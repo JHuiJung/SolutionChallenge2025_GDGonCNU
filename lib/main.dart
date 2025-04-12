@@ -1,10 +1,32 @@
 import 'package:flutter/material.dart';
 import "package:sliding_up_panel/sliding_up_panel.dart"; // 슬라이딩 패널 패키지 import
-
+import 'screen/firebase_test_screen.dart';
+import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 // 앱의 시작
-void main() {
-  runApp(const MyApp());
+void main() async {
+  print("main 시작");
+  WidgetsFlutterBinding.ensureInitialized(); // 필수!
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  print("파이어베이스 정보 로딩 끝");
+  runApp(const MyApp2());
 }
+
+class MyApp2 extends StatelessWidget {
+  const MyApp2({super.key});
+  
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Firebase Test',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const FirebaseTestScreen(), // 실험 중이니까 이걸로 시작
+    );
+  }
+}
+
 
 // 앱의 루트 위젯입니다. MaterialApp을 설정합니다.
 class MyApp extends StatelessWidget {
