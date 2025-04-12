@@ -1,4 +1,4 @@
-package com.example.solution_challenge_2025
+package com.example.naviya
 
 import io.flutter.embedding.android.FlutterActivity
 
