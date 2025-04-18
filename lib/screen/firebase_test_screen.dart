@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb 사용
 
-String client_id = "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com";
+String firebase_client_id = "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com";
 
 class FirebaseTestScreen extends StatefulWidget {
   const FirebaseTestScreen({super.key});
@@ -17,81 +17,122 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
   // ✅ 구글 로그인 함수
   Future<void> _signInWithGoogle() async {
+
+    if (kIsWeb) {
+      await signInWithGoogleForWeb();
+    } else {
+      await signInWithGoogleForMobile();
+    }
+
+  }
+
+  // 웹 테스트용 구글 로그인 함수
+  Future<void> signInWithGoogleForWeb() async {
     try {
-      final googleSignIn = GoogleSignIn(
-        clientId: kIsWeb
-            ? client_id
-            : null,
-      );
+      final googleProvider = GoogleAuthProvider();
 
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        setState(() {
-          _status = 'Google sign-in cancelled';
-        });
-        return;
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+      // Optional: Add scopes or custom parameters
+      // googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly');
 
       final userCredential =
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      await FirebaseAuth.instance.signInWithPopup(googleProvider);
+
       setState(() {
         _status = 'Signed in with Google: ${userCredential.user?.displayName}';
       });
+      print("Signed in as ${userCredential.user?.displayName}");
+
     } catch (e) {
       setState(() {
         _status = 'Google sign-in error: $e';
       });
-      print(e);
+      print("Google sign-in failed: $e");
     }
   }
 
-  Future<void> _signInAnonymously() async {
-    try {
-      final userCredential = await FirebaseAuth.instance.signInAnonymously();
-      setState(() {
-        _status = 'Signed in anonymously: ${userCredential.user?.uid}';
-      });
-    } catch (e) {
-      setState(() {
-        _status = 'Anonymous sign-in error: $e';
-      });
-      print(e);
+  // 모바일 구글 로그인 함수
+  Future<void> signInWithGoogleForMobile() async {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+    if (googleUser == null) {
+      // 사용자가 로그인 취소함
+      return;
     }
+
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+
+    setState(() {
+      _status = 'Signed in with Google: ${userCredential.user?.displayName}';
+    });
+    print("Signed in as ${userCredential.user?.displayName}");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Firebase Test')),
+      //appBar: AppBar(title: const Text('Firebase Test')),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_status, textAlign: TextAlign.center),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _signInAnonymously,
-              child: const Text('익명 로그인'),
+            const Text(
+              "Let's Get Started",
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            GoogleAuthProvider(client_id: client_id)
-            ,
 
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _signInWithGoogle,
-              child: const Text('구글 아이디로 로그인'),
+            const SizedBox(height: 25),
+
+            // Google G Logo Button
+            GestureDetector(
+              onTap: _signInWithGoogle,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                  //border: Border.all(color: Colors.grey),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 5,
+                      offset: Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: Center(
+                  child: Image.asset(
+                    'assets/images/Google__G__logo.png',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            const Text(
+              'Start with Google',
+              style: TextStyle(fontSize: 18),
             ),
           ],
         ),
       ),
     );
   }
+
 }
