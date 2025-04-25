@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb 사용
+import 'package:cloud_firestore/cloud_firestore.dart';
+import './firestoreManager.dart';
 
 String firebase_client_id = "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com";
 
+
+
 class FirebaseTestScreen extends StatefulWidget {
   const FirebaseTestScreen({super.key});
+
 
   @override
   State<FirebaseTestScreen> createState() => _FirebaseTestScreenState();
@@ -89,6 +94,11 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+
+            ElevatedButton(
+              onPressed: addUser,
+              child: Text('사용자 추가'),
             ),
 
             const SizedBox(height: 25),
