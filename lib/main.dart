@@ -10,9 +10,15 @@ import 'screens/post_detail_screen.dart';
 import 'screens/user_profile_screen.dart';
 import 'screens/chat_room_screen.dart';
 import 'screens/ai_chat_screen.dart';
+import 'screen/firebase_test_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -34,7 +40,8 @@ class MyApp extends StatelessWidget {
 
       // 네비게이션 라우트 정의
       routes: {
-        '/login': (context) => const LoginScreen(),
+        '/login': (context) => const FirebaseTestScreen(),
+        //'/login': (context) => const LoginScreen(),
         '/profile': (context) => const ProfileRegistrationScreen(), // 순서 변경됨
         '/preference': (context) => const PreferenceSelectionScreen(), // 순서 변경됨
         '/main': (context) => const MainScreen(),

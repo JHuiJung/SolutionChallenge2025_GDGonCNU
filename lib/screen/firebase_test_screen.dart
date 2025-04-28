@@ -20,6 +20,8 @@ class FirebaseTestScreen extends StatefulWidget {
 class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   String _status = 'Not authenticated';
 
+
+
   // ✅ 구글 로그인 함수
   Future<void> _signInWithGoogle() async {
 
@@ -28,6 +30,10 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
     } else {
       await signInWithGoogleForMobile();
     }
+
+    User? user = FirebaseAuth.instance.currentUser;
+
+    print(user?.email);
 
   }
 
