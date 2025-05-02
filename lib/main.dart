@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:naviya/screens/spot_detail_screen.dart';
+import 'package:naviya/screens/write_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/preference_selection_screen.dart';
 import 'screens/profile_registration_screen.dart';
@@ -7,10 +9,12 @@ import 'theme/app_theme.dart'; // 테마 파일 임포트
 import 'screens/mypage_screen.dart';
 import 'screens/create_post_screen.dart';
 import 'screens/post_detail_screen.dart';
-import 'screens/user_profile_screen.dart';
+import 'screens/user_profile_screen.dart'; 
 import 'screens/chat_room_screen.dart';
 import 'screens/ai_chat_screen.dart';
-
+import 'screens/spot_detail_screen.dart'; // 관광지 상세 화면 임포트
+import 'dart:ui'; // import 추가
+import 'screens/search_screen.dart'; // 검색 화면 임포트
 
 void main() {
   runApp(const MyApp());
@@ -25,9 +29,12 @@ class MyApp extends StatelessWidget {
       title: 'Quokka',
       theme: AppTheme.lightTheme, // 밝은 테마 적용
       darkTheme: AppTheme.darkTheme, // 다크 테마 적용
-      themeMode: ThemeMode.system, // 시스템 설정에 따라 테마 자동 전환
-      // themeMode: ThemeMode.light, // 항상 밝은 모드
+      // themeMode: ThemeMode.system, // 시스템 설정에 따라 테마 자동 전환
+      themeMode: ThemeMode.light, // 항상 밝은 모드
       debugShowCheckedModeBanner: false, // 디버그 배너 숨김
+      scrollBehavior: MaterialScrollBehavior().copyWith(
+        dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
+      ),
 
       // 앱 시작 시 첫 화면 설정
       initialRoute: '/login',
@@ -44,6 +51,9 @@ class MyApp extends StatelessWidget {
         '/user_profile': (context) => const UserProfileScreen(), // 사용자 프로필 라우트 추가
         '/chat_room': (context) => const ChatRoomScreen(), // 개별 채팅방 라우트 추가
         '/ai_chat': (context) => const AiChatScreen(),   // AI 채팅방 라우트 추가
+        '/write': (context) => const WriteScreen(), // 글쓰기 화면 라우트 추가
+        '/spot_detail': (context) => const SpotDetailScreen(),
+        '/search': (context) => const SearchScreen(), // 검색 화면 라우트 추가
       },
     );
   }

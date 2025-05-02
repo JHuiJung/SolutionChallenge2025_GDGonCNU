@@ -31,9 +31,9 @@ class _MainScreenState extends State<MainScreen> {
   String _getAppBarTitle(int index) {
     switch (index) {
       case 0:
-        return 'Meet-Up';
+        return 'Meet Up';
       case 1:
-        return 'Map';
+        return 'Explore';
       case 2:
         return 'Chat';
       default:
@@ -57,12 +57,12 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.people_outline),
             activeIcon: Icon(Icons.people), // 활성화 시 아이콘
-            label: 'Meet-Up',
+            label: 'Meet Up',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.map_outlined),
             activeIcon: Icon(Icons.map),
-            label: 'Map',
+            label: 'Explore',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),

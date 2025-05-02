@@ -17,20 +17,20 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
     'section4': {},
   };
 
-  // 각 섹션의 선택지 데이터 (실제 데이터로 교체 필요)
+  // 각 섹션의 선택지 데이터
   final Map<String, List<String>> _preferenceOptions = {
-    'section1': ['액티비티', '휴양', '맛집탐방', '쇼핑', '문화/예술', '자연'],
-    'section2': ['계획적', '즉흥적', '상관없음'],
-    'section3': ['혼자 여행', '친구와 함께', '연인과 함께', '가족과 함께'],
-    'section4': ['가성비 중시', '퀄리티 중시', '둘 다 고려'],
+    'section1': ['Activities', 'Food Discovery', 'Photography', 'Relaxtion', 'Cultural Exploration', 'etc'],
+    'section2': ['Nature', 'Cities', 'Both'],
+    'section3': ['Alone', 'Friends', 'Family', 'Partners'],
+    'section4': ['Detailed and Structured Itinerary', 'Spontaneous and Flexible'],
   };
 
   // 각 섹션의 질문 (실제 질문으로 교체 필요)
   final Map<String, String> _preferenceQuestions = {
-    'section1': '선호하는 여행 스타일은?',
-    'section2': '여행 계획 스타일은?',
-    'section3': '선호하는 여행 동반자는?',
-    'section4': '여행 시 중요하게 생각하는 것은?',
+    'section1': 'What is your main purpose for traveling?',
+    'section2': 'What type of destination do you prefer?',
+    'section3': 'Who do you usually travel with?',
+    'section4': 'What is your travel planning style?',
   };
 
 
@@ -62,6 +62,7 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
             }
           },
         ),
+
         actions: [
           TextButton(
             onPressed: () {
