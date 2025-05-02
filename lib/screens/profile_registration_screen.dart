@@ -1,5 +1,6 @@
 // lib/screens/profile_registration_screen.dart
 import 'package:flutter/material.dart';
+import '../firebase/firestoreManager.dart' as firestoreManager;
 
 // StatefulWidget으로 변경
 class ProfileRegistrationScreen extends StatefulWidget {
@@ -73,6 +74,8 @@ class _ProfileRegistrationScreenState extends State<ProfileRegistrationScreen> {
         actions: [
           TextButton(
             onPressed: () {
+              // Skip 버튼 클릭 시 바로 선호도 분석 화면으로 이동
+
               Navigator.pushReplacementNamed(context, '/preference');
             },
             child: const Text(

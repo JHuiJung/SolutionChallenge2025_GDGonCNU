@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../firebase/firestoreManager.dart' as firestoreManager;
 
 class PreferenceSelectionScreen extends StatefulWidget { // 상태 관리를 위해 StatefulWidget으로 변경
   const PreferenceSelectionScreen({super.key});
@@ -127,6 +128,13 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                   onPressed: () {
                     // 선택된 선호도 저장 로직 추가 (필요 시)
                     print('Selected Preferences: $_selectedPreferences');
+
+                    firestoreManager.UserState().preferredActivities = _selectedPreferences['section1']!.toList();
+                    firestoreManager.UserState().preferredLanguage = _selectedPreferences['section2']!.toList();
+                    firestoreManager.UserState().preferredTravelRegions = _selectedPreferences['section3']!.toList();
+
+
+                    firestoreManager.addUser();
 
                     // 메인 화면으로 이동
                     Navigator.pushReplacementNamed(context, '/main');

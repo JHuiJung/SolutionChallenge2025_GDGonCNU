@@ -15,8 +15,17 @@ import 'screens/ai_chat_screen.dart';
 import 'screens/spot_detail_screen.dart'; // 관광지 상세 화면 임포트
 import 'dart:ui'; // import 추가
 import 'screens/search_screen.dart'; // 검색 화면 임포트
+import 'firebase/firebase_test_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'firebase/firestoreManager.dart' as firestoreManager;
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp());
 }
 
@@ -39,9 +48,12 @@ class MyApp extends StatelessWidget {
       // 앱 시작 시 첫 화면 설정
       initialRoute: '/login',
 
+
+
       // 네비게이션 라우트 정의
       routes: {
-        '/login': (context) => const LoginScreen(),
+        '/login': (context) => const FirebaseTestScreen(),
+        //'/login': (context) => const LoginScreen(),
         '/profile': (context) => const ProfileRegistrationScreen(), // 순서 변경됨
         '/preference': (context) => const PreferenceSelectionScreen(), // 순서 변경됨
         '/main': (context) => const MainScreen(),
