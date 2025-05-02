@@ -10,15 +10,17 @@ import 'screens/post_detail_screen.dart';
 import 'screens/user_profile_screen.dart';
 import 'screens/chat_room_screen.dart';
 import 'screens/ai_chat_screen.dart';
-import 'screen/firebase_test_screen.dart';
+import 'firebase/firebase_test_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'firebase/firestoreManager.dart' as firestoreManager;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
 
@@ -37,6 +39,8 @@ class MyApp extends StatelessWidget {
 
       // 앱 시작 시 첫 화면 설정
       initialRoute: '/login',
+
+
 
       // 네비게이션 라우트 정의
       routes: {

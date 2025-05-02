@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../firebase/firestoreManager.dart' as firestoreManager;
 
 class ProfileRegistrationScreen extends StatelessWidget {
   const ProfileRegistrationScreen({super.key});
@@ -37,6 +38,7 @@ class ProfileRegistrationScreen extends StatelessWidget {
           TextButton(
             onPressed: () {
               // Skip 버튼 클릭 시 바로 선호도 분석 화면으로 이동
+
               Navigator.pushReplacementNamed(context, '/preference');
             },
             child: Text(
