@@ -129,9 +129,11 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                     // 선택된 선호도 저장 로직 추가 (필요 시)
                     print('Selected Preferences: $_selectedPreferences');
 
-                    firestoreManager.UserState().preferredActivities = _selectedPreferences['section1']!.toList();
-                    firestoreManager.UserState().preferredLanguage = _selectedPreferences['section2']!.toList();
-                    firestoreManager.UserState().preferredTravelRegions = _selectedPreferences['section3']!.toList();
+                    // Firestore에 저장
+                    firestoreManager.UserState().preferTravlePurpose = _selectedPreferences['section1']!.toList();
+                    firestoreManager.UserState().preferDestination = _selectedPreferences['section2']!.toList();
+                    firestoreManager.UserState().preferPeople = _selectedPreferences['section3']!.toList();
+                    firestoreManager.UserState().preferPlanningStyle = _selectedPreferences['section3']!.toList();
 
 
                     firestoreManager.addUser();

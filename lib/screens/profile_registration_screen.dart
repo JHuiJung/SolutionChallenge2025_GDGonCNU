@@ -1,6 +1,7 @@
 // lib/screens/profile_registration_screen.dart
 import 'package:flutter/material.dart';
 import '../firebase/firestoreManager.dart' as firestoreManager;
+import 'package:firebase_auth/firebase_auth.dart';
 
 // StatefulWidget으로 변경
 class ProfileRegistrationScreen extends StatefulWidget {
@@ -213,6 +214,19 @@ class _ProfileRegistrationScreenState extends State<ProfileRegistrationScreen> {
           print('Nationality: $_selectedNationality');
           print('Gender: $_selectedGender');
           print('Birth Year: $_selectedBirthYear');
+
+          //firestore에 저장
+          User? userinfo = FirebaseAuth.instance.currentUser;
+
+          if(userinfo != null)
+            {
+              firestoreManager.UserState().email = userinfo.email;
+              firestoreManager.UserState().name = userinfo.displayName;
+            }
+
+          firestoreManager.UserState().gender = _selectedGender;
+          firestoreManager.UserState().region = _selectedNationality;
+          firestoreManager.UserState().birthYear = _selectedBirthYear!;
 
           Navigator.pushReplacementNamed(context, '/preference');
         },

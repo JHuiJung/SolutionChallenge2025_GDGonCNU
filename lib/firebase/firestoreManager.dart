@@ -10,20 +10,28 @@ class UserState {
 
   UserState._internal();
 
-  String email = "";
-  String name = "";
-  String region = "";
-  String gender = "";
-  int age = 0;
-  List<String> preferredLanguage = [];
-  List<String> visitedCountries = [];
+  //기본정보
+  String? email = "";
+  String? name = "";
+  String? region = "";
+  String? gender = "";
+  int? birthYear = 0;
+
+  //프로필 추가 정보
+  (String, num) firstLanguage = ("",0); // 제 1국어
+  (String, num) secondLanguage = ("",0); // 제 2국어
+  List<String> visitedCountries = []; //다녀온 나라
   String bio = "";
-  List<String> postIds = [];
-  List<String> comments = [];
-  List<String> friendsEmail = [];
+  List<String> postIds = []; // 게시글 id
+  List<String> comments = []; // 코멘트 id
+  List<String> friendsEmail = []; // 친구 이메일
   String travelGoal = "";
-  List<String> preferredTravelRegions = [];
-  List<String> preferredActivities = [];
+
+  //선호 조사
+  List<String> preferTravlePurpose = [];
+  List<String> preferDestination = [];
+  List<String> preferPeople = [];
+  List<String> preferPlanningStyle = [];
 }
 
 class UserChat{
@@ -63,7 +71,7 @@ class UserRecommandPost{
 }
 
 class Comment{
-
+  String commentId = "";
   String userEmail = "";
   String userName = "";
   String userPhoto = "";
@@ -77,19 +85,28 @@ void addUser() {
 
   FirebaseFirestore.instance.collection('users').add({
     'email': user.email,
+
+    //기존 정보
     'name': user.name,
     'region': user.region,
     'gender': user.gender,
-    'age': user.age,
-    'preferredLanguage': user.preferredLanguage,
+    'birthYear': user.birthYear,
+
+    //프로필 추가 정보
     'visitedCountries': user.visitedCountries,
     'bio': user.bio,
     'postIds': user.postIds,
     'comments': user.comments,
     'travelGoal': user.travelGoal,
-    'preferredTravelRegions': user.preferredTravelRegions,
-    'preferredActivities': user.preferredActivities,
+
     'timestamp': FieldValue.serverTimestamp(),
+
+    //선호 조사
+    'preferTravlePurpose' : user.preferTravlePurpose,
+    'preferDestination' : user.preferDestination,
+    'preferPeople' : user.preferPeople,
+    'preferPlanningStyle' : user.preferPlanningStyle,
+
   }).then((DocumentReference doc) {
     print('Document added with ID: ${doc.id}');
   }).catchError((error) {
@@ -114,7 +131,7 @@ Future<bool> getUserInfoByEmail(String email) async {
         .get();
 
     if (snapshot.docs.isEmpty) {
-      print("해당 이메일의 유저가 없습니다.");
+      print("(firestoreManager) 해당 이메일의 유저가 없습니다.");
       return false;
     }
 
@@ -125,15 +142,19 @@ Future<bool> getUserInfoByEmail(String email) async {
     user.name = data['name'] ?? '';
     user.region = data['region'] ?? '';
     user.gender = data['gender'] ?? '';
-    user.age = data['age'] ?? 0;
-    user.preferredLanguage = List<String>.from(data['preferredLanguage'] ?? []);
+    user.birthYear = data['birthYear'] ?? 0;
     user.visitedCountries = List<String>.from(data['visitedCountries'] ?? []);
     user.bio = data['bio'] ?? '';
     user.postIds = List<String>.from(data['postIds'] ?? []);
     user.comments = List<String>.from(data['comments'] ?? []);
     user.travelGoal = data['travelGoal'] ?? '';
-    user.preferredTravelRegions = List<String>.from(data['preferredTravelRegions'] ?? []);
-    user.preferredActivities = List<String>.from(data['preferredActivities'] ?? []);
+
+
+    // 선호도
+    user.preferTravlePurpose = List<String>.from(data['preferTravlePurpose'] ?? []);
+    user.preferDestination = List<String>.from(data['preferDestination'] ?? []);
+    user.preferPeople = List<String>.from(data['preferPeople'] ?? []);
+    user.preferPlanningStyle = List<String>.from(data['preferPlanningStyle'] ?? []);
 
     print("유저 정보 로드 성공: ${user.name}");
     return true;
