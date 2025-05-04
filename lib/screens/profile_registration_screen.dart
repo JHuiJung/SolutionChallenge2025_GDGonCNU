@@ -12,6 +12,8 @@ class ProfileRegistrationScreen extends StatefulWidget {
 
 class _ProfileRegistrationScreenState extends State<ProfileRegistrationScreen> {
   // 선택된 값을 저장할 상태 변수
+  // Username을 위한 TextEditingController 추가
+  final TextEditingController _usernameController = TextEditingController();
   String? _selectedNationality;
   String? _selectedGender;
   int? _selectedBirthYear;
@@ -30,6 +32,13 @@ class _ProfileRegistrationScreenState extends State<ProfileRegistrationScreen> {
       .reversed
       .toList();
 
+  // --- Controller Dispose 추가 ---
+  @override
+  void dispose() {
+    _usernameController.dispose(); // 컨트롤러 메모리 해제
+    super.dispose();
+  }
+
   // 입력 필드 스타일을 위한 Helper 함수 (재사용)
   InputDecoration _buildInputDecoration({String? labelText, String? hintText, required Color backgroundColor}) {
     return InputDecoration(
@@ -45,7 +54,6 @@ class _ProfileRegistrationScreenState extends State<ProfileRegistrationScreen> {
       contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -115,13 +123,17 @@ class _ProfileRegistrationScreenState extends State<ProfileRegistrationScreen> {
               ),
               const SizedBox(height: 50),
 
-              // --- User Name (TextField 유지) ---
-              _buildSectionTitle('user name'), // 제목 추가
+              // --- User Name TextField 수정 ---
+              _buildSectionTitle('user name'),
               TextField(
+                controller: _usernameController, // 컨트롤러 연결
                 decoration: _buildInputDecoration(
                   hintText: 'Enter your username',
                   backgroundColor: textFieldBackgroundColor,
                 ),
+                // 추가 설정 (선택 사항)
+                textCapitalization: TextCapitalization.words, // 이름처럼 첫 글자 대문자
+                keyboardType: TextInputType.name,
               ),
               const SizedBox(height: 20),
 
@@ -209,7 +221,21 @@ class _ProfileRegistrationScreenState extends State<ProfileRegistrationScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          // --- 입력된 Username 값 가져오기 ---
+          final String username = _usernameController.text.trim(); // trim()으로 앞뒤 공백 제거
+
+          // TODO: 입력값 유효성 검사 추가 (예: username이 비어있는지 확인)
+          if (username.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Please enter your username.')),
+            );
+            return; // 진행 중단
+          }
+          // 다른 필드도 필요시 유효성 검사 추가
+
+          // --- 모든 데이터 출력 (확인용) ---
           // TODO: 선택된 값들(_selectedNationality, _selectedGender, _selectedBirthYear) 저장 로직 추가
+          print('Username: $username'); // 가져온 username 출력
           print('Nationality: $_selectedNationality');
           print('Gender: $_selectedGender');
           print('Birth Year: $_selectedBirthYear');

@@ -305,22 +305,23 @@ class _MapScreenState extends State<MapScreen> {
                       backgroundColor: Colors.grey.shade300,
                       backgroundImage: const NetworkImage('https://source.unsplash.com/random/100x100/?person&sig=99'),
                     ),
-                    Positioned(
-                      top: -2,
-                      right: -2,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: Colors.tealAccent[400],
-                          shape: BoxShape.circle,
-                          border: Border.all(color: colorScheme.surface, width: 1.5),
-                        ),
-                        child: const Text(
-                          '3',
-                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
+                    // 프로필 알림 표시 코드
+                    // Positioned(
+                    //   top: -2,
+                    //   right: -2,
+                    //   child: Container(
+                    //     padding: const EdgeInsets.all(5),
+                    //     decoration: BoxDecoration(
+                    //       color: Colors.tealAccent[400],
+                    //       shape: BoxShape.circle,
+                    //       border: Border.all(color: colorScheme.surface, width: 1.5),
+                    //     ),
+                    //     child: const Text(
+                    //       '3',
+                    //       style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -352,21 +353,21 @@ class _MapScreenState extends State<MapScreen> {
             child: Icon(Icons.my_location, color: iconColor),
           ),
           const SizedBox(width: 12),
-          // Write 버튼
-          ElevatedButton.icon(
-            // heroTag: 'fab_write', // 고유 Hero 태그
+          // --- 수정된 Write 버튼 ---
+          FloatingActionButton.small( // ElevatedButton 대신 사용
+            heroTag: 'fab_write', // 고유 Hero 태그
             onPressed: () {
               Navigator.pushNamed(context, '/write');
             },
-            icon: Icon(Icons.add, color: iconColor),
-            label: Text('Write ', style: TextStyle(color: iconColor, fontWeight: FontWeight.w600)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: buttonColor,
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+            backgroundColor: buttonColor, // 새 버튼 배경색 적용
+            elevation: 3,
+            // 모양 변경: RoundedRectangleBorder 사용
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0), // 모서리 둥글기 조절
+            ),
+            child: Icon(
+              Icons.create,
+              color: iconColor, // 새 버튼 아이콘 색상 적용
             ),
           ),
         ],

@@ -58,9 +58,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
     // 선호도 박스 스타일 정의
     final Color prefBoxBgColor = colorScheme.brightness == Brightness.light
-        ? Colors.purple.shade50.withOpacity(0.7)
-        : Colors.purple.shade900.withOpacity(0.5);
-    final Color prefBoxTitleColor = colorScheme.onSurface.withOpacity(0.6);
+        ? Colors.purple.shade50.withValues(alpha: 0.7)
+        : Colors.purple.shade900.withValues(alpha: 0.5);
+    final Color prefBoxTitleColor = colorScheme.onSurface.withValues(alpha: 0.6);
     final Color prefBoxContentColor = colorScheme.onSurface;
     final Color prefBoxBorderColor = Colors.purple.shade300;
 
@@ -83,6 +83,19 @@ class _MyPageScreenState extends State<MyPageScreen> {
               style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             centerTitle: true, // 제목 중앙 정렬
+            actions: [
+              IconButton(
+                icon: Icon(Icons.edit, color: colorScheme.onSurface), // 연필 아이콘
+                onPressed: () {
+                  // 프로필 수정 화면으로 이동
+                  Navigator.pushNamed(context, '/edit_mypage');
+                  print('Navigate to Edit MyPage');
+                },
+                tooltip: 'Edit Profile', // 툴팁 추가
+              ),
+              const SizedBox(width: 8), // 오른쪽 여백
+            ],
+            // --- actions 추가 끝 ---
           ),
 
           // 2. 헤더 영역 (지도 배경, 프로필 사진, 상태 메시지)
@@ -97,7 +110,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     child: Image.network( // 예시 이미지
                       'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png',
                       fit: BoxFit.cover,
-                      color: Colors.black.withOpacity(0.1), // 약간 어둡게 처리 (선택 사항)
+                      color: Colors.black.withValues(alpha: 0.1), // 약간 어둡게 처리 (선택 사항)
                       colorBlendMode: BlendMode.darken,
                       errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade300),
                     ),
@@ -133,7 +146,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         shadows: [ // 텍스트 가독성 향상 (선택 사항)
                           Shadow(
                             blurRadius: 4.0,
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             offset: const Offset(1.0, 1.0),
                           ),
                         ],
@@ -237,7 +250,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     children: [
                       CommentItem(comment: _comments[index]),
                       if (index < _comments.length - 1)
-                        Divider(height: 1, thickness: 1, color: colorScheme.surfaceVariant.withOpacity(0.3)),
+                        Divider(height: 1, thickness: 1, color: colorScheme.surfaceVariant.withValues(alpha: 0.3)),
                     ],
                   );
                 },
@@ -270,7 +283,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
           const SizedBox(width: 12),
           Expanded( // 긴 텍스트 줄바꿈 처리
             child: Text(

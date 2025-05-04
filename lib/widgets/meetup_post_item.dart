@@ -105,8 +105,8 @@ class MeetupPostItem extends StatelessWidget {
       runSpacing: 4.0,
       children: post.categories.take(2).map((category) => Chip(
         label: Text(category),
-        labelStyle: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant.withOpacity(0.8)),
-        backgroundColor: colorScheme.surfaceVariant.withOpacity(0.5),
+        labelStyle: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8)),
+        backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.5),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 0),
         visualDensity: VisualDensity.compact,
@@ -119,12 +119,12 @@ class MeetupPostItem extends StatelessWidget {
   Widget _buildInfoRow(BuildContext context, IconData icon, String text, TextTheme textTheme) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+        Icon(icon, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
         const SizedBox(width: 4),
         Expanded(
           child: Text(
             text,
-            style: textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)),
+            style: textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -159,17 +159,17 @@ class MeetupPostItem extends StatelessWidget {
         RichText(
           text: TextSpan(
             // 기본 스타일은 bodySmall 정도로 약간 작게 설정
-            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.8)),
+            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.8)),
             children: [
               TextSpan(
                 text: '${post.totalPeople}',
                 // 숫자는 조금 더 강조 (굵게, 약간 더 진하게)
-                style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface.withOpacity(0.9)),
+                style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface.withValues(alpha: 0.9)),
               ),
               const TextSpan(text: ' people · '), // 점으로 구분
               TextSpan(
                 text: '${post.spotsLeft}',
-                style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface.withOpacity(0.9)),
+                style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface.withValues(alpha: 0.9)),
               ),
               const TextSpan(text: ' left'),
             ],

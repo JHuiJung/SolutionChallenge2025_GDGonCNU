@@ -44,7 +44,7 @@ class CommentItem extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       comment.commenterInfo, // 예: "America, 20"
-                      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
+                      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
                     ),
                   ],
                 ),

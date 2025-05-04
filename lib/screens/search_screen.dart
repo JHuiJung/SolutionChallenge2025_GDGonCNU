@@ -58,7 +58,7 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.clear, color: colorScheme.onSurface.withOpacity(0.7)),
+            icon: Icon(Icons.clear, color: colorScheme.onSurface.withValues(alpha: 0.7)),
             onPressed: () => _searchController.clear(),
           ),
         ],

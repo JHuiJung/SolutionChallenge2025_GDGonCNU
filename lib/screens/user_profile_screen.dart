@@ -148,9 +148,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     // 선호도 박스 스타일 (MyPageScreen과 동일)
     final Color prefBoxBgColor = colorScheme.brightness == Brightness.light
-        ? Colors.purple.shade50.withOpacity(0.7)
-        : Colors.purple.shade900.withOpacity(0.5);
-    final Color prefBoxTitleColor = colorScheme.onSurface.withOpacity(0.6);
+        ? Colors.purple.shade50.withValues(alpha: 0.7)
+        : Colors.purple.shade900.withValues(alpha: 0.5);
+    final Color prefBoxTitleColor = colorScheme.onSurface.withValues(alpha: 0.6);
     final Color prefBoxContentColor = colorScheme.onSurface;
     final Color prefBoxBorderColor = Colors.purple.shade300;
 
@@ -188,7 +188,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     child: Image.network(
                       'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png',
                       fit: BoxFit.cover,
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       colorBlendMode: BlendMode.darken,
                       errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade300),
                     ),
@@ -217,7 +217,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         shadows: [
                           Shadow(
                             blurRadius: 4.0,
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             offset: const Offset(1.0, 1.0),
                           ),
                         ],
@@ -232,19 +232,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       // 배경색 추가 가능 (선택 사항)
-                      // color: colorScheme.surface.withOpacity(0.8),
+                      // color: colorScheme.surface.withValues(alpha: 0.8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 버튼 간격 균등하게
                         children: [
                           _buildActionButton(
                             context,
-                            icon: Icons.call_outlined,
+                            icon: Icons.call,
                             label: 'Call',
                             onPressed: _handleCall,
                           ),
                           _buildActionButton(
                             context,
-                            icon: Icons.message_outlined,
+                            icon: Icons.chat_bubble_outline,
                             label: 'Message',
                             onPressed: _handleMessage,
                           ),
@@ -328,10 +328,61 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
 
-          // 5. Comments 섹션 - MyPageScreen과 동일한 위젯 사용
+          // 5. Comments 섹션 수정
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            sliver: SliverToBoxAdapter(child: _buildSectionTitle(context, 'Comments')),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Comments',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.edit_outlined, color: colorScheme.onSurface.withOpacity(0.7)),
+                        onPressed: () async { // async 추가
+                          // 사용자 코멘트 작성 화면으로 이동하고 결과(작성된 텍스트)를 기다림
+                          final newCommentText = await Navigator.pushNamed(
+                            context,
+                            '/write_user_comment',
+                            arguments: _userId,
+                          );
+
+                          // 결과가 null이 아니고 비어있지 않으면 UI 업데이트
+                          if (newCommentText != null && newCommentText is String && newCommentText.isNotEmpty) {
+                            // --- 새 코멘트 객체 생성 (임시) ---
+                            // TODO: 실제로는 현재 로그인한 사용자 정보로 채워야 함
+                            final newComment = CommentModel(
+                              commentId: 'temp_${DateTime.now().millisecondsSinceEpoch}', // 임시 ID
+                              commenterId: 'current_user_id', // 현재 사용자 ID 필요
+                              commenterName: 'Me', // 현재 사용자 이름 필요
+                              commenterInfo: 'My Location, My Age', // 현재 사용자 정보 필요
+                              commenterImageUrl: 'https://i.pravatar.cc/150?img=60', // 현재 사용자 이미지 URL 필요
+                              commentText: newCommentText,
+                              timestamp: DateTime.now(),
+                            );
+                            // --- 새 코멘트 객체 생성 끝 ---
+
+                            // 상태 업데이트하여 목록에 추가 (맨 앞에 추가)
+                            setState(() {
+                              _comments.insert(0, newComment);
+                            });
+                          }
+                        },
+                        tooltip: 'Write a comment',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  Divider(height: 16, thickness: 1, color: colorScheme.surfaceVariant.withOpacity(0.5)),
+                ],
+              ),
+            ),
           ),
           _comments.isEmpty
               ? SliverPadding(
@@ -349,7 +400,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     children: [
                       CommentItem(comment: _comments[index]),
                       if (index < _comments.length - 1)
-                        Divider(height: 1, thickness: 1, color: colorScheme.surfaceVariant.withOpacity(0.3)),
+                        Divider(height: 1, thickness: 1, color: colorScheme.surfaceVariant.withValues(alpha: 0.3)),
                     ],
                   );
                 },
@@ -376,9 +427,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color defaultBackgroundColor = colorScheme.brightness == Brightness.light
-        ? Colors.purple.shade50.withOpacity(0.8)
-        : Colors.purple.shade900.withOpacity(0.6);
-    final Color defaultIconColor = colorScheme.onSurface.withOpacity(0.8);
+        ? Colors.purple.shade50.withValues(alpha: 0.8)
+        : Colors.purple.shade900.withValues(alpha: 0.6);
+    final Color defaultIconColor = colorScheme.onSurface.withValues(alpha: 0.8);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -406,7 +457,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         Text(
           label,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: colorScheme.onSurface.withOpacity(0.7),
+            color: colorScheme.onSurface.withValues(alpha: 0.7),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -431,7 +482,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

@@ -72,7 +72,7 @@ class ChatListItem extends StatelessWidget {
                   Text(
                     chat.lastMessage,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface.withOpacity(0.6), // 약간 흐린 색
+                      color: colorScheme.onSurface.withValues(alpha: 0.6), // 약간 흐린 색
                       fontWeight: chat.isRead ? FontWeight.normal : FontWeight.bold, // 안 읽으면 굵게
                     ),
                     maxLines: 2, // 최대 2줄
@@ -91,14 +91,14 @@ class ChatListItem extends StatelessWidget {
                 Text(
                   timeFormatter.format(dateTime), // 포맷된 시간 표시
                   style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurface.withOpacity(0.5),
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 4), // 시간과 아이콘 사이 간격
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 14,
-                  color: colorScheme.onSurface.withOpacity(0.4),
+                  color: colorScheme.onSurface.withValues(alpha: 0.4),
                 ),
               ],
             ),

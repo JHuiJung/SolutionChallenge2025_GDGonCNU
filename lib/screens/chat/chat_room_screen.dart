@@ -1,7 +1,7 @@
 // lib/screens/chat_room_screen.dart
 import 'package:flutter/material.dart';
-import '../models/chat_message_model.dart';
-import '../widgets/message_bubble.dart';
+import '../../models/chat_message_model.dart';
+import '../../widgets/message_bubble.dart';
 import 'dart:async'; // Timer 사용
 
 class ChatRoomScreen extends StatefulWidget {
@@ -243,7 +243,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           BoxShadow(
             offset: const Offset(0, -1),
             blurRadius: 4,
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
           ),
         ],
       ),
@@ -263,7 +263,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14.0),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceVariant.withOpacity(0.6), // 입력 필드 배경색
+                  color: colorScheme.surfaceVariant.withValues(alpha: 0.6), // 입력 필드 배경색
                   borderRadius: BorderRadius.circular(20.0),
                 ),
                 child: TextField(

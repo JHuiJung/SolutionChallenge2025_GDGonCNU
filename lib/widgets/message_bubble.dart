@@ -29,13 +29,13 @@ class MessageBubble extends StatelessWidget {
 
     // AI 번역 알림 텍스트 스타일
     final aiNoticeStyle = textTheme.bodySmall?.copyWith(
-      color: colorScheme.onSurface.withOpacity(0.5),
+      color: colorScheme.onSurface.withValues(alpha: 0.5),
       fontSize: 11,
     );
 
     // 읽음 상태/시간 텍스트 스타일
     final statusStyle = textTheme.bodySmall?.copyWith(
-      color: isMe ? colorScheme.onPrimary.withOpacity(0.7) : colorScheme.onSurfaceVariant.withOpacity(0.7),
+      color: isMe ? colorScheme.onPrimary.withValues(alpha: 0.7) : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
       fontSize: 11,
     );
 
@@ -69,7 +69,7 @@ class MessageBubble extends StatelessWidget {
             if (message.originalText != null && message.isTranslatedByAI)
               Text(
                 message.originalText!,
-                style: TextStyle(color: textColor.withOpacity(0.8), fontSize: 14), // 원문은 약간 흐리게
+                style: TextStyle(color: textColor.withValues(alpha: 0.8), fontSize: 14), // 원문은 약간 흐리게
               ),
             // 번역/주요 텍스트 표시
             Text(
