@@ -16,6 +16,8 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
   late SpotDetailModel _spotDetail;
   String? _spotId;
 
+  get outlineColorWithOpacity => null;
+
   @override
   void initState() {
     super.initState();
@@ -50,9 +52,9 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
 
     // 선호도 박스 스타일 (MyPage와 유사하게)
     final Color prefBoxBgColor = colorScheme.brightness == Brightness.light
-        ? Colors.purple.shade50.withOpacity(0.7)
-        : Colors.purple.shade900.withOpacity(0.5);
-    final Color prefBoxTitleColor = colorScheme.onSurface.withOpacity(0.6);
+        ? Colors.purple.shade50.withValues(alpha: 0.7)
+        : Colors.purple.shade900.withValues(alpha: 0.5);
+    final Color prefBoxTitleColor = colorScheme.onSurface.withValues(alpha: 0.6);
     final Color prefBoxContentColor = colorScheme.onSurface;
     final Color prefBoxBorderColor = Colors.purple.shade300;
 
@@ -98,12 +100,30 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // 댓글 섹션 제목
-                Text(
-                  'Comments',
-                  style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                // --- Comments 섹션 제목 수정 ---
+                Row( // 제목과 버튼을 위한 Row
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Comments',
+                      style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    // 코멘트 작성 버튼 추가
+                    IconButton(
+                      icon: Icon(Icons.edit_outlined, color: colorScheme.onSurface.withOpacity(0.7)),
+                      onPressed: () {
+                        // 스팟 코멘트 작성 화면으로 이동 (spotId 전달)
+                        Navigator.pushNamed(context, '/write_spot_comment', arguments: _spotId);
+                      },
+                      tooltip: 'Write a comment',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
                 ),
-                Divider(thickness: 1, height: 20, color: colorScheme.outline.withOpacity(0.3)), // 구분선
+                Divider(thickness: 1, height: 20, color: outlineColorWithOpacity), // 구분선
+                // --- Comments 섹션 제목 수정 끝 ---
               ]),
             ),
           ),
@@ -156,8 +176,8 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.2),
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.2),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                   stops: const [0.0, 0.5, 1.0], // 그라데이션 범위 조절
                 ),
@@ -189,14 +209,14 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                     style: textTheme.displaySmall?.copyWith( // 더 큰 제목 스타일
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      shadows: [Shadow(blurRadius: 2, color: Colors.black.withOpacity(0.5))],
+                      shadows: [Shadow(blurRadius: 2, color: Colors.black.withValues(alpha: 0.5))],
                     ),
                   ),
                   const SizedBox(height: 4),
                   // 한 줄 소개 (Quote)
                   Text(
                     _spotDetail.quote,
-                    style: textTheme.titleMedium?.copyWith(color: Colors.white.withOpacity(0.9)),
+                    style: textTheme.titleMedium?.copyWith(color: Colors.white.withValues(alpha: 0.9)),
                   ),
                   const SizedBox(height: 12),
                   // 작성자 정보

@@ -48,7 +48,7 @@ class TouristSpotCard extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                  colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
                   begin: Alignment.bottomCenter,
                   end: Alignment.center,
                 ),
@@ -94,7 +94,7 @@ class TouristSpotCard extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 child: Icon(

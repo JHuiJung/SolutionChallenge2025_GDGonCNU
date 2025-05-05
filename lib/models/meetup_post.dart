@@ -1,6 +1,6 @@
 // lib/models/meetup_post.dart
 import 'package:flutter/material.dart'; // LatLng 사용 위해 추가
-// import 'package:google_maps_flutter/google_maps_flutter.dart'; // 실제 지도 연동 시
+import 'package:google_maps_flutter/google_maps_flutter.dart'; // 실제 지도 연동 시
 
 class MeetupPost {
   final String id;

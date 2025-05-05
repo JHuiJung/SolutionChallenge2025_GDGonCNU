@@ -17,7 +17,7 @@ class SpotCommentCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 12.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withOpacity(0.5), // 반투명 배경
+        color: colorScheme.surfaceVariant.withValues(alpha: 0.5), // 반투명 배경
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Column(

@@ -95,7 +95,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     showDialog(
       context: context,
       barrierDismissible: false, // 배경 탭으로 닫기 비활성화
-      barrierColor: Colors.black.withOpacity(0.1), // 배경 약간 어둡게
+      barrierColor: Colors.black.withValues(alpha: 0.1), // 배경 약간 어둡게
       builder: (BuildContext context) {
         // 1초 후에 자동으로 팝업 닫기
         Timer(const Duration(seconds: 1), () {
@@ -159,7 +159,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     const SizedBox(height: 12),
                     Text(
                       '${_postDetail.totalPeople} people · ${_postDetail.spotsLeft} left',
-                      style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)),
+                      style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.7)),
                     ),
                     const SizedBox(height: 16),
                     _buildAuthorSection(context, textTheme),
@@ -173,6 +173,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     const SizedBox(height: 12),
                     _buildInfoRow(context, Icons.access_time_outlined, _postDetail.eventDateTimeString),
                     // 하단 버튼 공간 확보 (버튼 높이 + 패딩 고려)
+
                     const SizedBox(height: 100),
                   ]),
                 ),
@@ -197,7 +198,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
         child: CircleAvatar(
-          backgroundColor: Colors.black.withOpacity(0.3),
+          backgroundColor: Colors.black.withValues(alpha: 0.3),
           child: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
             onPressed: () => Navigator.pop(context),
@@ -231,7 +232,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       children: _postDetail.categories.map((category) => Chip(
         label: Text(category),
         labelStyle: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
-        backgroundColor: colorScheme.surfaceVariant.withOpacity(0.7),
+        backgroundColor: colorScheme.surfaceVariant.withValues(alpha: 0.7),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
         side: BorderSide.none,
@@ -265,7 +266,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   const SizedBox(height: 2),
                   Text(
                     _postDetail.authorLocation,
-                    style: textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                    style: textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                   ),
                 ],
               ),
@@ -285,7 +286,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -296,8 +297,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       ],
     );
   }
-  // --- 기존 빌더 함수들 끝 ---
-
 
   // 하단 버튼 빌더 (상태에 따라 Join 또는 Cancel 버튼 반환)
   Widget _buildBottomButton(BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
@@ -307,10 +306,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         decoration: BoxDecoration(
-          color: colorScheme.surface.withOpacity(0.9),
+          color: colorScheme.surface.withValues(alpha: 0.9),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               spreadRadius: 5,
             )
@@ -339,7 +338,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           borderRadius: BorderRadius.circular(30.0),
         ),
         // 처리 중일 때 비활성화 스타일 (선택 사항)
-        disabledBackgroundColor: colorScheme.primary.withOpacity(0.5),
+        disabledBackgroundColor: colorScheme.primary.withValues(alpha: 0.5),
       ),
       child: _isProcessing
           ? const SizedBox( // 로딩 인디케이터 표시
@@ -363,7 +362,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0), // 약간 덜 둥글게 (디자인 참고)
         ),
-        disabledBackgroundColor: Colors.grey.shade600.withOpacity(0.5),
+        disabledBackgroundColor: Colors.grey.shade600.withValues(alpha: 0.5),
       ),
       child: _isProcessing
           ? const SizedBox(
