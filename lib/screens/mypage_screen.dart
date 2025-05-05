@@ -1,5 +1,6 @@
 // lib/screens/mypage_screen.dart
 import 'package:flutter/material.dart';
+import 'package:naviya/firebase/firestoreManager.dart';
 import '../models/user_profile_model.dart'; // 내 프로필 모델
 import '../models/meetup_post.dart'; // 호스팅 글 모델
 import '../models/comment_model.dart'; // 코멘트 모델
@@ -7,6 +8,7 @@ import '../widgets/meetup_post_item.dart'; // 호스팅 글 위젯
 import '../widgets/comment_item.dart'; // 코멘트 위젯
 import '../widgets/language_indicator.dart'; // 언어 점 위젯
 import '../widgets/preference_display_box.dart'; // 선호도 박스 위젯
+import '../firebase/firestoreManager.dart' as firestoreManager;
 
 
 class MyPageScreen extends StatefulWidget {
@@ -22,6 +24,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
   late UserProfileModel _userProfile;
   late List<MeetupPost> _hostedPosts;
   late List<CommentModel> _comments;
+
+  //파이어베이스 데이터 가져오기
+  late UserState userinfo;
 
   @override
   void initState() {
@@ -45,6 +50,11 @@ class _MyPageScreenState extends State<MyPageScreen> {
       // 내 글이 없으면 다른 사람 글이라도 하나 보여주기 (더미 데이터용)
       _hostedPosts.add(getDummyMeetupPosts().first);
     }
+
+    //파이어 베이스 정보 로딩
+    userinfo = firestoreManager.UserState();
+
+
     _comments = getDummyComments();
 
     setState(() => _isLoading = false);
@@ -79,7 +89,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              '${_userProfile.name}, ${_userProfile.age}',
+              '${userinfo.name}, ${userinfo.birthYear}',
               style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             centerTitle: true, // 제목 중앙 정렬
@@ -116,7 +126,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         backgroundColor: Colors.white, // 테두리 효과
                         child: CircleAvatar(
                           radius: 62,
-                          backgroundImage: NetworkImage(_userProfile.profileImageUrl),
+                          backgroundImage: NetworkImage(userinfo.profileURL),
                           backgroundColor: Colors.grey.shade300,
                         ),
                       ),
@@ -126,7 +136,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   Positioned(
                     top: 185, // 프로필 사진 아래 위치하도록 조정
                     child: Text(
-                      _userProfile.statusMessage,
+                      userinfo.statusMessage,
                       style: textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.white, // 배경이 어두우므로 흰색 텍스트
@@ -152,19 +162,20 @@ class _MyPageScreenState extends State<MyPageScreen> {
               delegate: SliverChildListDelegate([
                 // --- Info ---
                 _buildSectionTitle(context, 'Info'),
-                _buildInfoRow(context, Icons.location_on_outlined, _userProfile.location),
-                _buildInfoRow(context, Icons.access_time, _userProfile.timeZoneInfo),
+                _buildInfoRow(context, Icons.location_on_outlined, userinfo.region ?? 'No Location'),
+                _buildInfoRow(context, Icons.access_time, "이 부분 수정 필요 ( 지역 시간 부분 )"),
                 const SizedBox(height: 24),
 
                 // --- Language ---
                 _buildSectionTitle(context, 'Language'),
-                ..._userProfile.languages.map((lang) => _buildLanguageRow(context, lang)),
+                ...userinfo.Languages.map((lang) => _buildLanguageRow(context, lang)),
+                //..._userProfile.languages.map((lang) => _buildLanguageRow(context, lang)),
                 const SizedBox(height: 24),
 
                 // --- Preferences ---
                 PreferenceDisplayBox(
                   title: 'I like',
-                  content: _userProfile.likes,
+                  content: userinfo.iLike,
                   backgroundColor: prefBoxBgColor,
                   titleColor: prefBoxTitleColor,
                   contentColor: prefBoxContentColor,
@@ -173,7 +184,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 const SizedBox(height: 12),
                 PreferenceDisplayBox(
                   title: "I've been",
-                  content: _userProfile.placesBeen,
+                  content: userinfo.visitedCountries.join(", "),
                   backgroundColor: prefBoxBgColor,
                   titleColor: prefBoxTitleColor,
                   contentColor: prefBoxContentColor,
@@ -182,7 +193,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 const SizedBox(height: 12),
                 PreferenceDisplayBox(
                   title: 'I want you to',
-                  content: _userProfile.wantsToDo,
+                  content: userinfo.wantsToDo,
                   backgroundColor: prefBoxBgColor,
                   titleColor: prefBoxTitleColor,
                   contentColor: prefBoxContentColor,
@@ -283,7 +294,40 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 
-  // 언어 행 위젯 (국기 + 이름 + 능숙도)
+  // 희중 버전
+  Widget _buildLanguageRow(BuildContext context, UserLanguageInfo langinfo) {
+    // TODO: languageCode에 맞는 실제 국기 이미지 에셋 필요
+    String flagAssetPath = 'assets/flags/korea.jpg'; // 예시 경로
+    //String flagAssetPath = 'assets/flags/usa.jpg'; // 예시 경로
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          // 국기 이미지 (에셋 필요)
+          Image.asset(
+            flagAssetPath,
+            width: 24,
+            height: 18, // 비율 유지
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => // 에러 시 Placeholder
+            Container(width: 24, height: 18, color: Colors.grey.shade300, child: Icon(Icons.flag, size: 14)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              langinfo.languageName,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          LanguageIndicator(proficiency: langinfo.proficiency), // 능숙도 점 표시
+        ],
+      ),
+    );
+  }
+}
+/*
+  // 언어 행 위젯 (국기 + 이름 + 능숙도) _ 재현님 버전
   Widget _buildLanguageRow(BuildContext context, UserLanguage language) {
     // TODO: languageCode에 맞는 실제 국기 이미지 에셋 필요
     String flagAssetPath = 'assets/flags/korea.jpg'; // 예시 경로
@@ -315,6 +359,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 }
+*/
 
 // --- Placeholder Screen for Editing Profile Picture ---
 class EditProfilePictureScreen extends StatelessWidget {

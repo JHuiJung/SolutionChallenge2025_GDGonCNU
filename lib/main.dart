@@ -26,6 +26,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // 테스트용 끝나고 지우기
+  firestoreManager.getUserInfoByEmail("wjdgmlwnd12@gmail.com");
+
   runApp(const MyApp());
 }
 
@@ -46,7 +49,7 @@ class MyApp extends StatelessWidget {
       ),
 
       // 앱 시작 시 첫 화면 설정
-      initialRoute: '/login',
+      initialRoute: '/main',
 
 
 

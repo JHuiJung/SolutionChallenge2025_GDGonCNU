@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 
+
 class UserState {
   static final UserState _instance = UserState._internal();
   factory UserState() => _instance;
@@ -18,10 +19,12 @@ class UserState {
   int? birthYear = 0;
 
   //프로필 추가 정보
-  (String, num) firstLanguage = ("",0); // 제 1국어
-  (String, num) secondLanguage = ("",0); // 제 2국어
+  List<UserLanguageInfo> Languages = []; // 가능 언어
   List<String> visitedCountries = []; //다녀온 나라
-  String bio = "";
+  String profileURL = "";
+  String statusMessage = "";
+  String wantsToDo = "";
+  String iLike = "";
   List<String> postIds = []; // 게시글 id
   List<String> comments = []; // 코멘트 id
   List<String> friendsEmail = []; // 친구 이메일
@@ -79,40 +82,77 @@ class Comment{
 
 }
 
+// 언어 정보
+class UserLanguageInfo {
+  final String languageCode;   // 예: 'ko'
+  final String languageName;   // 예: 'Korean'
+  final int proficiency;       // 예: 1~5
+
+  UserLanguageInfo({
+    required this.languageCode,
+    required this.languageName,
+    required this.proficiency,
+  });
+
+  factory UserLanguageInfo.fromMap(Map<String, dynamic> map) {
+    return UserLanguageInfo(
+      languageCode: map['languageCode'] ?? '',
+      languageName: map['languageName'] ?? '',
+      proficiency: map['proficiency'] ?? 1,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'languageCode': languageCode,
+      'languageName': languageName,
+      'proficiency': proficiency,
+    };
+  }
+}
+
 
 void addUser() {
-  final user = UserState(); // 싱글턴 인스턴스 호출
+  final user = UserState();
 
   FirebaseFirestore.instance.collection('users').add({
     'email': user.email,
-
-    //기존 정보
     'name': user.name,
     'region': user.region,
     'gender': user.gender,
     'birthYear': user.birthYear,
 
-    //프로필 추가 정보
+    // 언어 리스트를 Map 리스트로 변환
+    'languages': user.Languages
+        .map((lang) => {
+      'languageName': lang.languageName,
+      'languageCode': lang.languageCode,
+      'proficiency': lang.proficiency,
+    }).toList(),
+
     'visitedCountries': user.visitedCountries,
-    'bio': user.bio,
+    'profileURL': user.profileURL,
+    'statusMessage': user.statusMessage,
+    'wantsToDo': user.wantsToDo,
+    'iLike': user.iLike,
     'postIds': user.postIds,
     'comments': user.comments,
+    'friendsEmail': user.friendsEmail,
     'travelGoal': user.travelGoal,
 
     'timestamp': FieldValue.serverTimestamp(),
 
-    //선호 조사
-    'preferTravlePurpose' : user.preferTravlePurpose,
-    'preferDestination' : user.preferDestination,
-    'preferPeople' : user.preferPeople,
-    'preferPlanningStyle' : user.preferPlanningStyle,
-
+    'preferTravlePurpose': user.preferTravlePurpose,
+    'preferDestination': user.preferDestination,
+    'preferPeople': user.preferPeople,
+    'preferPlanningStyle': user.preferPlanningStyle,
   }).then((DocumentReference doc) {
     print('Document added with ID: ${doc.id}');
   }).catchError((error) {
     print('Error adding user: $error');
   });
 }
+
 
 // 로그인시 유저 정보 업데이트
 void setUpUserInfo()
@@ -143,14 +183,23 @@ Future<bool> getUserInfoByEmail(String email) async {
     user.region = data['region'] ?? '';
     user.gender = data['gender'] ?? '';
     user.birthYear = data['birthYear'] ?? 0;
+
+    // 언어 리스트 역직렬화
+    final languagesData = List<Map<String, dynamic>>.from(data['languages'] ?? []);
+    user.Languages = languagesData
+        .map((langMap) => UserLanguageInfo.fromMap(langMap))
+        .toList();
+
     user.visitedCountries = List<String>.from(data['visitedCountries'] ?? []);
-    user.bio = data['bio'] ?? '';
+    user.profileURL = data['profileURL'] ?? '';
+    user.statusMessage = data['statusMessage'] ?? '';
+    user.wantsToDo = data['wantsToDo'] ?? '';
+    user.iLike = data['iLike'] ?? '';
     user.postIds = List<String>.from(data['postIds'] ?? []);
     user.comments = List<String>.from(data['comments'] ?? []);
+    user.friendsEmail = List<String>.from(data['friendsEmail'] ?? []);
     user.travelGoal = data['travelGoal'] ?? '';
 
-
-    // 선호도
     user.preferTravlePurpose = List<String>.from(data['preferTravlePurpose'] ?? []);
     user.preferDestination = List<String>.from(data['preferDestination'] ?? []);
     user.preferPeople = List<String>.from(data['preferPeople'] ?? []);
@@ -163,3 +212,4 @@ Future<bool> getUserInfoByEmail(String email) async {
     return false;
   }
 }
+
