@@ -9,6 +9,7 @@ import '../widgets/comment_item.dart'; // 코멘트 위젯
 import '../widgets/language_indicator.dart'; // 언어 점 위젯
 import '../widgets/preference_display_box.dart'; // 선호도 박스 위젯
 import '../firebase/firestoreManager.dart' as firestoreManager;
+import '../firebase/imageManager.dart' as imageManager;
 
 
 class MyPageScreen extends StatefulWidget {
@@ -129,11 +130,20 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   Positioned(
                     top: 50, // 지도 상단에서부터의 위치
                     child: InkWell(
-                      onTap: () {
-                        // 프로필 사진 편집 화면으로 이동 (Placeholder)
-                        Navigator.pushNamed(context, '/edit_profile_picture');
-                        print('Navigate to edit profile picture');
+                      onTap:() async {
+
+                        // 이미지 저장
+                        bool isImageChanged = await imageManager
+                            .handleImageUpload(userinfo.email ?? 'none');
+                        if (isImageChanged) {
+                          Navigator.pushNamed(context, '/mypage');
+                          // UI 업데이트 등
+                        }
+
+                        //Navigator.pushNamed(context, '/edit_profile_picture');
+                        //print('Navigate to edit profile picture');
                       },
+
                       child: CircleAvatar(
                         radius: 65, // 사진 크기
                         backgroundColor: Colors.white, // 테두리 효과

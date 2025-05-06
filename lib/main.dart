@@ -33,7 +33,7 @@ void main() async {
   );
 
   // 테스트용 끝나고 지우기
-  firestoreManager.getUserInfoByEmail("wjdgmlwnd12@gmail.com");
+  //firestoreManager.getUserInfoByEmail("wjdgmlwnd12@gmail.com");
 
   runApp(const MyApp());
 }
@@ -55,12 +55,12 @@ class MyApp extends StatelessWidget {
       ),
 
       // 앱 시작 시 첫 화면 설정
-      initialRoute: '/main',
+      initialRoute: '/login',
 
       // 네비게이션 라우트 정의
       routes: {
-        //'/login': (context) => const FirebaseTestScreen(),
-        '/login': (context) => const LoginScreen(),
+        '/login': (context) => const FirebaseTestScreen(),
+        //'/login': (context) => const LoginScreen(),
         '/profile': (context) => const ProfileRegistrationScreen(),
         '/preference': (context) => const PreferenceSelectionScreen(),
         '/main': (context) => const MainScreen(),
