@@ -49,25 +49,19 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
     User? user = FirebaseAuth.instance.currentUser;
     
     bool isMember = await firestoreManager.getUserInfoByEmail(user!.email!);
-    
+
+    print("😍 이벤트1");
+
     if(isMember)
     {
-      if (Navigator.canPop(_context)) {
-        Navigator.pop(_context);
-      } else {
-        // 예: 메인 화면으로 강제 이동 (순서 변경됨)
+      print("😍 이벤트2");
+      Navigator.pushReplacementNamed(_context, '/main');
 
-        Navigator.pushReplacementNamed(_context, '/main');
-      }
     }
     else{
-      if (Navigator.canPop(_context)) {
-        Navigator.pop(_context);
-      } else {
-        // 예: 프로필 화면으로 강제 이동 (순서 변경됨)
+      print("😍 이벤트3");
+      Navigator.pushReplacementNamed(_context, '/profile');
 
-        Navigator.pushReplacementNamed(_context, '/profile');
-      }
     }
 
   }
@@ -98,27 +92,33 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
   // 모바일 구글 로그인 함수
   Future<void> signInWithGoogleForMobile(BuildContext context) async {
+
+    print("😍 모바일 이벤트1");
+
     final GoogleSignIn googleSignIn = GoogleSignIn();
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+    print("😍 모바일 이벤트2");
 
     if (googleUser == null) {
       // 사용자가 로그인 취소함
       return;
     }
 
+    print("😍 모바일 이벤트3");
     final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
+    print("😍 모바일 이벤트4");
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
     final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-
+    print("😍 모바일 이벤트5");
     setState(() {
       _status = 'Signed in with Google: ${userCredential.user?.displayName}';
     });
-    print("Signed in as ${userCredential.user?.displayName}");
+    print("😍 Signed in as ${userCredential.user?.displayName}");
   }
 
   @override

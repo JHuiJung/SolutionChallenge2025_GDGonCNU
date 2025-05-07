@@ -12,7 +12,20 @@
           "package_name": "com.example.naviya"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "194283088715-17nkds2u8q36ku2531jfbf0hbpdjn21k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.naviya",
+            "certificate_hash": "b97796ee66b3b98ee82eee1ba303c05f7ee41e3f"
+          }
+        },
+        {
+          "client_id": "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBLhDuykjN5LW_bTNbIfFz0Zp5w5AfHSZI"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "194283088715-430r21bhrl16skrk8murs5rdg095i0sh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.naviya"
+              }
+            }
+          ]
         }
       }
     }

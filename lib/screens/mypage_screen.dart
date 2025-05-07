@@ -149,7 +149,12 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         backgroundColor: Colors.white, // 테두리 효과
                         child: CircleAvatar(
                           radius: 62,
-                          backgroundImage: NetworkImage(userinfo.profileURL),
+                          // 여기에서 profileURL이 null인지 확인합니다.
+                          backgroundImage: (userinfo != null && userinfo.profileURL != null && userinfo.profileURL.isNotEmpty)
+                          // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
+                              ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
+                          // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
+                              : AssetImage('assets/images/egg.png') as ImageProvider<Object>?, // 예시: 기본 프로필 이미지 경로
                           backgroundColor: Colors.grey.shade300,
                         ),
                       ),
