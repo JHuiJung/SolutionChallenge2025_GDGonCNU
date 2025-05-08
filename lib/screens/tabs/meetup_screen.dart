@@ -150,7 +150,7 @@ class _MeetupScreenState extends State<MeetupScreen> {
                               IconButton(
                                 icon: Icon(Icons.edit_outlined, color: colorScheme.onSurface, size: 28),
                                 onPressed: () {
-                                  Navigator.pushNamed(context, '/write');
+                                  Navigator.pushNamed(context, '/write_meetup'); // 기존 write 부분을 write_meetup으로 수정
                                 },
                                 tooltip: 'Write a Post',
                                 padding: EdgeInsets.zero,

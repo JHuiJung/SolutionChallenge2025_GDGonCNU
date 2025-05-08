@@ -25,6 +25,8 @@ import 'screens/spot_detail_screen.dart'; // 관광지 상세 화면 임포트
 import 'screens/write/write_user_comment_screen.dart';
 import 'screens/write/write_spot_comment_screen.dart';
 import 'screens/edit_mypage_screen.dart'; // 프로필 수정 화면 임포트
+import 'screens/write_meetup_screen.dart'; // Meetup 게시글 작성 화면 임포트
+import 'screens/write_spot_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,12 +72,14 @@ class MyApp extends StatelessWidget {
         '/user_profile': (context) => const UserProfileScreen(), // 사용자 프로필 라우트 추가
         '/chat_room': (context) => const ChatRoomScreen(), // 개별 채팅방 라우트 추가
         '/ai_chat': (context) => const AiChatScreen(),   // AI 채팅방 라우트 추가
-        '/write': (context) => const WriteScreen(), // 글쓰기 화면 라우트 추가
+        //'/write': (context) => const WriteScreen(), // 글쓰기 화면 라우트 추가 >> 삭제하기
         '/spot_detail': (context) => const SpotDetailScreen(),
         '/search': (context) => const SearchScreen(), // 검색 화면 라우트 추가
         '/write_user_comment': (context) => const WriteUserCommentScreen(), // 사용자 코멘트 작성 라우트 추가
         '/write_spot_comment': (context) => const WriteSpotCommentScreen(), // 관광지 코멘트 작성 라우트 추가
         '/edit_mypage': (context) => const EditMyPageScreen(), // 프로필 수정 라우트 추가
+        '/write_meetup': (context) => const WriteMeetupScreen(),
+        '/write_spot': (context) => const WriteSpotScreen(), // *** 추가 ***
       },
     );
   }

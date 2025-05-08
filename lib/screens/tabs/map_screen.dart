@@ -6,6 +6,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 // 프로젝트 구조에 맞게 모델 및 위젯 경로 확인 필요
 import '../../models/tourist_spot_model.dart';
 import '../../widgets/tourist_spot_card.dart';
+import '../../models/spot_detail_model.dart'; // *** SpotDetailModel 임포트 추가
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -52,7 +53,10 @@ class _MapScreenState extends State<MapScreen> {
 
   // 버튼의 동적 bottom offset을 위한 상태 변수
   double _buttonBottomOffset = 0;
-  final double _buttonMarginAbovePanel = 16.0; // 버튼과 패널 상단 사이의 여백
+  final double _buttonMarginAbovePanel = 16.0;
+
+  get writeButtonColor => null;
+  get writeIconColor => null; // 버튼과 패널 상단 사이의 여백
 
   @override
   void initState() {
@@ -70,6 +74,37 @@ class _MapScreenState extends State<MapScreen> {
     _searchController.dispose();
     super.dispose();
   }
+
+  // --- 글쓰기 화면 호출 및 결과 처리 함수 수정 ---
+  Future<void> _navigateToWriteSpotScreen() async { // 함수 이름 변경
+    // WriteSpotScreen으로 이동하고 결과를 기다림 (결과는 SpotDetailModel 또는 null)
+    final result = await Navigator.pushNamed(context, '/write_spot'); // *** 라우트 변경 ***
+
+    // 결과가 SpotDetailModel 객체이면 목록에 추가 (임시: TouristSpotModel로 변환 필요)
+    if (result != null && result is SpotDetailModel) { // *** 반환 타입 변경 ***
+      final newSpotData = result;
+
+      // TODO: SpotDetailModel을 TouristSpotModel로 변환하는 로직 필요
+      // (또는 슬라이딩 패널에서 SpotDetailModel을 직접 사용하도록 수정)
+      // 임시 변환 (필요한 필드만 사용)
+      final newTouristSpot = TouristSpotModel(
+        id: newSpotData.id,
+        name: newSpotData.name,
+        location: newSpotData.location,
+        imageUrl: newSpotData.imageUrl,
+        photographerName: newSpotData.authorName, // 임시로 authorName 사용
+      );
+
+      // 상태 업데이트하여 슬라이딩 패널 목록에 추가 (맨 앞에 추가)
+      setState(() {
+        _touristSpots.insert(0, newTouristSpot);
+      });
+      print('New spot added to list: ${newSpotData.name}');
+    } else {
+      print('Writing spot cancelled or failed.');
+    }
+  }
+  // --- 함수 수정 끝 ---
 
   // 관광지 데이터 로드 함수 (예시)
   Future<void> _loadTouristSpots() async {
@@ -100,6 +135,8 @@ class _MapScreenState extends State<MapScreen> {
     print('GPS button pressed - Go to current location (Not implemented)');
     _goToLocation(const LatLng(37.5665, 126.9780)); // 예시: 서울 시청
   }
+
+
 
   // 검색 처리 함수 (Placeholder)
   void _handleSearch(String query) {
@@ -355,21 +392,13 @@ class _MapScreenState extends State<MapScreen> {
           const SizedBox(width: 12),
           // --- 수정된 Write 버튼 ---
           FloatingActionButton.small( // ElevatedButton 대신 사용
-            heroTag: 'fab_write', // 고유 Hero 태그
-            onPressed: () {
-              Navigator.pushNamed(context, '/write');
-            },
-            backgroundColor: buttonColor, // 새 버튼 배경색 적용
+            heroTag: 'fab_write',
+            onPressed: _navigateToWriteSpotScreen, // 수정된 함수 호출
+            backgroundColor: Colors.white,
             elevation: 3,
-            // 모양 변경: RoundedRectangleBorder 사용
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0), // 모서리 둥글기 조절
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            child: Icon(Icons.edit_outlined, color: writeIconColor),
             ),
-            child: Icon(
-              Icons.create,
-              color: iconColor, // 새 버튼 아이콘 색상 적용
-            ),
-          ),
         ],
       ),
     );
