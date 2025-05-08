@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
+import 'imageManager.dart';
 
 
 class UserState {
@@ -147,20 +148,64 @@ void addUser() {
     'preferPeople': user.preferPeople,
     'preferPlanningStyle': user.preferPlanningStyle,
   }).then((DocumentReference doc) {
-    print('Document added with ID: ${doc.id}');
+    print('✅ Document added with ID: ${doc.id}');
   }).catchError((error) {
-    print('Error adding user: $error');
+    print('❌ Error adding user: $error');
   });
 }
 
+void updateUser() async {
+  final user = UserState();
 
-// 로그인시 유저 정보 업데이트
-void setUpUserInfo()
-{
-  final userinfo = UserState();
+  try {
+    // 이메일로 문서 검색
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: user.email)
+        .limit(1)
+        .get();
 
+    if (querySnapshot.docs.isEmpty) {
+      print('해당 이메일을 가진 유저 문서를 찾을 수 없습니다.');
+      return;
+    }
 
+    final docId = querySnapshot.docs.first.id;
+
+    // 업데이트
+    await FirebaseFirestore.instance.collection('users').doc(docId).update({
+      'name': user.name,
+      'region': user.region,
+      'gender': user.gender,
+      'birthYear': user.birthYear,
+      'languages': user.Languages.map((lang) => {
+        'languageName': lang.languageName,
+        'languageCode': lang.languageCode,
+        'proficiency': lang.proficiency,
+      }).toList(),
+      'visitedCountries': user.visitedCountries,
+      'profileURL': user.profileURL,
+      'statusMessage': user.statusMessage,
+      'wantsToDo': user.wantsToDo,
+      'iLike': user.iLike,
+      'postIds': user.postIds,
+      'comments': user.comments,
+      'friendsEmail': user.friendsEmail,
+      'travelGoal': user.travelGoal,
+      'preferTravlePurpose': user.preferTravlePurpose,
+      'preferDestination': user.preferDestination,
+      'preferPeople': user.preferPeople,
+      'preferPlanningStyle': user.preferPlanningStyle,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    print('✅ 유저 정보 업데이트 완료: $docId');
+  } catch (e) {
+    print('❌ 유저 업데이트 중 오류 발생: $e');
+  }
 }
+
+
 
 Future<bool> getUserInfoByEmail(String email) async {
   try {

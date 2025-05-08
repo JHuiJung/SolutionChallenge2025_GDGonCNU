@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 여기에 인터넷 권한을 추가했습니다 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="naviya"
         android:name="${applicationName}"
@@ -20,9 +24,9 @@
                 android:name="com.google.android.geo.API_KEY"
                 android:value="YOUR_API_KEY_HERE"/>
             <meta-data
-              android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
-              />
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme"
+                />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

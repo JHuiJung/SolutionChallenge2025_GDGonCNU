@@ -1,5 +1,6 @@
 // lib/screens/preference_selection_screen.dart
 import 'package:flutter/material.dart';
+import '../firebase/firestoreManager.dart' as firestoreManager;
 
 import '../firebase/firestoreManager.dart' as firestoreManager;
 
@@ -144,10 +145,11 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                     print('Selected Preferences: $_selectedPreferences');
 
                     // Firestore에 저장
-                    firestoreManager.UserState().preferTravlePurpose = _selectedPreferences['section1']!.toList();
-                    firestoreManager.UserState().preferDestination = _selectedPreferences['section2']!.toList();
-                    firestoreManager.UserState().preferPeople = _selectedPreferences['section3']!.toList();
-                    firestoreManager.UserState().preferPlanningStyle = _selectedPreferences['section3']!.toList();
+                    firestoreManager.UserState().preferTravlePurpose = _selectedPreferences['purpose']!.toList();
+                    firestoreManager.UserState().preferDestination = _selectedPreferences['destination']!.toList();
+                    firestoreManager.UserState().preferPeople = _selectedPreferences['companion']!.toList();
+                    firestoreManager.UserState().preferPlanningStyle = _selectedPreferences['planningStyle']!.toList();
+
 
 
                     firestoreManager.addUser();

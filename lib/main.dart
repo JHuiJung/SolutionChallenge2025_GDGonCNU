@@ -28,6 +28,8 @@ import 'screens/edit_mypage_screen.dart'; // 프로필 수정 화면 임포트
 import 'screens/write_meetup_screen.dart'; // Meetup 게시글 작성 화면 임포트
 import 'screens/write_spot_screen.dart';
 
+import 'package:http/http.dart' as http;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -35,7 +37,8 @@ void main() async {
   );
 
   // 테스트용 끝나고 지우기
-  firestoreManager.getUserInfoByEmail("wjdgmlwnd12@gmail.com");
+  //firestoreManager.getUserInfoByEmail("wjdgmlwnd12@gmail.com");
+  await testNetworkConnectivity();
 
   runApp(const MyApp());
 }
@@ -57,12 +60,12 @@ class MyApp extends StatelessWidget {
       ),
 
       // 앱 시작 시 첫 화면 설정
-      initialRoute: '/main',
+      initialRoute: '/login',
 
       // 네비게이션 라우트 정의
       routes: {
-        //'/login': (context) => const FirebaseTestScreen(),
-        '/login': (context) => const LoginScreen(),
+        '/login': (context) => const FirebaseTestScreen(),
+        //'/login': (context) => const LoginScreen(),
         '/profile': (context) => const ProfileRegistrationScreen(),
         '/preference': (context) => const PreferenceSelectionScreen(),
         '/main': (context) => const MainScreen(),
@@ -84,3 +87,25 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+
+Future<void> testNetworkConnectivity() async {
+  try {
+    // 구글 홈페이지 같은 잘 알려진 외부 URL로 테스트
+    var response = await http.get(Uri.parse('https://www.google.com'));
+    if (response.statusCode == 200) {
+      print('Network test successful! Google homepage loaded.');
+    } else {
+      print('Network test failed! Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Network test exception: $e');
+  }
+}
+
+// 이 함수를 호출하는 버튼이나 이벤트 리스너 추가
+// ElevatedButton(
+//   onPressed: testNetworkConnectivity,
+//   child: Text('Test Network'),
+// )

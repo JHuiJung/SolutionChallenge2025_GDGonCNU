@@ -247,9 +247,8 @@ class _ProfileRegistrationScreenState extends State<ProfileRegistrationScreen> {
           if(userinfo != null)
             {
               firestoreManager.UserState().email = userinfo.email;
-              firestoreManager.UserState().name = userinfo.displayName;
             }
-
+          firestoreManager.UserState().name = username;
           firestoreManager.UserState().gender = _selectedGender;
           firestoreManager.UserState().region = _selectedNationality;
           firestoreManager.UserState().birthYear = _selectedBirthYear!;
