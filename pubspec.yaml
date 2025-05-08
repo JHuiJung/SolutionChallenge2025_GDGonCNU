@@ -43,20 +43,6 @@ dependencies:
   google_sign_in: ^6.3.0
   firebase_ui_oauth_google: ^1.4.1
   cloud_firestore: ^5.6.6
-<<<<<<< Updated upstream
-  timezone: ^0.10.1
-  image_picker: ^1.1.2
-  firebase_storage: ^12.4.5
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-  image_picker: ^1.0.0
-=======
-  timezone: ^0.10.1
-  image_picker: ^1.1.2
-  firebase_storage: ^12.4.5
->>>>>>> 4714ebbc4588898a7370548540174a1e923bfa8a
-=======
   timezone: ^0.10.1
   image_picker: ^1.1.2
   firebase_storage: ^12.4.5
