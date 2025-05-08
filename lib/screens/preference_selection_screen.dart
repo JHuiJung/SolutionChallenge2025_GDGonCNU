@@ -1,6 +1,8 @@
 // lib/screens/preference_selection_screen.dart
 import 'package:flutter/material.dart';
 
+import '../firebase/firestoreManager.dart' as firestoreManager;
+
 // --- 데이터 구조 정의 --- (다른 파일에 해도 된다)
 class PreferenceSection {
   final String key;
