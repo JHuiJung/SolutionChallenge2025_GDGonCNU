@@ -7,6 +7,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../models/tourist_spot_model.dart';
 import '../../widgets/tourist_spot_card.dart';
 import '../../models/spot_detail_model.dart'; // *** SpotDetailModel 임포트 추가
+import '../../firebase/firestoreManager.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -20,6 +21,8 @@ class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _mapController;
   final PanelController _panelController = PanelController();
   final TextEditingController _searchController = TextEditingController();
+
+  late UserState userinfo;
 
   // 지도 초기 위치 (예: 서울)
   static const CameraPosition _initialCameraPosition = CameraPosition(
@@ -65,6 +68,10 @@ class _MapScreenState extends State<MapScreen> {
     // initState에서는 MediaQuery 사용이 안전하지 않을 수 있으므로,
     // 초기값은 고정값으로 설정하고, 빌드 후 또는 onPanelSlide에서 업데이트
     _buttonBottomOffset = _panelMinHeight + _buttonMarginAbovePanel;
+
+    userinfo = UserState();
+    print("Map 초기화 함수 ${userinfo.name}");
+
     _loadTouristSpots();
   }
 
@@ -340,7 +347,11 @@ class _MapScreenState extends State<MapScreen> {
                     CircleAvatar(
                       radius: 25,
                       backgroundColor: Colors.grey.shade300,
-                      backgroundImage: const NetworkImage('https://source.unsplash.com/random/100x100/?person&sig=99'),
+                        backgroundImage: (userinfo != null && userinfo.profileURL != null && userinfo.profileURL.isNotEmpty)
+                        // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
+                            ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
+                        // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
+                            : AssetImage('assets/images/egg.png') as ImageProvider<Object>?,
                     ),
                     // 프로필 알림 표시 코드
                     // Positioned(

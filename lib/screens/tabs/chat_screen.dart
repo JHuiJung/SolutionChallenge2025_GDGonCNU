@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../models/chat_list_item_model.dart'; // 채팅 모델 임포트
 import '../../widgets/chat_list_item.dart'; // 채팅 아이템 위젯 임포트
+import '../../firebase/firestoreManager.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -14,6 +15,8 @@ class _ChatScreenState extends State<ChatScreen> {
   late List<ChatListItemModel> _chatList;
   bool _isLoading = true;
 
+  late UserState userinfo;
+
   @override
   void initState() {
     super.initState();
@@ -21,6 +24,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _loadChatList() async {
+
+    userinfo = UserState();
+
     // Simulate loading data
     await Future.delayed(const Duration(milliseconds: 300));
     setState(() {
@@ -70,7 +76,11 @@ class _ChatScreenState extends State<ChatScreen> {
                             radius: 22,
                             backgroundColor: Colors.grey.shade300,
                             // TODO: 실제 사용자 프로필 이미지로 교체
-                            backgroundImage: const NetworkImage('https://i.pravatar.cc/150?img=60'),
+                            backgroundImage: (userinfo != null && userinfo.profileURL != null && userinfo.profileURL.isNotEmpty)
+                            // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
+                                ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
+                            // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
+                                : AssetImage('assets/images/egg.png') as ImageProvider<Object>?,
                           ),
                         ),
                       ],

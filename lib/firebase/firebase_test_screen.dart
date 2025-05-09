@@ -23,6 +23,7 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
 
   // ✅ 구글 로그인 함수
+  // ✅ 구글 로그인 함수
   Future<void> _signInWithGoogle(BuildContext _context) async {
 
     // 로그인 정보 가져오기
@@ -30,16 +31,12 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
     if (userinfo != null) {
       // 이미 로그인 되어 있음 → 메인화면으로 이동
-      firestoreManager.getUserInfoByEmail(userinfo!.email!);
+      await firestoreManager.getUserInfoByEmail(userinfo!.email!);  // await 추가
       Navigator.pushReplacementNamed(_context, '/main');
-
       return;
-
     }
 
-
-      // 로그인 안됨 → 로그인화면으로 이동
-
+    // 로그인 안됨 → 로그인화면으로 이동
     if (kIsWeb) {
       await signInWithGoogleForWeb(_context);
     } else {
@@ -47,24 +44,21 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
     }
 
     User? user = FirebaseAuth.instance.currentUser;
-    
+
+    // Firestore에서 유저 정보 조회
     bool isMember = await firestoreManager.getUserInfoByEmail(user!.email!);
 
     print("😍 이벤트1");
 
-    if(isMember)
-    {
+    if (isMember) {
       print("😍 이벤트2");
       Navigator.pushReplacementNamed(_context, '/main');
-
-    }
-    else{
+    } else {
       print("😍 이벤트3");
       Navigator.pushReplacementNamed(_context, '/profile');
-
     }
-
   }
+
 
   // 웹 테스트용 구글 로그인 함수
   Future<void> signInWithGoogleForWeb(BuildContext context) async {

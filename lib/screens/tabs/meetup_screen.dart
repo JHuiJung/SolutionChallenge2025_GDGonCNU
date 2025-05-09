@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../models/meetup_post.dart';
 import '../../widgets/meetup_post_item.dart';
+import '../../firebase/firestoreManager.dart';
 
 class MeetupScreen extends StatefulWidget {
   const MeetupScreen({super.key});
@@ -16,6 +17,8 @@ class _MeetupScreenState extends State<MeetupScreen> {
   bool _isLoading = true;
   String? _searchQuery; // 검색어 저장 상태 변수
 
+  late UserState userinfo;
+
   @override
   void initState() {
     super.initState();
@@ -24,6 +27,10 @@ class _MeetupScreenState extends State<MeetupScreen> {
 
   // 모든 게시글 로드 (초기 또는 검색 취소 시)
   Future<void> _loadMeetupPosts() async {
+
+    userinfo = UserState();
+    print("Meet up 초기화 함수 ${userinfo.name}");
+
     if (!mounted) return;
     setState(() {
       _isLoading = true;
@@ -165,7 +172,11 @@ class _MeetupScreenState extends State<MeetupScreen> {
                                 child: CircleAvatar(
                                   radius: 22,
                                   backgroundColor: Colors.grey.shade300,
-                                  backgroundImage: const NetworkImage('https://i.pravatar.cc/150?img=60'),
+                                  backgroundImage: (userinfo != null && userinfo.profileURL != null && userinfo.profileURL.isNotEmpty)
+                                  // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
+                                      ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
+                                  // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
+                                      : AssetImage('assets/images/egg.png') as ImageProvider<Object>?, // 예시: 기본 프로필 이미지 경로,
                                 ),
                               ),
                             ],
