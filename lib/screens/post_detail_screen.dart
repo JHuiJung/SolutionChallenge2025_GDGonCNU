@@ -4,6 +4,7 @@ import '../models/meetup_post.dart'; // MeetupPost 모델 임포트 (경로 확�
 import '../widgets/overlapping_avatars.dart'; // 참여자 아바타 위젯 임포트 (경로 확인)
 import 'dart:async'; // Timer 사용 위해 추가
 import 'dart:ui'; // ImageFilter 사용 위해 추가 (하단 버튼 블러 효과용)
+import '../firebase/firestoreManager.dart';
 
 class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({super.key});
@@ -41,7 +42,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(milliseconds: 300)); // Simulate loading
     // TODO: 실제 API 호출 또는 DB 조회
-    _postDetail = getDummyPostDetail(postId); // 더미 데이터 사용
+    // = getDummyPostDetail(postId); // 더미 데이터 사용
+    MeetupPost dummyMeetupPost = getDummyPostDetail(postId);
+
+    _postDetail = await getMeetUpPostById(postId) ?? dummyMeetupPost; // 더미 데이터 사용
     // TODO: 사용자의 이 이벤트 참여 여부를 확인하여 _isJoined 초기값 설정
     if (!mounted) return;
     setState(() => _isLoading = false);

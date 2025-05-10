@@ -22,6 +22,7 @@ class MeetupPostItem extends StatelessWidget {
       child: InkWell(
         onTap: () {
           Navigator.pushNamed(context, '/post_detail', arguments: post.id);
+          //Navigator.pushNamed(context, '/post_detail', arguments: post);
           print('Navigate to post detail: ${post.id}');
         },
         child: Container(

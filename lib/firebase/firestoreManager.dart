@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import 'imageManager.dart';
 import '../models/meetup_post.dart';
+import '../models/spot_detail_model.dart';
 
 late UserState mainUserInfo;
 
@@ -346,5 +347,100 @@ Future<List<MeetupPost>> getAllMeetUpPost() async {
   return meetups;
 }
 
+Future<MeetupPost?> getMeetUpPostById(String postId) async {
+  try {
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection('meetupPosts')
+        .doc(postId)
+        .get();
 
+    if (doc.exists) {
+      final data = doc.data() as Map<String, dynamic>;
 
+      return MeetupPost(
+        id: data['id'],
+        authorId: data['authorId'],
+        authorName: data['authorName'],
+        authorImageUrl: data['authorImageUrl'],
+        authorLocation: data['authorLocation'],
+        imageUrl: data['imageUrl'],
+        title: data['title'],
+        totalPeople: data['totalPeople'],
+        spotsLeft: data['spotsLeft'],
+        participantImageUrls: List<String>.from(data['participantImageUrls'] ?? []),
+        categories: List<String>.from(data['categories'] ?? []),
+        description: data['description'],
+        eventLocation: data['eventLocation'],
+        eventDateTimeString: data['eventDateTimeString'],
+      );
+    } else {
+      print('No meetup post found with ID $postId');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching meetup post by ID: $e');
+    return null;
+  }
+}
+
+Future<void> addSpotPost(SpotDetailModel post) async {
+  try {
+    await FirebaseFirestore.instance.collection('spotPosts').doc(post.id).set({
+      'id': post.id,
+      'name': post.name,
+      'location': post.location,
+      'imageUrl': post.imageUrl,
+      'quote': post.quote,
+      'authorId': post.authorId,
+      'authorName': post.authorName,
+      'authorImageUrl': post.authorImageUrl,
+      'description': post.description,
+      'recommendTo': post.recommendTo,
+      'canEnjoy': post.canEnjoy,
+      'commentIds': post.commentIds,
+      'createdAt': FieldValue.serverTimestamp(), // 업로드 시간 기록 (선택)
+    });
+
+    print('Spot post successfully uploaded.');
+  } catch (e) {
+    print('Error uploading spot post: $e');
+  }
+}
+
+Future<List<SpotDetailModel>> getAllSpotPost() async {
+  List<SpotDetailModel> spotPosts = [];
+
+  try {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('spotPosts')
+        .orderBy('createdAt', descending: true)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+
+      SpotDetailModel post = SpotDetailModel(
+        id: data['id'],
+        name: data['name'],
+        location: data['location'],
+        imageUrl: data['imageUrl'],
+        quote: data['quote'],
+        authorId: data['authorId'],
+        authorName: data['authorName'],
+        authorImageUrl: data['authorImageUrl'],
+        description: data['description'],
+        recommendTo: data['recommendTo'],
+        canEnjoy: data['canEnjoy'],
+        commentIds: List<String>.from(data['commentIds'] ?? []),
+      );
+
+      spotPosts.add(post);
+    }
+
+    print('Fetched ${spotPosts.length} spot posts.');
+  } catch (e) {
+    print('Error fetching spot posts: $e');
+  }
+
+  return spotPosts;
+}

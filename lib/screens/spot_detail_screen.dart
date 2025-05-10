@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/spot_detail_model.dart';
 import '../widgets/preference_display_box.dart'; // 재사용
 import '../widgets/spot_comment_card.dart';
+import '../firebase/firestoreManager.dart';
+import '../models/spot_comment_model.dart';
 
 class SpotDetailScreen extends StatefulWidget {
   const SpotDetailScreen({super.key});
@@ -15,6 +17,8 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
   bool _isLoading = true;
   late SpotDetailModel _spotDetail;
   String? _spotId;
+
+  List<SpotCommentModel> spotComments = [];
 
   get outlineColorWithOpacity => null;
 
@@ -33,6 +37,9 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
         // Navigator.pop(context); // 또는 에러 메시지 표시
       }
     });
+
+
+
   }
 
   Future<void> _loadSpotDetails(String spotId) async {
@@ -255,7 +262,8 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
     return SliverToBoxAdapter(
       child: SizedBox(
         height: 150, // 댓글 카드 높이 + 여백 고려
-        child: _spotDetail.comments.isEmpty
+        //child: _spotDetail.comments.isEmpty
+        child: spotComments.isEmpty
             ? Center( // 댓글 없을 때 메시지
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -265,9 +273,11 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
             : ListView.builder(
           scrollDirection: Axis.horizontal, // 가로 스크롤
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          itemCount: _spotDetail.comments.length,
+          //itemCount: _spotDetail.comments.length,
+          itemCount: spotComments.length,
           itemBuilder: (context, index) {
-            return SpotCommentCard(comment: _spotDetail.comments[index]);
+            //return SpotCommentCard(comment: _spotDetail.comments[index]);
+            return SpotCommentCard(comment: spotComments[index]);
           },
         ),
       ),

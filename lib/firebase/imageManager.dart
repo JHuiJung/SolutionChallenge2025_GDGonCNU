@@ -170,3 +170,32 @@ Future<String?> uploadHostImage(String? hostId, firestoreManager.UserState userI
     return null;
   }
 }
+
+Future<String?> uploadSpotImage(String? spotId, firestoreManager.UserState userInfo, XFile? selectedImage) async {
+  try {
+
+    if(spotId == null || selectedImage == null)
+    {
+      print("😁 스팟 아이디 또는 이미지가 없음 (이미지 메니저)");
+    }
+
+    if (selectedImage == null) return null;
+
+    File imageFile = File(selectedImage.path);
+
+    // Firebase Storage 경로 지정
+    String filePath = 'spotImages/${userInfo.email}_$spotId.jpg';
+
+    // 이미지 업로드
+    final ref = FirebaseStorage.instance.ref().child(filePath);
+    final uploadTask = await ref.putFile(imageFile);
+
+    // 다운로드 URL 가져오기
+    final downloadUrl = await ref.getDownloadURL();
+
+    return downloadUrl;
+  } catch (e) {
+    print('이미지 업로드 중 오류 발생: $e');
+    return null;
+  }
+}

@@ -122,7 +122,10 @@ class _MapScreenState extends State<MapScreen> {
     setState(() => _isLoadingSpots = true);
     await Future.delayed(const Duration(milliseconds: 500)); // Simulate loading
     // 더미 데이터 로드
-    _touristSpots = getDummyTouristSpots();
+    //_touristSpots = getDummyTouristSpots();
+
+    List<SpotDetailModel> spotDetailModels = await getAllSpotPost();
+    _touristSpots = getTouristSpotsBySpotPostInfo(spotDetailModels);
     if (!mounted) return;
     setState(() => _isLoadingSpots = false);
   }
