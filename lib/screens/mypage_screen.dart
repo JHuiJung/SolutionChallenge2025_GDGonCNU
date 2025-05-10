@@ -32,6 +32,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
   @override
   void initState() {
     super.initState();
+
     _loadMyPageData();
   }
 
@@ -53,7 +54,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     }
 
     //파이어 베이스 정보 로딩
-    userinfo = firestoreManager.UserState();
+    userinfo = firestoreManager.mainUserInfo;
 
 
     _comments = getDummyComments();
@@ -196,7 +197,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
                 // --- Language ---
                 _buildSectionTitle(context, 'Language'),
-                ...userinfo.Languages.map((lang) => _buildLanguageRow(context, lang)),
+                ...userinfo.languages.map((lang) => _buildLanguageRow(context, lang)),
                 //..._userProfile.languages.map((lang) => _buildLanguageRow(context, lang)),
                 const SizedBox(height: 24),
 

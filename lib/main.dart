@@ -38,7 +38,8 @@ void main() async {
 
   // 테스트용 끝나고 지우기
   //firestoreManager.getUserInfoByEmail("wjdgmlwnd12@gmail.com");
-  await testNetworkConnectivity();
+  //await testNetworkConnectivity();
+  firestoreManager.SetUpFireManager();
 
   runApp(const MyApp());
 }

@@ -3,8 +3,10 @@ import 'dart:io'; // File 사용 위해 추가
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:naviya/firebase/imageManager.dart';
 // 모델 임포트 (경로 확인 필요)
 import '../models/meetup_post.dart';
+import '../firebase/firestoreManager.dart';
 
 class WriteMeetupScreen extends StatefulWidget {
   const WriteMeetupScreen({super.key});
@@ -28,6 +30,8 @@ class _WriteMeetupScreenState extends State<WriteMeetupScreen> {
   final TextEditingController _placeController = TextEditingController(); // 임시 장소 입력용
 
   bool _isSubmitting = false; // 제출 처리 중 플래그
+  late String hostId;
+  late String hostImageURL ="";
 
   // 드롭다운 옵션
   final List<String> _category1Options = ['Activities', 'Food Discovery', 'Photography', 'Relaxation', 'Cultural Exploration', 'Etc'];
@@ -35,6 +39,13 @@ class _WriteMeetupScreenState extends State<WriteMeetupScreen> {
   final List<String> _peopleOptions = [...List.generate(19, (i) => (i + 2).toString()), 'Unlimited']; // 2~20, Unlimited
 
   final ImagePicker _picker = ImagePicker(); // 이미지 피커 인스턴스
+
+  @override
+  void initState() {
+    super.initState();
+
+    hostId = "${DateTime.now().millisecondsSinceEpoch}";
+  }
 
   @override
   void dispose() {
@@ -83,6 +94,27 @@ class _WriteMeetupScreenState extends State<WriteMeetupScreen> {
   }
 
   Future<void> _pickImage() async {
+    /*
+
+    try{
+      (String?, XFile?) url_imgFile = await uploadHostImage(hostId, mainUserInfo);
+
+      if(url_imgFile != (null,null))
+      {
+        setState(() {
+          hostImageURL = url_imgFile.$1;
+          _selectedImage = url_imgFile.$2;
+        });
+      }
+
+    } catch (e) {
+      print("Image picker error: $e");
+      // 사용자에게 오류 메시지 표시 (선택 사항)
+      ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Failed to pick image.')),
+      );
+    }
+    */
     try {
       final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
@@ -136,16 +168,16 @@ class _WriteMeetupScreenState extends State<WriteMeetupScreen> {
     // 2. 나머지 데이터와 이미지 URL을 포함하여 DB에 저장 (Firestore 등)
 
     // 임시 데이터 생성 (DB 저장 시뮬레이션)
-    await Future.delayed(const Duration(milliseconds: 800));
+    hostImageURL = await uploadHostImage(hostId, mainUserInfo, _selectedImage) ?? '';
 
     // MeetupPost 객체 생성 (모델 필드 확인 및 조정 필요)
     final newPost = MeetupPost(
-      id: 'new_post_${DateTime.now().millisecondsSinceEpoch}', // 임시 ID
-      authorId: 'current_user_id', // TODO: 실제 로그인 사용자 ID 가져오기
-      authorName: 'Me', // TODO: 실제 로그인 사용자 이름 가져오기
-      authorImageUrl: 'https://i.pravatar.cc/150?img=60', // TODO: 실제 사용자 이미지 URL
+      id: hostId , // 임시 ID
+      authorId: mainUserInfo.email ?? 'noneEmail', // TODO: 실제 로그인 사용자 ID 가져오기
+      authorName: mainUserInfo.name ?? 'noneName', // TODO: 실제 로그인 사용자 이름 가져오기
+      authorImageUrl: mainUserInfo.profileURL , // TODO: 실제 사용자 이미지 URL
       // imageUrl: _selectedImage!.path, // 로컬 경로 대신 업로드된 URL 사용해야 함
-      imageUrl: 'https://source.unsplash.com/random/800x600/?meetup,event&sig=${DateTime.now().millisecondsSinceEpoch}', // 임시 이미지 URL
+      imageUrl: hostImageURL , // 임시 이미지 URL
       title: _titleController.text.trim(),
       // totalPeople, spotsLeft 계산 로직 필요
       totalPeople: _selectedPeopleCount == 'Unlimited' ? 999 : int.parse(_selectedPeopleCount!),
@@ -157,8 +189,13 @@ class _WriteMeetupScreenState extends State<WriteMeetupScreen> {
       eventLocation: _placeController.text.trim(), // 임시 장소
       eventDateTimeString: DateFormat('MMM d, yyyy ・ ').format(_selectedDate!) +
           '${_selectedStartTime!.format(context)} ~ ${_selectedEndTime!.format(context)}',
-      authorLocation: 'My City, My Country', // TODO: 실제 사용자 위치
+      authorLocation: mainUserInfo.region ?? 'noneRegion', // TODO: 실제 사용자 위치
     );
+
+    //유저 정보 업데이트
+    await addMeetUpPost(newPost);
+    mainUserInfo.postIds.add(hostId);
+    updateUser();
 
     if (mounted) {
       // 생성된 Post 객체를 이전 화면(MeetupScreen)으로 전달

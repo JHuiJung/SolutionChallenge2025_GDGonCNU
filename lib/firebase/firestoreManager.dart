@@ -4,38 +4,62 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import 'imageManager.dart';
+import '../models/meetup_post.dart';
 
+late UserState mainUserInfo;
+
+void SetUpFireManager()
+{
+  mainUserInfo = UserState();
+}
 
 class UserState {
-  static final UserState _instance = UserState._internal();
-  factory UserState() => _instance;
+  // 기본정보
+  String? email;
+  String? name;
+  String? region;
+  String? gender;
+  int? birthYear;
 
-  UserState._internal();
+  // 프로필 추가 정보
+  List<UserLanguageInfo> languages;
+  List<String> visitedCountries;
+  String profileURL;
+  String statusMessage;
+  String wantsToDo;
+  String iLike;
+  List<String> postIds;
+  List<String> comments;
+  List<String> friendsEmail;
+  String travelGoal;
 
-  //기본정보
-  String? email = "";
-  String? name = "";
-  String? region = "";
-  String? gender = "";
-  int? birthYear = 0;
+  // 선호 조사
+  List<String> preferTravlePurpose;
+  List<String> preferDestination;
+  List<String> preferPeople;
+  List<String> preferPlanningStyle;
 
-  //프로필 추가 정보
-  List<UserLanguageInfo> Languages = []; // 가능 언어
-  List<String> visitedCountries = []; //다녀온 나라
-  String profileURL = "";
-  String statusMessage = "";
-  String wantsToDo = "";
-  String iLike = "";
-  List<String> postIds = []; // 게시글 id
-  List<String> comments = []; // 코멘트 id
-  List<String> friendsEmail = []; // 친구 이메일
-  String travelGoal = "";
-
-  //선호 조사
-  List<String> preferTravlePurpose = [];
-  List<String> preferDestination = [];
-  List<String> preferPeople = [];
-  List<String> preferPlanningStyle = [];
+  // 기본 생성자
+  UserState()
+      : email = "",
+        name = "",
+        region = "",
+        gender = "",
+        birthYear = 0,
+        languages = [],
+        visitedCountries = [],
+        profileURL = "",
+        statusMessage = "",
+        wantsToDo = "",
+        iLike = "",
+        postIds = [],
+        comments = [],
+        friendsEmail = [],
+        travelGoal = "",
+        preferTravlePurpose = [],
+        preferDestination = [],
+        preferPeople = [],
+        preferPlanningStyle = [];
 }
 
 class UserChat{
@@ -114,7 +138,7 @@ class UserLanguageInfo {
 
 
 void addUser() {
-  final user = UserState();
+  final user = mainUserInfo;
 
   FirebaseFirestore.instance.collection('users').add({
     'email': user.email,
@@ -124,7 +148,7 @@ void addUser() {
     'birthYear': user.birthYear,
 
     // 언어 리스트를 Map 리스트로 변환
-    'languages': user.Languages
+    'languages': user.languages
         .map((lang) => {
       'languageName': lang.languageName,
       'languageCode': lang.languageCode,
@@ -155,7 +179,7 @@ void addUser() {
 }
 
 void updateUser() async {
-  final user = UserState();
+  final user = mainUserInfo;
 
   try {
     // 이메일로 문서 검색
@@ -178,7 +202,7 @@ void updateUser() async {
       'region': user.region,
       'gender': user.gender,
       'birthYear': user.birthYear,
-      'languages': user.Languages.map((lang) => {
+      'languages': user.languages.map((lang) => {
         'languageName': lang.languageName,
         'languageCode': lang.languageCode,
         'proficiency': lang.proficiency,
@@ -205,8 +229,6 @@ void updateUser() async {
   }
 }
 
-
-
 Future<bool> getUserInfoByEmail(String email) async {
   try {
     final snapshot = await FirebaseFirestore.instance
@@ -221,7 +243,7 @@ Future<bool> getUserInfoByEmail(String email) async {
     }
 
     final data = snapshot.docs.first.data();
-    final user = UserState();
+    final user = mainUserInfo;
 
     user.email = data['email'] ?? '';
     user.name = data['name'] ?? '';
@@ -231,7 +253,7 @@ Future<bool> getUserInfoByEmail(String email) async {
 
     // 언어 리스트 역직렬화
     final languagesData = List<Map<String, dynamic>>.from(data['languages'] ?? []);
-    user.Languages = languagesData
+    user.languages = languagesData
         .map((langMap) => UserLanguageInfo.fromMap(langMap))
         .toList();
 
@@ -257,4 +279,72 @@ Future<bool> getUserInfoByEmail(String email) async {
     return false;
   }
 }
+
+Future<void> addMeetUpPost(MeetupPost post) async {
+  try {
+    await FirebaseFirestore.instance.collection('meetupPosts').doc(post.id).set({
+      'id': post.id,
+      'authorId': post.authorId,
+      'authorName': post.authorName,
+      'authorImageUrl': post.authorImageUrl,
+      'authorLocation': post.authorLocation,
+      'imageUrl': post.imageUrl,
+      'title': post.title,
+      'totalPeople': post.totalPeople,
+      'spotsLeft': post.spotsLeft,
+      'participantImageUrls': post.participantImageUrls,
+      'categories': post.categories,
+      'description': post.description,
+      'eventLocation': post.eventLocation,
+      'eventDateTimeString': post.eventDateTimeString,
+      'createdAt': FieldValue.serverTimestamp(), // 업로드 시간 기록 (선택)
+    });
+
+    print('Meetup post successfully uploaded.');
+  } catch (e) {
+    print('Error uploading meetup post: $e');
+  }
+}
+
+Future<List<MeetupPost>> getAllMeetUpPost() async {
+  List<MeetupPost> meetups = [];
+
+  try {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('meetupPosts')
+        .orderBy('createdAt', descending: true) // 최신 순 정렬 (선택)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+
+      MeetupPost post = MeetupPost(
+        id: data['id'],
+        authorId: data['authorId'],
+        authorName: data['authorName'],
+        authorImageUrl: data['authorImageUrl'],
+        authorLocation: data['authorLocation'],
+        imageUrl: data['imageUrl'],
+        title: data['title'],
+        totalPeople: data['totalPeople'],
+        spotsLeft: data['spotsLeft'],
+        participantImageUrls: List<String>.from(data['participantImageUrls'] ?? []),
+        categories: List<String>.from(data['categories'] ?? []),
+        description: data['description'],
+        eventLocation: data['eventLocation'],
+        eventDateTimeString: data['eventDateTimeString'],
+      );
+
+      meetups.add(post);
+    }
+
+    print('Fetched ${meetups.length} meetup posts.');
+  } catch (e) {
+    print('Error fetching meetup posts: $e');
+  }
+
+  return meetups;
+}
+
+
 

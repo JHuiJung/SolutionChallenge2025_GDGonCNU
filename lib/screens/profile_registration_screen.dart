@@ -246,12 +246,12 @@ class _ProfileRegistrationScreenState extends State<ProfileRegistrationScreen> {
 
           if(userinfo != null)
             {
-              firestoreManager.UserState().email = userinfo.email;
+              firestoreManager.mainUserInfo.email = userinfo.email;
             }
-          firestoreManager.UserState().name = username;
-          firestoreManager.UserState().gender = _selectedGender;
-          firestoreManager.UserState().region = _selectedNationality;
-          firestoreManager.UserState().birthYear = _selectedBirthYear!;
+          firestoreManager.mainUserInfo.name = username;
+          firestoreManager.mainUserInfo.gender = _selectedGender;
+          firestoreManager.mainUserInfo.region = _selectedNationality;
+          firestoreManager.mainUserInfo.birthYear = _selectedBirthYear!;
 
           Navigator.pushReplacementNamed(context, '/preference');
         },

@@ -25,7 +25,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _loadChatList() async {
 
-    userinfo = UserState();
+    userinfo = mainUserInfo;
 
     // Simulate loading data
     await Future.delayed(const Duration(milliseconds: 300));

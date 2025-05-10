@@ -145,10 +145,10 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                     print('Selected Preferences: $_selectedPreferences');
 
                     // Firestore에 저장
-                    firestoreManager.UserState().preferTravlePurpose = _selectedPreferences['purpose']!.toList();
-                    firestoreManager.UserState().preferDestination = _selectedPreferences['destination']!.toList();
-                    firestoreManager.UserState().preferPeople = _selectedPreferences['companion']!.toList();
-                    firestoreManager.UserState().preferPlanningStyle = _selectedPreferences['planningStyle']!.toList();
+                    firestoreManager.mainUserInfo.preferTravlePurpose = _selectedPreferences['purpose']!.toList();
+                    firestoreManager.mainUserInfo.preferDestination = _selectedPreferences['destination']!.toList();
+                    firestoreManager.mainUserInfo.preferPeople = _selectedPreferences['companion']!.toList();
+                    firestoreManager.mainUserInfo.preferPlanningStyle = _selectedPreferences['planningStyle']!.toList();
 
 
 

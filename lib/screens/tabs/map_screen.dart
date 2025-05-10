@@ -69,8 +69,7 @@ class _MapScreenState extends State<MapScreen> {
     // 초기값은 고정값으로 설정하고, 빌드 후 또는 onPanelSlide에서 업데이트
     _buttonBottomOffset = _panelMinHeight + _buttonMarginAbovePanel;
 
-    userinfo = UserState();
-    print("Map 초기화 함수 ${userinfo.name}");
+
 
     _loadTouristSpots();
   }
@@ -115,6 +114,9 @@ class _MapScreenState extends State<MapScreen> {
 
   // 관광지 데이터 로드 함수 (예시)
   Future<void> _loadTouristSpots() async {
+
+    userinfo = mainUserInfo;
+
     // setState 호출 전에 위젯이 마운트되었는지 확인 (선택 사항이지만 안전함)
     if (!mounted) return;
     setState(() => _isLoadingSpots = true);

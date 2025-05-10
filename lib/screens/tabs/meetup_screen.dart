@@ -28,7 +28,7 @@ class _MeetupScreenState extends State<MeetupScreen> {
   // 모든 게시글 로드 (초기 또는 검색 취소 시)
   Future<void> _loadMeetupPosts() async {
 
-    userinfo = UserState();
+    userinfo = mainUserInfo;
     print("Meet up 초기화 함수 ${userinfo.name}");
 
     if (!mounted) return;
@@ -37,7 +37,8 @@ class _MeetupScreenState extends State<MeetupScreen> {
       _searchQuery = null; // 검색어 초기화
     });
     await Future.delayed(const Duration(milliseconds: 500));
-    _allPosts = getDummyMeetupPosts(); // 모든 더미 데이터 가져오기
+    //_allPosts = getDummyMeetupPosts(); // 모든 더미 데이터 가져오기
+    _allPosts = await getAllMeetUpPost();
     _displayedPosts = List.from(_allPosts); // 처음엔 모든 글 표시
     if (!mounted) return;
     setState(() => _isLoading = false);
