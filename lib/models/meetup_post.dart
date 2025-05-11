@@ -18,6 +18,7 @@ class MeetupPost {
   final String eventLocation; // 예: "Seoul, Korea" (만나는 장소)
   // final LatLng eventCoordinates; // 실제 지도 연동 시 만나는 장소 좌표
   final String eventDateTimeString; // 예: "25th, April, 15:00~18:00"
+  final String meetupChatid; // 예: "25th, April, 15:00~18:00"
 
   MeetupPost({
     required this.id,
@@ -35,6 +36,7 @@ class MeetupPost {
     required this.eventLocation,
     // this.eventCoordinates,
     required this.eventDateTimeString,
+    required this.meetupChatid,
   });
 }
 
@@ -65,6 +67,7 @@ List<MeetupPost> getDummyMeetupPosts() {
       eventLocation: ['Near Mt. Fuji Station', 'Gangnam Station Exit 10', 'Yeouinaru Station Exit 2', 'Gyeongbok Palace Entrance', 'Bukhansan National Park Entrance'][index % 5], // 만남 장소 예시
       // eventCoordinates: LatLng(...), // 실제 좌표
       eventDateTimeString: '25th, April, 15:00~18:00', // 날짜/시간 예시
+      meetupChatid: 'none',
     );
   });
 }

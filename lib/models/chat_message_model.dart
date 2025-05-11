@@ -21,6 +21,8 @@ class ChatMessageModel {
   });
 }
 
+
+
 // --- 임시 더미 데이터 생성 함수 ---
 List<ChatMessageModel> getDummyChatMessages(String chatId) {
   // chatId에 따라 다른 대화 내용을 보여줄 수 있음 (지금은 동일)

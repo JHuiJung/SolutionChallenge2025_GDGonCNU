@@ -29,10 +29,41 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // Simulate loading data
     await Future.delayed(const Duration(milliseconds: 300));
+
+
+    //_chatList = getDummyChatListItems();
+    List<ChatListItemModel> _dummyChatList = getDummyChatListItems();
+
+    List<ChatListItemModel> usersChats = [];
+
+    for(int i = 0 ; i < mainUserInfo.chatIds.length ; ++i)
+    {
+      ChatListItemModel? newChat = await getChat(mainUserInfo.chatIds[i]);
+
+      if(newChat != null)
+        {
+          usersChats.add(newChat);
+        }
+
+    }
+
+    _chatList = usersChats;
+
     setState(() {
-      _chatList = getDummyChatListItems(); // 더미 데이터 사용
+     //_chatList = getDummyChatListItems(); // 더미 데이터 사용
+
+
+
+      // 더미 데이터 사용
+
+
       // 시간 순으로 정렬 (최신 메시지가 위로) - TimeOfDay 비교
-      _chatList.sort((a, b) {
+      /*_chatList.sort((a, b) {
+        final aDateTime = DateTime(0,0,0, a.timestamp.hour, a.timestamp.minute);
+        final bDateTime = DateTime(0,0,0, b.timestamp.hour, b.timestamp.minute);
+        return bDateTime.compareTo(aDateTime); // 내림차순 정렬
+      });*/
+      usersChats.sort((a, b) {
         final aDateTime = DateTime(0,0,0, a.timestamp.hour, a.timestamp.minute);
         final bDateTime = DateTime(0,0,0, b.timestamp.hour, b.timestamp.minute);
         return bDateTime.compareTo(aDateTime); // 내림차순 정렬

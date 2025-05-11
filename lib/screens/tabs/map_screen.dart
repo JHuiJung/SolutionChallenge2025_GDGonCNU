@@ -1,7 +1,7 @@
 // lib/screens/tabs/map_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+//import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 // 프로젝트 구조에 맞게 모델 및 위젯 경로 확인 필요
 import '../../models/tourist_spot_model.dart';
@@ -17,21 +17,23 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  final Completer<GoogleMapController> _mapControllerCompleter = Completer();
-  GoogleMapController? _mapController;
+  //final Completer<GoogleMapController> _mapControllerCompleter = Completer();
+  //GoogleMapController? _mapController;
   final PanelController _panelController = PanelController();
   final TextEditingController _searchController = TextEditingController();
 
   late UserState userinfo;
 
   // 지도 초기 위치 (예: 서울)
+  /*
   static const CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(37.5665, 126.9780),
     zoom: 13.0,
   );
+*/
 
   // 지도에 표시할 마커 (예시)
-  final Set<Marker> _markers = {
+  /*final Set<Marker> _markers = {
     const Marker(
       markerId: MarkerId('marker_1'),
       position: LatLng(37.5700, 126.9790),
@@ -44,7 +46,7 @@ class _MapScreenState extends State<MapScreen> {
       markerId: MarkerId('marker_3'),
       position: LatLng(37.5685, 126.9760),
     ),
-  };
+  };*/
 
   // 슬라이딩 패널에 표시할 관광지 데이터
   List<TouristSpotModel> _touristSpots = [];
@@ -76,7 +78,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
-    _mapController?.dispose();
+    // _mapController?.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -131,7 +133,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // 지도 이동 함수 (예시)
-  Future<void> _goToLocation(LatLng position) async {
+  /*Future<void> _goToLocation(LatLng position) async {
     // mapController가 초기화되었는지 확인
     if (_mapController == null) {
       final GoogleMapController controller = await _mapControllerCompleter.future;
@@ -140,12 +142,12 @@ class _MapScreenState extends State<MapScreen> {
     _mapController?.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: position, zoom: 15.0),
     ));
-  }
+  }*/
 
   // 현재 위치로 이동 함수 (Placeholder)
   void _goToCurrentLocation() {
     print('GPS button pressed - Go to current location (Not implemented)');
-    _goToLocation(const LatLng(37.5665, 126.9780)); // 예시: 서울 시청
+    // _goToLocation(const LatLng(37.5665, 126.9780)); // 예시: 서울 시청
   }
 
 
@@ -154,7 +156,7 @@ class _MapScreenState extends State<MapScreen> {
   void _handleSearch(String query) {
     print('Search submitted: $query');
     FocusScope.of(context).unfocus();
-    _goToLocation(const LatLng(37.5512, 126.9882)); // 예시: 남산타워
+    // _goToLocation(const LatLng(37.5512, 126.9882)); // 예시: 남산타워
   }
 
   @override
@@ -167,7 +169,7 @@ class _MapScreenState extends State<MapScreen> {
       body: Stack(
         children: [
           // 1. Google Map 배경
-          GoogleMap(
+          /*GoogleMap(
             mapType: MapType.normal,
             initialCameraPosition: _initialCameraPosition,
             onMapCreated: (GoogleMapController controller) {
@@ -183,7 +185,7 @@ class _MapScreenState extends State<MapScreen> {
             zoomControlsEnabled: false,
             // 지도 하단 패딩: 패널 최소 높이 - (Google 로고 등 가려지지 않을 정도의 여유)
             padding: EdgeInsets.only(bottom: _panelMinHeight - 30),
-          ),
+          ),*/
 
           // 2. 슬라이딩 패널
           SlidingUpPanel(

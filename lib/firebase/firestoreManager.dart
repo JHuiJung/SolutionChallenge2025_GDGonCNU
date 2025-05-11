@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'imageManager.dart';
 import '../models/meetup_post.dart';
 import '../models/spot_detail_model.dart';
+import '../models/chat_list_item_model.dart';
 
 late UserState mainUserInfo;
 
@@ -33,6 +34,7 @@ class UserState {
   List<String> comments;
   List<String> friendsEmail;
   String travelGoal;
+  List<String> chatIds = [];
 
   // 선호 조사
   List<String> preferTravlePurpose;
@@ -60,7 +62,8 @@ class UserState {
         preferTravlePurpose = [],
         preferDestination = [],
         preferPeople = [],
-        preferPlanningStyle = [];
+        preferPlanningStyle = [],
+        chatIds = [];
 }
 
 class UserChat{
@@ -165,6 +168,7 @@ void addUser() {
     'comments': user.comments,
     'friendsEmail': user.friendsEmail,
     'travelGoal': user.travelGoal,
+    'chatIds': user.chatIds,
 
     'timestamp': FieldValue.serverTimestamp(),
 
@@ -217,6 +221,7 @@ void updateUser() async {
       'comments': user.comments,
       'friendsEmail': user.friendsEmail,
       'travelGoal': user.travelGoal,
+      'chatIds': user.chatIds,
       'preferTravlePurpose': user.preferTravlePurpose,
       'preferDestination': user.preferDestination,
       'preferPeople': user.preferPeople,
@@ -266,6 +271,7 @@ Future<bool> getUserInfoByEmail(String email) async {
     user.postIds = List<String>.from(data['postIds'] ?? []);
     user.comments = List<String>.from(data['comments'] ?? []);
     user.friendsEmail = List<String>.from(data['friendsEmail'] ?? []);
+    user.chatIds = List<String>.from(data['chatIds'] ?? []);
     user.travelGoal = data['travelGoal'] ?? '';
 
     user.preferTravlePurpose = List<String>.from(data['preferTravlePurpose'] ?? []);
@@ -278,6 +284,63 @@ Future<bool> getUserInfoByEmail(String email) async {
   } catch (e) {
     print("유저 정보 가져오기 오류: $e");
     return false;
+  }
+}
+
+Future<UserState?> getAnotherUserInfoByEmail(String email) async {
+
+
+  try {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) {
+      print("(firestoreManager) 해당 이메일의 유저가 없습니다.");
+      return null;
+    }
+
+    final data = snapshot.docs.first.data();
+    UserState user = UserState();
+
+    user.email = data['email'] ?? '';
+    user.name = data['name'] ?? '';
+    user.region = data['region'] ?? '';
+    user.gender = data['gender'] ?? '';
+    user.birthYear = data['birthYear'] ?? 0;
+
+    // 언어 리스트 역직렬화
+    final languagesData = List<Map<String, dynamic>>.from(
+        data['languages'] ?? []);
+    user.languages = languagesData
+        .map((langMap) => UserLanguageInfo.fromMap(langMap))
+        .toList();
+
+    user.visitedCountries = List<String>.from(data['visitedCountries'] ?? []);
+    user.profileURL = data['profileURL'] ?? '';
+    user.statusMessage = data['statusMessage'] ?? '';
+    user.wantsToDo = data['wantsToDo'] ?? '';
+    user.iLike = data['iLike'] ?? '';
+    user.postIds = List<String>.from(data['postIds'] ?? []);
+    user.comments = List<String>.from(data['comments'] ?? []);
+    user.friendsEmail = List<String>.from(data['friendsEmail'] ?? []);
+    user.chatIds = List<String>.from(data['chatIds'] ?? []);
+    user.travelGoal = data['travelGoal'] ?? '';
+
+    user.preferTravlePurpose =
+    List<String>.from(data['preferTravlePurpose'] ?? []);
+    user.preferDestination = List<String>.from(data['preferDestination'] ?? []);
+    user.preferPeople = List<String>.from(data['preferPeople'] ?? []);
+    user.preferPlanningStyle =
+    List<String>.from(data['preferPlanningStyle'] ?? []);
+
+    print("유저 정보 로드 성공: ${user.name}");
+    return user;
+  } catch (e) {
+    print("유저 정보 가져오기 오류: $e");
+    return null;
   }
 }
 
@@ -298,6 +361,7 @@ Future<void> addMeetUpPost(MeetupPost post) async {
       'description': post.description,
       'eventLocation': post.eventLocation,
       'eventDateTimeString': post.eventDateTimeString,
+      'meetupChatid': post.meetupChatid,
       'createdAt': FieldValue.serverTimestamp(), // 업로드 시간 기록 (선택)
     });
 
@@ -334,6 +398,7 @@ Future<List<MeetupPost>> getAllMeetUpPost() async {
         description: data['description'],
         eventLocation: data['eventLocation'],
         eventDateTimeString: data['eventDateTimeString'],
+          meetupChatid : data['meetupChatid'],
       );
 
       meetups.add(post);
@@ -372,6 +437,7 @@ Future<MeetupPost?> getMeetUpPostById(String postId) async {
         description: data['description'],
         eventLocation: data['eventLocation'],
         eventDateTimeString: data['eventDateTimeString'],
+        meetupChatid: data['meetupChatid'],
       );
     } else {
       print('No meetup post found with ID $postId');
@@ -444,3 +510,116 @@ Future<List<SpotDetailModel>> getAllSpotPost() async {
 
   return spotPosts;
 }
+
+Future<SpotDetailModel?> getSpotPostById(String spotId) async {
+  try {
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection('spotPosts')
+        .doc(spotId)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data() as Map<String, dynamic>;
+
+      return SpotDetailModel(
+        id: spotId,
+        name: data['name'] ?? '',
+        location: data['location'] ?? '',
+        imageUrl: data['imageUrl'] ?? '',
+        quote: data['quote'] ?? '',
+        authorId: data['authorId'] ?? '',
+        authorName: data['authorName'] ?? '',
+        authorImageUrl: data['authorImageUrl'] ?? '',
+        description: data['description'] ?? '',
+        recommendTo: data['recommendTo'] ?? '',
+        canEnjoy: data['canEnjoy'] ?? '',
+        commentIds: List<String>.from(data['commentIds'] ?? []),
+        // comments: List<SpotCommentModel>.from(...), // 필요 시 주석 해제
+      );
+    } else {
+      print('No Spot post found with ID $spotId');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching meetup post by ID: $e');
+    return null;
+  }
+}
+
+Future<void> addChat(ChatListItemModel chat) async {
+  try {
+    await FirebaseFirestore.instance.collection('chats').doc(chat.chatId).set({
+      'chatId': chat.chatId,
+      'userId': chat.userId,
+      'name': chat.name,
+      'imageUrl': chat.imageUrl,
+      'lastMessage': chat.lastMessage,
+      'timestamp': {
+        'hour': chat.timestamp.hour,
+        'minute': chat.timestamp.minute,
+      },
+      'isRead': chat.isRead,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    print('Chat successfully uploaded.');
+  } catch (e) {
+    print('Error uploading chat: $e');
+  }
+}
+
+Future<void> updateChat(ChatListItemModel chat) async {
+  try {
+    await FirebaseFirestore.instance.collection('chats').doc(chat.chatId).update({
+      'userId': chat.userId,
+      'name': chat.name,
+      'imageUrl': chat.imageUrl,
+      'lastMessage': chat.lastMessage,
+      'timestamp': {
+        'hour': chat.timestamp.hour,
+        'minute': chat.timestamp.minute,
+      },
+      'isRead': chat.isRead,
+      // 'updatedAt': FieldValue.serverTimestamp(), // 필요시 추가
+    });
+
+    print('Chat successfully updated.');
+  } catch (e) {
+    print('Error updating chat: $e');
+  }
+}
+
+Future<ChatListItemModel?> getChat(String chatId) async {
+  try {
+    final doc = await FirebaseFirestore.instance.collection('chats').doc(chatId).get();
+
+    if (!doc.exists) {
+      print('Chat not found.');
+      return null;
+    }
+
+    final data = doc.data()!;
+
+    final timestampMap = data['timestamp'] as Map<String, dynamic>?;
+
+    return ChatListItemModel(
+      chatId: data['chatId'] as String,
+      userId: data['userId'] as String,
+      name: data['name'] as String,
+      imageUrl: data['imageUrl'] as String?, // null 허용
+      lastMessage: data['lastMessage'] as String,
+      timestamp: timestampMap != null
+          ? TimeOfDay(
+        hour: timestampMap['hour'] as int,
+        minute: timestampMap['minute'] as int,
+      )
+          : TimeOfDay(hour: 0, minute: 0), // 기본값 처리
+      isRead: data['isRead'] as bool? ?? true,
+    );
+  } catch (e) {
+    print('Error getting chat: $e');
+    return null;
+  }
+}
+
+

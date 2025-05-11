@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:naviya/firebase/imageManager.dart';
 // 모델 임포트 (경로 확인 필요)
 import '../models/meetup_post.dart';
+import '../models/chat_list_item_model.dart';
 import '../firebase/firestoreManager.dart';
 
 class WriteMeetupScreen extends StatefulWidget {
@@ -170,6 +171,25 @@ class _WriteMeetupScreenState extends State<WriteMeetupScreen> {
     // 임시 데이터 생성 (DB 저장 시뮬레이션)
     hostImageURL = await uploadHostImage(hostId, mainUserInfo, _selectedImage) ?? '';
 
+    String newChatId = "${DateTime.now().millisecondsSinceEpoch}";
+
+    ChatListItemModel newChat = ChatListItemModel(
+      chatId: newChatId,
+      userId: mainUserInfo.email ?? 'noneEmail',
+      name: mainUserInfo.name ?? 'noneName',
+      imageUrl: mainUserInfo.profileURL ?? '',
+      lastMessage: "-",
+      timestamp: TimeOfDay.now(),
+      isRead: false,
+
+    );
+
+    await addChat(newChat);
+    mainUserInfo.chatIds.add(newChatId);
+    updateUser();
+
+
+
     // MeetupPost 객체 생성 (모델 필드 확인 및 조정 필요)
     final newPost = MeetupPost(
       id: hostId , // 임시 ID
@@ -189,7 +209,9 @@ class _WriteMeetupScreenState extends State<WriteMeetupScreen> {
       eventLocation: _placeController.text.trim(), // 임시 장소
       eventDateTimeString: DateFormat('MMM d, yyyy ・ ').format(_selectedDate!) +
           '${_selectedStartTime!.format(context)} ~ ${_selectedEndTime!.format(context)}',
-      authorLocation: mainUserInfo.region ?? 'noneRegion', // TODO: 실제 사용자 위치
+      authorLocation: mainUserInfo.region ?? 'noneRegion',
+      meetupChatid: newChatId,
+      // TODO: 실제 사용자 위치
     );
 
     //유저 정보 업데이트

@@ -47,7 +47,9 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(milliseconds: 400)); // Simulate loading
     // TODO: 실제 API 호출 또는 DB 조회로 spotId에 맞는 데이터 가져오기
-    _spotDetail = getDummySpotDetail(spotId);
+    //_spotDetail = getDummySpotDetail(spotId);
+    SpotDetailModel _spotdummy = getDummySpotDetail(spotId);
+    _spotDetail = await getSpotPostById(spotId) ?? _spotdummy;
     if (!mounted) return;
     setState(() => _isLoading = false);
   }

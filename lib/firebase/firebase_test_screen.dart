@@ -31,9 +31,14 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
     if (userinfo != null) {
       // 이미 로그인 되어 있음 → 메인화면으로 이동
-      await firestoreManager.getUserInfoByEmail(userinfo!.email!);  // await 추가
-      Navigator.pushReplacementNamed(_context, '/main');
-      return;
+      bool isRight = await firestoreManager.getUserInfoByEmail(userinfo!.email!);  // await 추가
+
+      if(isRight)
+        {
+          Navigator.pushReplacementNamed(_context, '/main');
+          return;
+        }
+
     }
 
     // 로그인 안됨 → 로그인화면으로 이동
