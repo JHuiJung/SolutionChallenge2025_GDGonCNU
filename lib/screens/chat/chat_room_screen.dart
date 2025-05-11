@@ -20,6 +20,20 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   bool _isLoading = true;
 
+  // --- AI Tutor 추천 메시지 목록 ---
+  final List<String> _aiRecommendedMessages = [
+    'Study essential travel phrases',
+    'Study essential travel vocabulary',
+    'Role-play ordering with Hatchy', // 'Hatchy'는 AI 이름으로 가정
+    'Role-play meet up with Hatchy',
+    'Free-talking with Hatchy',
+    'Tell me about popular spots in [City Name]', // 예시: 사용자가 도시 이름 입력 가능
+    'How do I get to [Place] from [Place]?',
+    'What\'s the weather like in [City Name]?',
+    'Translate this for me: [Your Text]',
+  ];
+  // --- AI Tutor 추천 메시지 목록 끝 ---
+
   @override
   void initState() {
     super.initState();
@@ -71,29 +85,30 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     super.dispose();
   }
 
-  // 메시지 전송 함수
-  void _sendMessage() {
-    final text = _textController.text.trim();
+  // 메시지 전송 함수 (추천 메시지 클릭 시에도 사용)
+  void _sendMessage({String? predefinedText}) {
+    final text = predefinedText ?? _textController.text.trim(); // 미리 정의된 텍스트가 있으면 사용
     if (text.isNotEmpty) {
       final newMessage = ChatMessageModel(
-        id: 'msg_${DateTime.now().millisecondsSinceEpoch}', // 임시 고유 ID
+        id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
         text: text,
         timestamp: DateTime.now(),
         sender: MessageSender.me,
-        isRead: false, // 처음엔 안 읽음 상태
+        isRead: false,
       );
 
-      setState(() {
-        // 새 메시지를 리스트 맨 앞에 추가 (ListView가 reverse 상태이므로)
-        _messages.insert(0, newMessage);
-      });
+      if (mounted) {
+        setState(() {
+          _messages.insert(0, newMessage);
+        });
+      }
 
-      _textController.clear(); // 입력 필드 비우기
-      _scrollToBottom(); // 메시지 보낸 후 맨 아래로 스크롤
+      if (predefinedText == null) { // 직접 입력한 경우에만 컨트롤러 클리어
+        _textController.clear();
+      }
+      _scrollToBottom();
 
-      // TODO: 실제로는 서버로 메시지 전송 로직 필요
-      // TODO: AI 번역 기능이 필요하면 여기서 처리 또는 서버에서 처리
-      // 예시: AI 튜터에게 보내면 잠시 후 답장 오는 시뮬레이션
+      // AI Tutor에게 보내면 응답 시뮬레이션
       if (_chatId == 'chat_ai_tutor') {
         _simulateAiResponse(text);
       }
@@ -140,6 +155,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final bool isAiTutorChat = _chatId == 'chat_ai_tutor';
 
     return Scaffold(
       appBar: AppBar(
@@ -198,13 +214,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   return Column(
                     children: [
                       MessageBubble(message: _messages[index]),
-                      if (showRobot) _buildAiRobotWidget(), // 로봇 위젯 추가
+                      // if (showRobot) _buildAiRobotWidget(), // 로봇 위젯 추가
                     ],
                   );
                 },
               ),
             ),
           ),
+          // --- AI Tutor 추천 메시지 블록 (조건부 표시) ---
+          if (isAiTutorChat) _buildRecommendedMessages(context, colorScheme),
           // 입력 영역
           _buildInputArea(context),
         ],
@@ -213,22 +231,22 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   // AI 로봇 위젯 빌더
-  Widget _buildAiRobotWidget() {
-    // TODO: 실제 이미지 에셋 경로 사용
-    String robotImagePath = 'assets/images/robot_thinking_chat.png'; // 채팅방용 로봇 이미지
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 16.0, bottom: 10.0, top: 20.0),
-      child: Align(
-        alignment: Alignment.bottomRight,
-        child: Image.asset(
-          robotImagePath,
-          height: 100, // 크기 조절
-          errorBuilder: (context, error, stackTrace) => const SizedBox(height: 100), // 에러 시 빈 공간
-        ),
-      ),
-    );
-  }
+  // Widget _buildAiRobotWidget() {
+  //   // TODO: 실제 이미지 에셋 경로 사용
+  //   String robotImagePath = 'assets/images/robot_thinking_chat.png'; // 채팅방용 로봇 이미지
+  //
+  //   return Padding(
+  //     padding: const EdgeInsets.only(right: 16.0, bottom: 10.0, top: 20.0),
+  //     child: Align(
+  //       alignment: Alignment.bottomRight,
+  //       child: Image.asset(
+  //         robotImagePath,
+  //         height: 100, // 크기 조절
+  //         errorBuilder: (context, error, stackTrace) => const SizedBox(height: 100), // 에러 시 빈 공간
+  //       ),
+  //     ),
+  //   );
+  // }
 
 
   // 하단 입력 영역 위젯 빌더
@@ -291,4 +309,72 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       ),
     );
   }
+  // --- AI 추천 메시지 블록 빌더 ---
+  Widget _buildRecommendedMessages(BuildContext context, ColorScheme colorScheme) {
+    final Color chipBackgroundColor = colorScheme.brightness == Brightness.light
+        ? Colors.deepPurple.shade100 // 이미지와 유사한 연보라색
+        : Colors.deepPurple.shade800;
+    final Color chipTextColor = colorScheme.brightness == Brightness.light
+        ? Colors.deepPurple.shade900
+        : Colors.deepPurple.shade50;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 7.0),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceVariant.withOpacity(0.5), // 약간의 배경색
+        border: Border(top: BorderSide(color: colorScheme.outline.withOpacity(0.2), width: 0.5)), // 상단 구분선
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 11.0, bottom: 5.0),
+            child: Text(
+              'Tools recommended by AI', // 섹션 제목
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant.withOpacity(0.8),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 30, // 블록 높이 (텍스트 길이에 따라 조절)
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal, // 좌우 스크롤
+              padding: const EdgeInsets.symmetric(horizontal: 7.0), // 좌우 패딩
+              itemCount: _aiRecommendedMessages.length,
+              itemBuilder: (context, index) {
+                final message = _aiRecommendedMessages[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                  child: ActionChip( // ChoiceChip 대신 ActionChip 사용 (클릭 액션에 더 적합)
+                    label: Padding( // 텍스트가 길 경우 여러 줄로 표시되도록
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Text(
+                        message,
+                        textAlign: TextAlign.center, // 텍스트 중앙 정렬
+                        style: TextStyle(color: chipTextColor, fontSize: 14, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    backgroundColor: chipBackgroundColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0), // 둥근 모서리
+                      side: BorderSide.none, // 테두리 없음
+                    ),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: const EdgeInsets.symmetric(horizontal: 1.0), // 내부 패딩
+                    onPressed: () {
+                      // 블록 클릭 시 해당 텍스트로 메시지 전송
+                      _sendMessage(predefinedText: message);
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+// --- AI 추천 메시지 블록 빌더 끝 ---
 }

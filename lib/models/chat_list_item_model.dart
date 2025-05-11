@@ -27,7 +27,7 @@ List<ChatListItemModel> getDummyChatListItems() {
     ChatListItemModel(
       chatId: 'chat_ai_tutor',
       userId: 'ai_tutor_bot', // AI 튜터 ID
-      name: 'AI Tutor',
+      name: 'Hatchy',
       // AI 튜터 이미지 (실제 이미지 URL로 교체 필요)
       imageUrl: 'https://cdn-icons-png.flaticon.com/512/8943/8943371.png',
       lastMessage: 'A short sentence that takes up the first and the second line.',
