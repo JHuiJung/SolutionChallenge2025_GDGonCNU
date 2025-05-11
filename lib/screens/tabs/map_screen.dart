@@ -1,12 +1,17 @@
 // lib/screens/tabs/map_screen.dart
 import 'dart:async';
+import 'dart:io'; // File 사용 위해 추가
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart'; // 이미지 피커 임포트
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 // 프로젝트 구조에 맞게 모델 및 위젯 경로 확인 필요
 import '../../models/tourist_spot_model.dart';
 import '../../widgets/tourist_spot_card.dart';
 import '../../models/spot_detail_model.dart'; // *** SpotDetailModel 임포트 추가
+
+// --- 이미지 검색 상태를 나타내는 enum ---
+enum ImageSearchStatus { none, picking, searching, found, error }
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -57,6 +62,17 @@ class _MapScreenState extends State<MapScreen> {
 
   get writeButtonColor => null;
   get writeIconColor => null; // 버튼과 패널 상단 사이의 여백
+
+
+  // --- 이미지 검색 관련 상태 변수 ---
+  ImageSearchStatus _imageSearchStatus = ImageSearchStatus.none;
+  XFile? _pickedImageFile; // 사용자가 선택/촬영한 이미지 파일
+  String? _geminiSearchResult; // Gemini 검색 결과 텍스트
+  String _searchBarHintText = 'Search places or with picture...'; // 검색창 기본 힌트
+
+  final ImagePicker _picker = ImagePicker();
+
+
 
   @override
   void initState() {
@@ -137,7 +153,6 @@ class _MapScreenState extends State<MapScreen> {
   }
 
 
-
   // 검색 처리 함수 (Placeholder)
   void _handleSearch(String query) {
     print('Search submitted: $query');
@@ -145,87 +160,141 @@ class _MapScreenState extends State<MapScreen> {
     _goToLocation(const LatLng(37.5512, 126.9882)); // 예시: 남산타워
   }
 
+
+
+  // --- 이미지 검색 관련 함수 ---
+  Future<void> _pickImageAndSearch(ImageSource source) async {
+    if (!mounted) return;
+    setState(() {
+      _imageSearchStatus = ImageSearchStatus.picking;
+      _searchBarHintText = 'Selecting image...'; // 검색창 힌트 변경
+      _geminiSearchResult = null; // 이전 결과 초기화
+      _pickedImageFile = null;
+    });
+
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        if (!mounted) return;
+        setState(() {
+          _pickedImageFile = pickedFile;
+          _imageSearchStatus = ImageSearchStatus.searching;
+          _searchBarHintText = 'Searching image...'; // 검색창 힌트 변경
+        });
+        // --- Gemini API 호출 (시뮬레이션) ---
+        _callGeminiApi(pickedFile);
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _imageSearchStatus = ImageSearchStatus.none; // 이미지 선택 취소
+          _searchBarHintText = 'Search places or with picture...';
+        });
+      }
+    } catch (e) {
+      print("Image picker error: $e");
+      if (mounted) {
+        setState(() {
+          _imageSearchStatus = ImageSearchStatus.error;
+          _searchBarHintText = 'Error picking image.';
+        });
+      }
+    }
+  }
+
+  // Gemini API 호출 시뮬레이션 함수
+  Future<void> _callGeminiApi(XFile imageFile) async {
+    // TODO: 실제 Gemini API 연동 로직 구현
+    // 1. imageFile을 Gemini API가 요구하는 형식으로 변환 (예: base64, bytes)
+    // 2. Gemini API 호출
+    // 3. 응답 파싱하여 _geminiSearchResult에 저장
+
+    // 시뮬레이션을 위해 2초 딜레이 후 더미 결과 반환
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      // 더미 결과 (실제로는 API 응답 사용)
+      final dummyResult = """This is Tokyo Tower, located in Minato City, Tokyo, Japan.
+Here are some popular attractions near Tokyo Tower:
+* Zojoji Temple: A historic Buddhist temple right next to Tokyo Tower, known for its connection to the Tokugawa shogunate.
+* Shiba Park: One of the oldest parks in Japan, offering green spaces and views of Tokyo Tower. Zojoji Temple is located within this park.
+* Tokyo Tower Observation Decks: Enjoy panoramic views of Tokyo from the Main Deck (150m) and the Top Deck (250m). On a clear day, you might even see Mount Fuji.
+* Foot Town: Located at the base of Tokyo Tower, this complex has various shops, restaurants, and attractions like the Tokyo Tower Aquarium.
+* Hamarikyu Gardens: A traditional Japanese garden with a teahouse, ponds, and seasonal flowers, offering a peaceful escape from the city bustle. You can take a water bus from here.
+* Mini Cruise in Tokyo Bay: Enjoy views of the Tokyo skyline, including Tokyo Tower and the Rainbow Bridge, from a different perspective.
+* Shiodome Miyazaki's Clock: A whimsical and large clock designed by Hayao Miyazaki of Studio Ghibli fame.""";
+
+      setState(() {
+        _geminiSearchResult = dummyResult;
+        _imageSearchStatus = ImageSearchStatus.found;
+        _searchBarHintText = 'Gemini found it!'; // 검색창 힌트 변경
+      });
+    }
+  }
+
+  // 이미지 검색 UI 닫기 (결과 화면에서 뒤로가기 등)
+  void _closeImageSearchUI() {
+    if (!mounted) return;
+    setState(() {
+      _imageSearchStatus = ImageSearchStatus.none;
+      _searchBarHintText = 'Search places or with picture...';
+      _geminiSearchResult = null;
+      _pickedImageFile = null;
+    });
+  }
+  // --- 이미지 검색 관련 함수 끝 ---
+
+
+
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final TextTheme textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      // resizeToAvoidBottomInset: false, // 키보드가 올라올 때 화면 resize 방지 (선택 사항)
       body: Stack(
         children: [
-          // 1. Google Map 배경
-          GoogleMap(
-            mapType: MapType.normal,
-            initialCameraPosition: _initialCameraPosition,
-            onMapCreated: (GoogleMapController controller) {
-              // Completer가 완료되지 않았을 때만 컨트롤러 설정
-              if (!_mapControllerCompleter.isCompleted) {
-                _mapControllerCompleter.complete(controller);
-                // _mapController 변수에도 할당 (선택 사항, completer로도 접근 가능)
-                _mapController = controller;
-              }
-            },
-            markers: _markers,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-            // 지도 하단 패딩: 패널 최소 높이 - (Google 로고 등 가려지지 않을 정도의 여유)
-            padding: EdgeInsets.only(bottom: _panelMinHeight - 30),
-          ),
-
-          // 2. 슬라이딩 패널
-          SlidingUpPanel(
-            controller: _panelController,
-            minHeight: _panelMinHeight,
-            maxHeight: _panelMaxHeight,
-            parallaxEnabled: true,
-            parallaxOffset: 0.1, // 배경 지도 스크롤 속도 비율
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(27.0),
-              topRight: Radius.circular(27.0),
+          // 1. Google Map 배경 (이미지 검색 UI가 활성화되지 않았을 때만 보이도록)
+          if (_imageSearchStatus == ImageSearchStatus.none)
+            GoogleMap(
+              mapType: MapType.normal,
+              initialCameraPosition: _initialCameraPosition,
+              onMapCreated: (GoogleMapController controller) {
+                if (!_mapControllerCompleter.isCompleted) {
+                  _mapControllerCompleter.complete(controller);
+                  _mapController = controller;
+                }
+              },
+              markers: _markers,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              padding: EdgeInsets.only(bottom: _panelMinHeight - 30),
             ),
-            color: colorScheme.surface, // 패널 배경색
-            // *** 중요: 패널 위치 변경 시 버튼 위치 업데이트 ***
-            onPanelSlide: (double position) {
-              // position: 0.0 (최소 높이) ~ 1.0 (최대 높이)
-              // setState를 호출하여 _buttonBottomOffset 업데이트
-              if (mounted) { // 위젯이 여전히 트리에 있는지 확인
-                setState(() {
-                  _buttonBottomOffset = (_panelMinHeight + _buttonMarginAbovePanel) +
-                      (_panelMaxHeight - _panelMinHeight) * position;
-                });
-              }
-            },
-            // 패널 빌더: 패널 내부 컨텐츠 정의
-            panelBuilder: (ScrollController sc) => _buildPanelContent(sc, textTheme),
-            // 패널이 닫혔을 때 보이는 핸들 부분
-            collapsed: Container(
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(27.0),
-                  topRight: Radius.circular(27.0),
-                ),
-              ),
-              child: Center(
-                child: Container(
-                  width: 40,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
+
+          // 2. 슬라이딩 패널 (이미지 검색 UI가 활성화되지 않았을 때만 보이도록)
+          if (_imageSearchStatus == ImageSearchStatus.none)
+            SlidingUpPanel(
+              controller: _panelController,
+              minHeight: _panelMinHeight,
+              maxHeight: _panelMaxHeight,
+              parallaxEnabled: true,
+              parallaxOffset: 0.1,
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(24.0), topRight: Radius.circular(24.0)),
+              color: colorScheme.surface,
+              onPanelSlide: (double position) { if (mounted) { setState(() { _buttonBottomOffset = (_panelMinHeight + _buttonMarginAbovePanel) + (_panelMaxHeight - _panelMinHeight) * position; }); } },
+              panelBuilder: (ScrollController sc) => _buildPanelContent(sc, textTheme),
+              collapsed: Container(decoration: BoxDecoration(color: colorScheme.surface, borderRadius: const BorderRadius.only(topLeft: Radius.circular(24.0), topRight: Radius.circular(24.0))), child: Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(12))))),
             ),
-          ),
 
-          // 3. 상단 검색창 및 프로필 아이콘
-          _buildTopSearchBar(context, colorScheme),
+          // --- 3. 이미지 검색 UI (조건부 표시) ---
+          if (_imageSearchStatus != ImageSearchStatus.none)
+            _buildImageSearchUI(context, colorScheme, textTheme),
 
-          // 4. GPS 및 Write 버튼 (동적 위치)
-          // *** 중요: Stack의 자식으로 배치하고 Positioned 사용 ***
-          _buildActionButtons(context, colorScheme),
+          // 4. 상단 검색창 및 프로필 아이콘 (항상 표시)
+          _buildTopSearchBar(context, colorScheme), // 이미지 검색 상태에 따라 내용 변경
+
+          // 5. GPS 및 Write 버튼 (이미지 검색 UI가 활성화되지 않았을 때만 보이도록)
+          if (_imageSearchStatus == ImageSearchStatus.none)
+            _buildActionButtons(context, colorScheme),
         ],
       ),
     );
@@ -280,32 +349,36 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // 상단 검색창 위젯 빌더
+
+  // --- 상단 검색창 위젯 빌더 (카메라 버튼 추가 및 상태에 따른 힌트 변경) ---
   Widget _buildTopSearchBar(BuildContext context, ColorScheme colorScheme) {
     final isLightMode = colorScheme.brightness == Brightness.light;
     return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
+      top: 0, left: 0, right: 0,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(
             children: [
+              // 뒤로가기 버튼 (이미지 검색 UI 활성화 시에만 표시)
+              if (_imageSearchStatus != ImageSearchStatus.none)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new, color: colorScheme.onSurface),
+                  onPressed: _closeImageSearchUI, // 이미지 검색 UI 닫기
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              if (_imageSearchStatus != ImageSearchStatus.none)
+                const SizedBox(width: 8),
+
               // 검색창
               Expanded(
                 child: Container(
-                  height: 40,
+                  height: 44, // Search Bar Height
                   decoration: BoxDecoration(
                     color: isLightMode ? Colors.white : colorScheme.surfaceVariant,
                     borderRadius: BorderRadius.circular(25.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 5, offset: const Offset(0, 2))],
                   ),
                   child: Row(
                     children: [
@@ -316,20 +389,58 @@ class _MapScreenState extends State<MapScreen> {
                       Expanded(
                         child: TextField(
                           controller: _searchController,
-                          decoration: const InputDecoration(
-                              hintText: 'Search places...',
+                          decoration: InputDecoration(
+                              hintText: _searchBarHintText, // 동적 힌트 텍스트
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.only(bottom: 8)
+                              contentPadding: const EdgeInsets.only(bottom: 4)
                           ),
-                          onSubmitted: _handleSearch,
+                          onSubmitted: _imageSearchStatus == ImageSearchStatus.none ? _handleSearch : null, // 이미지 검색 중에는 텍스트 검색 비활성화
+                          enabled: _imageSearchStatus == ImageSearchStatus.none, // 이미지 검색 중에는 텍스트 필드 비활성화
                         ),
                       ),
+                      // --- 카메라 아이콘 버튼 추가 ---
+                      IconButton(
+                        icon: Icon(Icons.camera_alt_outlined, color: colorScheme.onSurface.withOpacity(0.7)),
+                        onPressed: () {
+                          // 이미지 선택 옵션 보여주기 (갤러리 또는 카메라)
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext bc) {
+                              return SafeArea(
+                                child: Wrap(
+                                  children: <Widget>[
+                                    ListTile(
+                                      leading: const Icon(Icons.photo_library),
+                                      title: const Text('Gallery'),
+                                      onTap: () {
+                                        Navigator.of(context).pop();
+                                        _pickImageAndSearch(ImageSource.gallery);
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(Icons.photo_camera),
+                                      title: const Text('Camera'),
+                                      onTap: () {
+                                        Navigator.of(context).pop();
+                                        _pickImageAndSearch(ImageSource.camera);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        tooltip: 'Search with image',
+                      ),
+                      const SizedBox(width: 4), // 버튼 오른쪽 여백
+                      // --- 카메라 아이콘 버튼 끝 ---
                     ],
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              // 프로필 아이콘
+              // 프로필 아이콘 (이미지 검색 UI 활성화 시에는 숨김 - 선택 사항)
               InkWell(
                 onTap: () {
                   Navigator.pushNamed(context, '/mypage');
@@ -369,6 +480,7 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+
   // GPS 및 Write 버튼 위젯 빌더 (동적 위치)
   Widget _buildActionButtons(BuildContext context, ColorScheme colorScheme) {
     final isLightMode = colorScheme.brightness == Brightness.light;
@@ -403,4 +515,52 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
   }
-}
+
+
+  // --- 이미지 검색 UI 빌더 ---
+  Widget _buildImageSearchUI(BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
+    return Positioned.fill( // 전체 화면을 덮도록
+      child: Container(
+        color: colorScheme.background, // 배경색
+        padding: EdgeInsets.only(top: kToolbarHeight + MediaQuery.of(context).padding.top + 12 + 50 + 12), // AppBar 및 검색창 높이만큼 패딩
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (_imageSearchStatus == ImageSearchStatus.searching) ...[
+              // 로고 (임시 아이콘)
+              Icon(Icons.travel_explore, size: 40, color: colorScheme.primary),
+              const SizedBox(height: 16),
+              Text(
+                'Please wait for a moment...',
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.8)),
+              ),
+              const SizedBox(height: 20),
+              const CircularProgressIndicator(), // 로딩 인디케이터
+            ],
+            if (_imageSearchStatus == ImageSearchStatus.found && _geminiSearchResult != null) ...[
+              // Gemini 결과 표시
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    _geminiSearchResult!,
+                    style: textTheme.bodyLarge,
+                  ),
+                ),
+              ),
+            ],
+            if (_imageSearchStatus == ImageSearchStatus.error) ...[
+              Icon(Icons.error_outline, color: colorScheme.error, size: 40),
+              const SizedBox(height: 16),
+              Text(
+                'Failed to get information from the image.',
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.error),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+} // _MapScreenState 끝

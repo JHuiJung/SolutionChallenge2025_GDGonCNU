@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../models/spot_detail_model.dart';
-import '../models/comment_model.dart'; // CommentModel 임포트
+import '../../models/spot_detail_model.dart';
+import '../../models/comment_model.dart'; // CommentModel 임포트
 
 class WriteSpotScreen extends StatefulWidget {
   const WriteSpotScreen({super.key});

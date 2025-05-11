@@ -117,25 +117,25 @@ class _ChatScreenState extends State<ChatScreen> {
               ],
             ),
 
-            // 3. AI 채팅 버튼 (로봇 모양)
-            Positioned(
-              bottom: 20,
-              right: 20,
-              child: FloatingActionButton(
-                onPressed: () {
-                  // AI 채팅방으로 이동
-                  Navigator.pushNamed(context, '/ai_chat');
-                  print('Navigate to AI Chat');
-                },
-                backgroundColor: colorScheme.primaryContainer, // 테마 색상 활용
-                child: Icon(
-                  Icons.smart_toy_outlined, // 로봇 아이콘 (혹은 Image 위젯 사용)
-                  color: colorScheme.onPrimaryContainer,
-                  size: 30,
-                ),
-                // tooltip: 'Chat with AI', // 길게 눌렀을 때 힌트 (선택 사항)
-              ),
-            ),
+            // // 3. AI 채팅 버튼 (로봇 모양)
+            // Positioned(
+            //   bottom: 20,
+            //   right: 20,
+            //   child: FloatingActionButton(
+            //     onPressed: () {
+            //       // AI 채팅방으로 이동
+            //       Navigator.pushNamed(context, '/ai_chat');
+            //       print('Navigate to AI Chat');
+            //     },
+            //     backgroundColor: colorScheme.primaryContainer, // 테마 색상 활용
+            //     child: Icon(
+            //       Icons.smart_toy_outlined, // 로봇 아이콘 (혹은 Image 위젯 사용)
+            //       color: colorScheme.onPrimaryContainer,
+            //       size: 30,
+            //     ),
+            //     // tooltip: 'Chat with AI', // 길게 눌렀을 때 힌트 (선택 사항)
+            //   ),
+            // ),
 
             // 4. 로봇 일러스트 (선택 사항 - 목록이 비어있을 때만 표시하거나 항상 표시)
             // 실제 이미지 에셋 필요

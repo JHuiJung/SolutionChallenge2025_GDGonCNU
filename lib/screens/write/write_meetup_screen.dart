@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 // 모델 임포트 (경로 확인 필요)
-import '../models/meetup_post.dart';
+import '../../models/meetup_post.dart';
 
 class WriteMeetupScreen extends StatefulWidget {
   const WriteMeetupScreen({super.key});

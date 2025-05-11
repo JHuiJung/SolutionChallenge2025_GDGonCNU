@@ -112,7 +112,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             mainAxisSize: MainAxisSize.min, // 내용 크기만큼만 차지
             children: [
               Image.asset(
-                'assets/images/egg.png', // 추가한 이미지 경로
+                'assets/images/egg1.png', // 추가한 이미지 경로
                 height: 150, // 이미지 크기 조절
               ),
               const SizedBox(height: 16),
