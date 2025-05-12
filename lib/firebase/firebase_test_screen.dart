@@ -22,7 +22,6 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   String testDummyEmail = "test1@dummy.com";
   String testDummyPassword = "password123";
 
-
   // ✅ 구글 로그인 함수
   // ✅ 구글 로그인 함수
   Future<void> _signInWithGoogle(BuildContext _context) async {
