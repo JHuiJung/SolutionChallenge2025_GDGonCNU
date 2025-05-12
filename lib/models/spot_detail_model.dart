@@ -13,7 +13,8 @@ class SpotDetailModel {
   final String description;
   final String recommendTo; // 예: "People who like nature"
   final String canEnjoy; // 예: "The beauty of Korea"
-  final List<SpotCommentModel> comments;
+  final List<String> commentIds;
+  //final List<SpotCommentModel> comments;
 
   SpotDetailModel({
     required this.id,
@@ -27,7 +28,8 @@ class SpotDetailModel {
     required this.description,
     required this.recommendTo,
     required this.canEnjoy,
-    required this.comments,
+    required this.commentIds,
+    //required this.comments,
   });
 }
 
@@ -46,6 +48,7 @@ SpotDetailModel getDummySpotDetail(String spotId) {
     description: "If you're looking to explore a peaceful and culturally rich spot off the typical tourist trail, I highly recommend visiting Yongbongsa Temple. As a local, I've been there many times, and each visit offers something new — a sense of calm, history, and beauty that's hard to find elsewhere.",
     recommendTo: 'People who like nature and quiet places',
     canEnjoy: 'The beauty of Korean traditional architecture and spring blossoms',
-    comments: getDummySpotComments(), // 댓글 더미 데이터
+    commentIds: [],
+    //comments: getDummySpotComments(), // 댓글 더미 데이터
   );
 }

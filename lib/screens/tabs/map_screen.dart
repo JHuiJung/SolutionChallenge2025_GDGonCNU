@@ -9,6 +9,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../models/tourist_spot_model.dart';
 import '../../widgets/tourist_spot_card.dart';
 import '../../models/spot_detail_model.dart'; // *** SpotDetailModel 임포트 추가
+import '../../firebase/firestoreManager.dart';
 
 // --- 이미지 검색 상태를 나타내는 enum ---
 enum ImageSearchStatus { none, picking, searching, found, error }
@@ -21,19 +22,23 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  final Completer<GoogleMapController> _mapControllerCompleter = Completer();
-  GoogleMapController? _mapController;
+  //final Completer<GoogleMapController> _mapControllerCompleter = Completer();
+  //GoogleMapController? _mapController;
   final PanelController _panelController = PanelController();
   final TextEditingController _searchController = TextEditingController();
 
+  late UserState userinfo;
+
   // 지도 초기 위치 (예: 서울)
+  /*
   static const CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(37.5665, 126.9780),
     zoom: 13.0,
   );
+*/
 
   // 지도에 표시할 마커 (예시)
-  final Set<Marker> _markers = {
+  /*final Set<Marker> _markers = {
     const Marker(
       markerId: MarkerId('marker_1'),
       position: LatLng(37.5700, 126.9790),
@@ -46,7 +51,7 @@ class _MapScreenState extends State<MapScreen> {
       markerId: MarkerId('marker_3'),
       position: LatLng(37.5685, 126.9760),
     ),
-  };
+  };*/
 
   // 슬라이딩 패널에 표시할 관광지 데이터
   List<TouristSpotModel> _touristSpots = [];
@@ -81,12 +86,15 @@ class _MapScreenState extends State<MapScreen> {
     // initState에서는 MediaQuery 사용이 안전하지 않을 수 있으므로,
     // 초기값은 고정값으로 설정하고, 빌드 후 또는 onPanelSlide에서 업데이트
     _buttonBottomOffset = _panelMinHeight + _buttonMarginAbovePanel;
+
+
+
     _loadTouristSpots();
   }
 
   @override
   void dispose() {
-    _mapController?.dispose();
+    // _mapController?.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -124,18 +132,24 @@ class _MapScreenState extends State<MapScreen> {
 
   // 관광지 데이터 로드 함수 (예시)
   Future<void> _loadTouristSpots() async {
+
+    userinfo = mainUserInfo;
+
     // setState 호출 전에 위젯이 마운트되었는지 확인 (선택 사항이지만 안전함)
     if (!mounted) return;
     setState(() => _isLoadingSpots = true);
     await Future.delayed(const Duration(milliseconds: 500)); // Simulate loading
     // 더미 데이터 로드
-    _touristSpots = getDummyTouristSpots();
+    //_touristSpots = getDummyTouristSpots();
+
+    List<SpotDetailModel> spotDetailModels = await getAllSpotPost();
+    _touristSpots = getTouristSpotsBySpotPostInfo(spotDetailModels);
     if (!mounted) return;
     setState(() => _isLoadingSpots = false);
   }
 
   // 지도 이동 함수 (예시)
-  Future<void> _goToLocation(LatLng position) async {
+  /*Future<void> _goToLocation(LatLng position) async {
     // mapController가 초기화되었는지 확인
     if (_mapController == null) {
       final GoogleMapController controller = await _mapControllerCompleter.future;
@@ -144,12 +158,12 @@ class _MapScreenState extends State<MapScreen> {
     _mapController?.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: position, zoom: 15.0),
     ));
-  }
+  }*/
 
   // 현재 위치로 이동 함수 (Placeholder)
   void _goToCurrentLocation() {
     print('GPS button pressed - Go to current location (Not implemented)');
-    _goToLocation(const LatLng(37.5665, 126.9780)); // 예시: 서울 시청
+    // _goToLocation(const LatLng(37.5665, 126.9780)); // 예시: 서울 시청
   }
 
 
@@ -157,7 +171,7 @@ class _MapScreenState extends State<MapScreen> {
   void _handleSearch(String query) {
     print('Search submitted: $query');
     FocusScope.of(context).unfocus();
-    _goToLocation(const LatLng(37.5512, 126.9882)); // 예시: 남산타워
+    // _goToLocation(const LatLng(37.5512, 126.9882)); // 예시: 남산타워
   }
 
 
@@ -451,7 +465,11 @@ Here are some popular attractions near Tokyo Tower:
                     CircleAvatar(
                       radius: 25,
                       backgroundColor: Colors.grey.shade300,
-                      backgroundImage: const NetworkImage('https://source.unsplash.com/random/100x100/?person&sig=99'),
+                        backgroundImage: (userinfo != null && userinfo.profileURL != null && userinfo.profileURL.isNotEmpty)
+                        // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
+                            ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
+                        // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
+                            : AssetImage('assets/images/egg.png') as ImageProvider<Object>?,
                     ),
                     // 프로필 알림 표시 코드
                     // Positioned(

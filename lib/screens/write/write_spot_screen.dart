@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../models/spot_detail_model.dart';
-import '../../models/comment_model.dart'; // CommentModel 임포트
+import '../firebase/imageManager.dart';
+import '../models/spot_detail_model.dart';
+import '../models/comment_model.dart'; // CommentModel 임포트
+import '../firebase/firestoreManager.dart';
 
 class WriteSpotScreen extends StatefulWidget {
   const WriteSpotScreen({super.key});
@@ -29,6 +31,7 @@ class _WriteSpotScreenState extends State<WriteSpotScreen> {
 
   bool _isSubmitting = false;
   final ImagePicker _picker = ImagePicker();
+  late String spotId;
 
   @override
   void dispose() {
@@ -38,6 +41,13 @@ class _WriteSpotScreenState extends State<WriteSpotScreen> {
     _canEnjoyController.dispose();
     _placeSearchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    spotId = DateTime.now().millisecondsSinceEpoch.toString();
   }
 
   // --- 이미지 선택 ---
@@ -117,22 +127,28 @@ class _WriteSpotScreenState extends State<WriteSpotScreen> {
     // TODO: 이미지 업로드 및 DB 저장 로직
     await Future.delayed(const Duration(milliseconds: 800)); // 시뮬레이션
 
+    String? spotUrl = await uploadSpotImage(spotId, mainUserInfo, _selectedImage);
+
     // SpotDetailModel 객체 생성
     final newSpot = SpotDetailModel(
-      id: 'spot_${DateTime.now().millisecondsSinceEpoch}', // 임시 ID
+      id: spotId, // 임시 ID
       name: _selectedPlaceName!,
       location: _selectedPlaceLocation!,
       // imageUrl: _selectedImage!.path, // 로컬 경로 대신 업로드 URL 사용
-      imageUrl: 'https://source.unsplash.com/random/800x600/?travel,landmark&sig=${DateTime.now().millisecondsSinceEpoch}', // 임시 URL
+      imageUrl: spotUrl ?? '', // 임시 URL
       quote: _quoteController.text.trim(),
-      authorId: 'current_user_id', // TODO: 실제 사용자 ID
-      authorName: 'Me', // TODO: 실제 사용자 이름
-      authorImageUrl: 'https://i.pravatar.cc/150?img=60', // TODO: 실제 사용자 이미지
+      authorId: mainUserInfo.email ?? 'noneEmail', // TODO: 실제 사용자 ID
+      authorName: mainUserInfo.name ?? 'noneName', // TODO: 실제 사용자 이름
+      authorImageUrl: mainUserInfo.profileURL, // TODO: 실제 사용자 이미지
       description: _descriptionController.text.trim(),
       recommendTo: _recommendToController.text.trim(),
       canEnjoy: _canEnjoyController.text.trim(),
-      comments: [], // 처음엔 코멘트 없음
+      //comments: [], // 처음엔 코멘트 없음
+      commentIds: [], // 처음엔 코멘트 없음
     );
+
+    // db에 추가 및 유저 정보 업데이트
+    await addSpotPost(newSpot);
 
     if (mounted) {
       Navigator.pop(context, newSpot); // 생성된 객체 반환

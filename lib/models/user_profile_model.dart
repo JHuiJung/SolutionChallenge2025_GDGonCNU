@@ -1,4 +1,6 @@
 // lib/models/user_profile_model.dart
+import '../firebase/firestoreManager.dart';
+
 class UserProfileModel {
   final String userId;
   final String name;
@@ -7,7 +9,7 @@ class UserProfileModel {
   final String timeZoneInfo; // 예: "13:37 (-7hours)" - 실제로는 TimeZone ID 저장 후 계산
   final String profileImageUrl;
   final String statusMessage;
-  final List<UserLanguage> languages;
+  final List<UserLanguageInfo> languages;
   final String likes; // 예: "Shopping, Movie"
   final String placesBeen; // 예: "Japan, America, India"
   final String wantsToDo; // 예: "make a happy memory with me"
@@ -51,8 +53,8 @@ UserProfileModel getDummyMyProfile() {
     profileImageUrl: 'https://source.unsplash.com/random/200x200/?person,woman&sig=1', // 내 프로필 사진
     statusMessage: "Let's hang out!",
     languages: [
-      UserLanguage(languageCode: 'ko', languageName: 'Korean', proficiency: 5),
-      UserLanguage(languageCode: 'en', languageName: 'English', proficiency: 3),
+      UserLanguageInfo(languageCode: 'ko', languageName: 'Korean', proficiency: 5),
+      UserLanguageInfo(languageCode: 'en', languageName: 'English', proficiency: 3),
     ],
     likes: 'Shopping, Movie, Hiking',
     placesBeen: 'Japan, America, India, France',

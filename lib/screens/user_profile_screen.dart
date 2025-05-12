@@ -1,4 +1,5 @@
 // lib/screens/user_profile_screen.dart
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'dart:async'; // Timer 등 비동기 작업에 필요할 수 있음
 
@@ -12,10 +13,11 @@ import '../widgets/meetup_post_item.dart';
 import '../widgets/comment_item.dart';
 import '../widgets/language_indicator.dart';
 import '../widgets/preference_display_box.dart';
+import '../firebase/firestoreManager.dart';
 
 // --- 더미 데이터 함수 (실제로는 별도 파일 또는 API 호출로 대체) ---
 // UserProfileModel에 userId를 받는 생성자 또는 함수가 있다고 가정
-UserProfileModel getDummyUserProfile(String userId) {
+/*UserProfileModel getDummyUserProfile(String userId) {
   // userId에 따라 다른 더미 데이터 반환 (예시)
   bool isJohn = userId == 'user_john'; // 예시 ID
   return UserProfileModel(
@@ -35,6 +37,24 @@ UserProfileModel getDummyUserProfile(String userId) {
     likes: isJohn ? 'Shopping, Movie, Coding' : 'Hiking, Photography, Reading',
     placesBeen: isJohn ? 'Japan, America, India, Germany' : 'Thailand, Vietnam, Spain',
     wantsToDo: isJohn ? 'make a happy memory with me' : 'find hidden gems',
+  );
+}*/
+
+UserProfileModel getUserProfile(UserState userInfo) {
+  // userId에 따라 다른 더미 데이터 반환 (예시)
+
+  return UserProfileModel(
+    userId: userInfo.email ?? 'noneEmail',
+    name: userInfo.name ?? 'noneName',
+    age: userInfo.birthYear ?? 0,
+    location: userInfo.region ?? 'Seoul, Korea',
+    timeZoneInfo: "시간 계산 필요", // 실제로는 계산 필요
+    profileImageUrl: userInfo.profileURL, // 다른 사용자 랜덤 이미지
+    statusMessage: userInfo.statusMessage,
+    languages: userInfo.languages,
+    likes: userInfo.iLike,
+    placesBeen: userInfo.visitedCountries.join(', '),
+    wantsToDo: userInfo.wantsToDo,
   );
 }
 
@@ -70,13 +90,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   bool _isFollowing = false; // 현재 내가 이 사용자를 팔로우하는지 여부 (DB 연동 필요)
   bool _isProcessingFollow = false; // 팔로우/언팔로우 처리 중 플래그
 
+  late UserState? userInfo;
+
   @override
   void initState() {
     super.initState();
+
+
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (ModalRoute.of(context)?.settings.arguments != null) {
         _userId = ModalRoute.of(context)?.settings.arguments as String;
         _loadUserProfileData(_userId!);
+
       } else {
         if (mounted) {
           setState(() => _isLoading = false);
@@ -92,9 +118,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(milliseconds: 400)); // Simulate loading
 
+    userInfo = await getAnotherUserInfoByEmail(_userId ?? '');
+
     // TODO: 실제 API 또는 DB에서 userId 기반으로 데이터 로드
-    _userProfile = getDummyUserProfile(userId);
-    _hostedPosts = getDummyHostedPosts(userId);
+    // _userProfile = getDummyUserProfile(userId);
+    _userProfile = getUserProfile(userInfo ?? mainUserInfo);
+    // _hostedPosts = getDummyHostedPosts(userId);
+    _hostedPosts = [];
+
+    List<String> userHostIds = userInfo?.postIds ?? [];
+
+    for(int i = 0 ; i < userHostIds.length;++i)
+      {
+        MeetupPost? _post = await getMeetUpPostById(userHostIds[i]);
+
+        if(_post != null)
+          {
+            _hostedPosts.add(_post);
+          }
+      }
+
     _comments = getDummyCommentsAboutUser(userId);
     // TODO: 현재 로그인한 사용자가 이 userId를 팔로우하는지 DB에서 확인하여 _isFollowing 설정
 
@@ -496,7 +539,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   // 언어 행 위젯 (국기 + 이름 + 능숙도)
-  Widget _buildLanguageRow(BuildContext context, UserLanguage language) {
+  Widget _buildLanguageRow(BuildContext context, UserLanguageInfo language) {
     String flagAssetPath = 'assets/flags/${language.languageCode}.png'; // 에셋 경로 확인 필요
 
     return Padding(

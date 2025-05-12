@@ -81,7 +81,7 @@ Future<bool> ImagePickerForMobile(String userEmail) async {
     final imageUrl = await uploadProfileImage(imageFile, userEmail);
     if (imageUrl != null) {
       await saveImageUrlToFirestore(userEmail, imageUrl);
-      firestoreManager.UserState().profileURL = imageUrl;
+      firestoreManager.mainUserInfo.profileURL = imageUrl;
       print("이미지 업로드 및 저장 완료: $imageUrl");
 
       return true;
@@ -115,7 +115,7 @@ Future<bool> ImagePickerForWeb(String userEmail) async {
       print('다운로드 URL: $imageUrl'); // 여기에 appspot.com 이 포함되어야 함
       print("웹 이미지 함수 : 2 $imageUrl");
 
-      firestoreManager.UserState().profileURL = imageUrl;
+      firestoreManager.mainUserInfo.profileURL = imageUrl;
 
       print("✅ 웹에서 이미지 업로드 및 저장 완료: $imageUrl");
       return true;
@@ -137,6 +137,65 @@ Future<String?> getProfileImageUrl(String userEmail) async {
     return imageUrl;
   } catch (e) {
     print('이미지 불러오기 오류: $e');
+    return null;
+  }
+}
+
+
+Future<String?> uploadHostImage(String? hostId, firestoreManager.UserState userInfo, XFile? selectedImage) async {
+  try {
+
+    if(hostId == null || selectedImage == null)
+      {
+        print("😁 호스트 아이디 또는 이미지가 없음 (이미지 메니저)");
+      }
+
+    if (selectedImage == null) return null;
+
+    File imageFile = File(selectedImage.path);
+
+    // Firebase Storage 경로 지정
+    String filePath = 'hostImages/${userInfo.email}_$hostId.jpg';
+
+    // 이미지 업로드
+    final ref = FirebaseStorage.instance.ref().child(filePath);
+    final uploadTask = await ref.putFile(imageFile);
+
+    // 다운로드 URL 가져오기
+    final downloadUrl = await ref.getDownloadURL();
+
+    return downloadUrl;
+  } catch (e) {
+    print('이미지 업로드 중 오류 발생: $e');
+    return null;
+  }
+}
+
+Future<String?> uploadSpotImage(String? spotId, firestoreManager.UserState userInfo, XFile? selectedImage) async {
+  try {
+
+    if(spotId == null || selectedImage == null)
+    {
+      print("😁 스팟 아이디 또는 이미지가 없음 (이미지 메니저)");
+    }
+
+    if (selectedImage == null) return null;
+
+    File imageFile = File(selectedImage.path);
+
+    // Firebase Storage 경로 지정
+    String filePath = 'spotImages/${userInfo.email}_$spotId.jpg';
+
+    // 이미지 업로드
+    final ref = FirebaseStorage.instance.ref().child(filePath);
+    final uploadTask = await ref.putFile(imageFile);
+
+    // 다운로드 URL 가져오기
+    final downloadUrl = await ref.getDownloadURL();
+
+    return downloadUrl;
+  } catch (e) {
+    print('이미지 업로드 중 오류 발생: $e');
     return null;
   }
 }

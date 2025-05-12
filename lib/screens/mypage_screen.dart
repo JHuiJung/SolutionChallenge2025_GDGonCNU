@@ -32,6 +32,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
   @override
   void initState() {
     super.initState();
+
     _loadMyPageData();
   }
 
@@ -42,18 +43,41 @@ class _MyPageScreenState extends State<MyPageScreen> {
     await Future.delayed(const Duration(milliseconds: 600));
 
     // TODO: 실제 API 호출 또는 로컬 DB에서 데이터 가져오기
+
+    //파이어 베이스 정보 로딩
+    userinfo = firestoreManager.mainUserInfo;
+
+
+    List<MeetupPost> userMeetupPosts = [];
+
+
+    print("(마이 페이지) 🙄 내가 쓴 글 수 ${mainUserInfo.postIds.length}");
+    for(int i = 0 ; i < mainUserInfo.postIds.length; ++i)
+      {
+
+        MeetupPost? _meetUpPost = await getMeetUpPostById(mainUserInfo.postIds[i]);
+        print("(마이 페이지) 🙄${i}번째 내가 쓴 글 ${_meetUpPost == null ? "없음" : mainUserInfo.postIds[i]}");
+        if(_meetUpPost != null)
+          {
+            userMeetupPosts.add(_meetUpPost);
+          }
+      }
+    print("(마이 페이지) 🙄 불러온 글 수 ${userMeetupPosts.length}");
+
     _userProfile = getDummyMyProfile();
     // 호스팅 글 필터링 (예시: authorId가 내 ID와 같은 글)
-    _hostedPosts = getDummyMeetupPosts()
-        .where((post) => post.authorId == _userProfile.userId) // 실제 ID 비교 필요
+    //_hostedPosts = getDummyMeetupPosts()
+    _hostedPosts = userMeetupPosts
+        //.where((post) => post.authorId == _userProfile.userId) // 실제 ID 비교 필요
         .toList();
     if (_hostedPosts.isEmpty && getDummyMeetupPosts().isNotEmpty) {
       // 내 글이 없으면 다른 사람 글이라도 하나 보여주기 (더미 데이터용)
+      print("(마이 페이지)😥 올린 글이 없어 더미 생성");
       _hostedPosts.add(getDummyMeetupPosts().first);
     }
 
     //파이어 베이스 정보 로딩
-    userinfo = firestoreManager.UserState();
+    userinfo = firestoreManager.mainUserInfo;
 
 
     _comments = getDummyComments();
@@ -196,7 +220,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
                 // --- Language ---
                 _buildSectionTitle(context, 'Language'),
-                ...userinfo.Languages.map((lang) => _buildLanguageRow(context, lang)),
+                ...userinfo.languages.map((lang) => _buildLanguageRow(context, lang)),
                 //..._userProfile.languages.map((lang) => _buildLanguageRow(context, lang)),
                 const SizedBox(height: 24),
 

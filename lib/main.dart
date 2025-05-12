@@ -25,9 +25,9 @@ import 'screens/spot_detail_screen.dart'; // 관광지 상세 화면 임포트
 import 'screens/write/write_user_comment_screen.dart';
 import 'screens/write/write_spot_comment_screen.dart';
 import 'screens/edit_mypage_screen.dart'; // 프로필 수정 화면 임포트
-import 'screens/write/write_meetup_screen.dart'; // Meetup 게시글 작성 화면 임포트
-import 'screens/write/write_spot_screen.dart';
-
+import 'screens/write_meetup_screen.dart'; // Meetup 게시글 작성 화면 임포트
+import 'screens/write_spot_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
 void main() async {
@@ -37,8 +37,10 @@ void main() async {
   );
 
   // 테스트용 끝나고 지우기
-  //firestoreManager.getUserInfoByEmail("wjdgmlwnd12@gmail.com");
-  await testNetworkConnectivity();
+  firestoreManager.SetUpFireManager();
+  //firestoreManager.getUserInfoByEmail("test1@dummy.com");
+  //await testNetworkConnectivity();
+  //await createDummyAccounts();
 
   runApp(const MyApp());
 }
@@ -104,6 +106,31 @@ Future<void> testNetworkConnectivity() async {
   }
 }
 
+Future<void> createDummyAccounts() async {
+  final List<Map<String, String>> dummyUsers = [
+    {'email': 'test1@dummy.com', 'password': 'password123'},
+    {'email': 'test2@dummy.com', 'password': 'password123'},
+    {'email': 'test3@dummy.com', 'password': 'password123'},
+    {'email': 'test4@dummy.com', 'password': 'password123'},
+    {'email': 'test5@dummy.com', 'password': 'password123'},
+  ];
+
+  for (var user in dummyUsers) {
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: user['email']!,
+        password: user['password']!,
+      );
+      print('✅ Created: ${user['email']}');
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        print('⚠️ Already exists: ${user['email']}');
+      } else {
+        print('❌ Error for ${user['email']}: ${e.message}');
+      }
+    }
+  }
+}
 // 이 함수를 호출하는 버튼이나 이벤트 리스너 추가
 // ElevatedButton(
 //   onPressed: testNetworkConnectivity,

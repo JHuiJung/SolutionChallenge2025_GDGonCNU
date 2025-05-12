@@ -19,8 +19,8 @@ class FirebaseTestScreen extends StatefulWidget {
 
 class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   String _status = 'Not authenticated';
-
-
+  String testDummyEmail = "test2@dummy.com";
+  String testDummyPassword = "password123";
 
   // ✅ 구글 로그인 함수
   Future<void> _signInWithGoogle(BuildContext _context) async {
@@ -30,16 +30,17 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
     if (userinfo != null) {
       // 이미 로그인 되어 있음 → 메인화면으로 이동
-      firestoreManager.getUserInfoByEmail(userinfo!.email!);
-      Navigator.pushReplacementNamed(_context, '/main');
+      bool isRight = await firestoreManager.getUserInfoByEmail(userinfo!.email!);  // await 추가
 
-      return;
+      if(isRight)
+        {
+          Navigator.pushReplacementNamed(_context, '/main');
+          return;
+        }
 
     }
 
-
-      // 로그인 안됨 → 로그인화면으로 이동
-
+    // 로그인 안됨 → 로그인화면으로 이동
     if (kIsWeb) {
       await signInWithGoogleForWeb(_context);
     } else {
@@ -47,24 +48,21 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
     }
 
     User? user = FirebaseAuth.instance.currentUser;
-    
+
+    // Firestore에서 유저 정보 조회
     bool isMember = await firestoreManager.getUserInfoByEmail(user!.email!);
 
     print("😍 이벤트1");
 
-    if(isMember)
-    {
+    if (isMember) {
       print("😍 이벤트2");
       Navigator.pushReplacementNamed(_context, '/main');
-
-    }
-    else{
+    } else {
       print("😍 이벤트3");
       Navigator.pushReplacementNamed(_context, '/profile');
-
     }
-
   }
+
 
   // 웹 테스트용 구글 로그인 함수
   Future<void> signInWithGoogleForWeb(BuildContext context) async {
@@ -121,6 +119,41 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
     print("😍 Signed in as ${userCredential.user?.displayName}");
   }
 
+  Future<void> signInWithEmailPassword({
+    required BuildContext context,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      final user = userCredential.user;
+      if (user != null) {
+        print("✅ 로그인 성공: ${user.email}");
+        // 로그인 성공 후 화면 이동 등 처리
+
+        bool isMember = await firestoreManager.getUserInfoByEmail(user!.email!);
+
+        print("😍 이벤트1");
+
+        if(isMember)
+        {
+          print("😍 이벤트2");
+          Navigator.pushReplacementNamed(context, '/main');
+
+        }
+        else{
+          print("😍 이벤트3");
+          Navigator.pushReplacementNamed(context, '/profile');
+
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      print("❌ 로그인 실패: ${e.code} - ${e.message}");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,6 +162,20 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            TextButton(
+              onPressed: () {
+                signInWithEmailPassword(
+                  context: context,
+                  email: testDummyEmail,
+                  password: testDummyPassword,
+                );
+              },
+              child: const Text(
+                "테스트 더미 로그인",
+                style: TextStyle(fontSize: 32),
+              ),
+            ),
+
             const Text(
               "Let's Get Started",
               style: TextStyle(
