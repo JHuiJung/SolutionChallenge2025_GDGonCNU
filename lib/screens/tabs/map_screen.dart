@@ -1,15 +1,17 @@
 // lib/screens/tabs/map_screen.dart
 import 'dart:async';
-import 'dart:io'; // File 사용 위해 추가
+import 'dart:io' if (dart.library.html) 'dart:typed_data'; // 조건부 import
+import 'package:flutter/foundation.dart' show Uint8List, kIsWeb; // kIsWeb 사용
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image_picker/image_picker.dart'; // 이미지 피커 임포트
+import 'package:image_picker/image_picker.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-// 프로젝트 구조에 맞게 모델 및 위젯 경로 확인 필요
+import '../../models/spot_detail_model.dart';
 import '../../models/tourist_spot_model.dart';
 import '../../widgets/tourist_spot_card.dart';
 import '../../models/spot_detail_model.dart'; // *** SpotDetailModel 임포트 추가
 import '../../firebase/firestoreManager.dart';
+import '../../services/api_service.dart';
 
 // --- 이미지 검색 상태를 나타내는 enum ---
 enum ImageSearchStatus { none, picking, searching, found, error }
@@ -166,7 +168,6 @@ class _MapScreenState extends State<MapScreen> {
     // _goToLocation(const LatLng(37.5665, 126.9780)); // 예시: 서울 시청
   }
 
-
   // 검색 처리 함수 (Placeholder)
   void _handleSearch(String query) {
     print('Search submitted: $query');
@@ -174,15 +175,13 @@ class _MapScreenState extends State<MapScreen> {
     // _goToLocation(const LatLng(37.5512, 126.9882)); // 예시: 남산타워
   }
 
-
-
-  // --- 이미지 검색 관련 함수 ---
+  // --- 이미지 검색 관련 함수 (ApiService.locatePhoto 연동) ---
   Future<void> _pickImageAndSearch(ImageSource source) async {
     if (!mounted) return;
     setState(() {
       _imageSearchStatus = ImageSearchStatus.picking;
-      _searchBarHintText = 'Selecting image...'; // 검색창 힌트 변경
-      _geminiSearchResult = null; // 이전 결과 초기화
+      _searchBarHintText = 'Selecting image...';
+      _geminiSearchResult = null;
       _pickedImageFile = null;
     });
 
@@ -193,14 +192,15 @@ class _MapScreenState extends State<MapScreen> {
         setState(() {
           _pickedImageFile = pickedFile;
           _imageSearchStatus = ImageSearchStatus.searching;
-          _searchBarHintText = 'Searching image...'; // 검색창 힌트 변경
+          _searchBarHintText = 'Searching image...';
         });
-        // --- Gemini API 호출 (시뮬레이션) ---
-        _callGeminiApi(pickedFile);
+        // --- ApiService.locatePhoto 호출 ---
+        // *** 수정된 부분: XFile 객체를 직접 전달 ***
+        _callLocatePhotoApi(pickedFile);
       } else {
         if (!mounted) return;
         setState(() {
-          _imageSearchStatus = ImageSearchStatus.none; // 이미지 선택 취소
+          _imageSearchStatus = ImageSearchStatus.none;
           _searchBarHintText = 'Search places or with picture...';
         });
       }
@@ -210,38 +210,41 @@ class _MapScreenState extends State<MapScreen> {
         setState(() {
           _imageSearchStatus = ImageSearchStatus.error;
           _searchBarHintText = 'Error picking image.';
+          _geminiSearchResult = 'Could not pick image: $e';
         });
       }
     }
   }
 
-  // Gemini API 호출 시뮬레이션 함수
-  Future<void> _callGeminiApi(XFile imageFile) async {
-    // TODO: 실제 Gemini API 연동 로직 구현
-    // 1. imageFile을 Gemini API가 요구하는 형식으로 변환 (예: base64, bytes)
-    // 2. Gemini API 호출
-    // 3. 응답 파싱하여 _geminiSearchResult에 저장
+  // ApiService.locatePhoto 호출 함수 (플랫폼 분기 처리)
+  Future<void> _callLocatePhotoApi(XFile imageXFile) async {
+    if (!mounted) return;
+    try {
+      String locationResult;
+      if (kIsWeb) {
+        // 웹 환경: 바이트 데이터와 파일명, MIME 타입 전달
+        final Uint8List imageBytes = await imageXFile.readAsBytes();
+        locationResult = await ApiService.locatePhoto(
+          fileBytes: imageBytes,
+          fileName: imageXFile.name, // XFile의 name 속성 사용
+          mimeType: imageXFile.mimeType, // XFile의 mimeType 속성 사용
+          filePath: '', // 웹에서는 filePath 불필요
+        );
+      } else {
+        // 모바일 환경: 파일 경로 전달
+        locationResult = await ApiService.locatePhoto(
+          filePath: imageXFile.path, // XFile의 path 속성 사용
+        );
+      }
 
-    // 시뮬레이션을 위해 2초 딜레이 후 더미 결과 반환
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (mounted) {
-      // 더미 결과 (실제로는 API 응답 사용)
-      final dummyResult = """This is Tokyo Tower, located in Minato City, Tokyo, Japan.
-Here are some popular attractions near Tokyo Tower:
-* Zojoji Temple: A historic Buddhist temple right next to Tokyo Tower, known for its connection to the Tokugawa shogunate.
-* Shiba Park: One of the oldest parks in Japan, offering green spaces and views of Tokyo Tower. Zojoji Temple is located within this park.
-* Tokyo Tower Observation Decks: Enjoy panoramic views of Tokyo from the Main Deck (150m) and the Top Deck (250m). On a clear day, you might even see Mount Fuji.
-* Foot Town: Located at the base of Tokyo Tower, this complex has various shops, restaurants, and attractions like the Tokyo Tower Aquarium.
-* Hamarikyu Gardens: A traditional Japanese garden with a teahouse, ponds, and seasonal flowers, offering a peaceful escape from the city bustle. You can take a water bus from here.
-* Mini Cruise in Tokyo Bay: Enjoy views of the Tokyo skyline, including Tokyo Tower and the Rainbow Bridge, from a different perspective.
-* Shiodome Miyazaki's Clock: A whimsical and large clock designed by Hayao Miyazaki of Studio Ghibli fame.""";
-
-      setState(() {
-        _geminiSearchResult = dummyResult;
-        _imageSearchStatus = ImageSearchStatus.found;
-        _searchBarHintText = 'Gemini found it!'; // 검색창 힌트 변경
-      });
+      if (mounted) {
+        setState(() { _geminiSearchResult = locationResult; _imageSearchStatus = ImageSearchStatus.found; _searchBarHintText = 'Location found!'; });
+      }
+    } catch (e) {
+      print("Locate photo API error: $e");
+      if (mounted) {
+        setState(() { _imageSearchStatus = ImageSearchStatus.error; _searchBarHintText = 'Error finding location.'; _geminiSearchResult = 'Failed to find location from image: $e'; });
+      }
     }
   }
 
@@ -256,8 +259,6 @@ Here are some popular attractions near Tokyo Tower:
     });
   }
   // --- 이미지 검색 관련 함수 끝 ---
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -535,12 +536,12 @@ Here are some popular attractions near Tokyo Tower:
   }
 
 
-  // --- 이미지 검색 UI 빌더 ---
+  // --- 이미지 검색 UI 빌더 (Gemini 결과 대신 API 결과 표시) ---
   Widget _buildImageSearchUI(BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
-    return Positioned.fill( // 전체 화면을 덮도록
+    return Positioned.fill(
       child: Container(
-        color: colorScheme.background, // 배경색
-        padding: EdgeInsets.only(top: kToolbarHeight + MediaQuery.of(context).padding.top + 12 + 50 + 12), // AppBar 및 검색창 높이만큼 패딩
+        color: colorScheme.background,
+        padding: EdgeInsets.only(top: kToolbarHeight + MediaQuery.of(context).padding.top + 12 + 50 + 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -553,16 +554,27 @@ Here are some popular attractions near Tokyo Tower:
                 style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.8)),
               ),
               const SizedBox(height: 20),
-              const CircularProgressIndicator(), // 로딩 인디케이터
+              const CircularProgressIndicator(),
             ],
+            // *** API 결과 표시 (Gemini -> Location) ***
             if (_imageSearchStatus == ImageSearchStatus.found && _geminiSearchResult != null) ...[
-              // Gemini 결과 표시
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    _geminiSearchResult!,
-                    style: textTheme.bodyLarge,
+                  child: Column( // 더 나은 가독성을 위해 Column 사용
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Text(
+                      //   'Identified Location:', // 제목 추가
+                      //   style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      // ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _geminiSearchResult!, // 이제 API의 위치 정보
+                        style: textTheme.bodyLarge,
+                      ),
+                      // TODO: 필요한 경우, 이 위치로 지도 이동 버튼 추가 가능
+                    ],
                   ),
                 ),
               ),
@@ -571,7 +583,7 @@ Here are some popular attractions near Tokyo Tower:
               Icon(Icons.error_outline, color: colorScheme.error, size: 40),
               const SizedBox(height: 16),
               Text(
-                'Failed to get information from the image.',
+                _geminiSearchResult ?? 'Failed to get information from the image.', // 에러 메시지 표시
                 style: textTheme.titleMedium?.copyWith(color: colorScheme.error),
                 textAlign: TextAlign.center,
               ),
