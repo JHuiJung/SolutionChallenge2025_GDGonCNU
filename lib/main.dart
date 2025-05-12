@@ -25,8 +25,8 @@ import 'screens/spot_detail_screen.dart'; // 관광지 상세 화면 임포트
 import 'screens/write/write_user_comment_screen.dart';
 import 'screens/write/write_spot_comment_screen.dart';
 import 'screens/edit_mypage_screen.dart'; // 프로필 수정 화면 임포트
-import 'screens/write/write_meetup_screen.dart'; // Meetup 게시글 작성 화면 임포트
-import 'screens/write/write_spot_screen.dart';
+import 'screens/write_meetup_screen.dart'; // Meetup 게시글 작성 화면 임포트
+import 'screens/write_spot_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
