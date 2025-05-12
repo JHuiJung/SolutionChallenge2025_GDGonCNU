@@ -19,7 +19,8 @@ class FirebaseTestScreen extends StatefulWidget {
 
 class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   String _status = 'Not authenticated';
-
+  String testDummyEmail = "test1@dummy.com";
+  String testDummyPassword = "password123";
 
 
   // ✅ 구글 로그인 함수
@@ -120,6 +121,41 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
     print("😍 Signed in as ${userCredential.user?.displayName}");
   }
 
+  Future<void> signInWithEmailPassword({
+    required BuildContext context,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      final user = userCredential.user;
+      if (user != null) {
+        print("✅ 로그인 성공: ${user.email}");
+        // 로그인 성공 후 화면 이동 등 처리
+
+        bool isMember = await firestoreManager.getUserInfoByEmail(user!.email!);
+
+        print("😍 이벤트1");
+
+        if(isMember)
+        {
+          print("😍 이벤트2");
+          Navigator.pushReplacementNamed(context, '/main');
+
+        }
+        else{
+          print("😍 이벤트3");
+          Navigator.pushReplacementNamed(context, '/profile');
+
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      print("❌ 로그인 실패: ${e.code} - ${e.message}");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,6 +164,20 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            TextButton(
+              onPressed: () {
+                signInWithEmailPassword(
+                  context: context,
+                  email: testDummyEmail,
+                  password: testDummyPassword,
+                );
+              },
+              child: const Text(
+                "테스트 더미 로그인",
+                style: TextStyle(fontSize: 32),
+              ),
+            ),
+
             const Text(
               "Let's Get Started",
               style: TextStyle(
