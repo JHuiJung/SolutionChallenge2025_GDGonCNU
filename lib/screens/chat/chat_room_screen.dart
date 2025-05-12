@@ -1,8 +1,11 @@
 // lib/screens/chat_room_screen.dart
 import 'package:flutter/material.dart';
+import 'package:naviya/firebase/firestoreManager.dart';
 import '../../models/chat_message_model.dart';
+import '../../models/chat_list_item_model.dart';
 import '../../widgets/message_bubble.dart';
 import 'dart:async'; // Timer 사용
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({super.key});
@@ -18,6 +21,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   String _chatPartnerName = 'Loading...'; // 채팅 상대방 이름
   String? _chatId; // 채팅방 ID
 
+  late ChatListItemModel chatListItemModel;
+  late ChatMessageInfoDB messageInfoDB;
   bool _isLoading = true;
 
   @override
@@ -35,7 +40,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         // Navigator.pop(context); // 또는 에러 메시지 표시
       }
     });
+
+
   }
+
 
   // 데이터 로딩 함수
   Future<void> _loadChatData(String chatId) async {
@@ -43,9 +51,33 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     // Simulate loading chat partner name and messages
     await Future.delayed(const Duration(milliseconds: 300));
 
+
+    //
+    ChatMessageInfoDB dummyDB = ChatMessageInfoDB(
+      chatId: 'none',
+      messages: [],
+    );
+
+    /*messageInfoDB = await getChatMessageInfo(chatId) ?? dummyDB;
+
+    if(messageInfoDB.chatId == 'none')
+      {
+        ChatMessageInfoDB newDB = ChatMessageInfoDB(
+          chatId: chatId,
+          messages: [],
+        );
+        await addChatMessageInfo(newDB);
+        messageInfoDB = newDB;
+      }*/
+
+
+    ChatListItemModel dummy = getDummyChatListItems()[0];
+    chatListItemModel = await getChat(_chatId ?? 'noneChatId') ?? dummy;
+
     // TODO: 실제로는 chatId를 기반으로 상대방 정보와 메시지 목록을 가져와야 함
     // 예시: 더미 데이터 사용
-    _chatPartnerName = _getChatPartnerName(chatId); // chatId 기반 이름 가져오기 (임시)
+    //_chatPartnerName = _getChatPartnerName(chatId); // chatId 기반 이름 가져오기 (임시)
+    _chatPartnerName = chatListItemModel.name; // chatId 기반 이름 가져오기 (임시)
     _messages = getDummyChatMessages(chatId);
 
     setState(() => _isLoading = false);
@@ -72,6 +104,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   // 메시지 전송 함수
+/*
   void _sendMessage() {
     final text = _textController.text.trim();
     if (text.isNotEmpty) {
@@ -99,6 +132,38 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       }
     }
   }
+*/
+
+  void _sendMessage() {
+    final text = _textController.text.trim();
+    if (text.isNotEmpty) {
+      final newMessage = ChatMessageModel(
+        id: 'msg_${DateTime.now().millisecondsSinceEpoch}', // 임시 고유 ID
+        text: text,
+        timestamp: DateTime.now(),
+        sender: MessageSender.me,
+        isRead: false, // 처음엔 안 읽음 상태
+      );
+
+      /*setState(() {
+        // 새 메시지를 리스트 맨 앞에 추가 (ListView가 reverse 상태이므로)
+        _messages.insert(0, newMessage);
+      });*/
+
+      _textController.clear(); // 입력 필드 비우기
+      _scrollToBottom(); // 메시지 보낸 후 맨 아래로 스크롤
+
+      /*// TODO: 실제로는 서버로 메시지 전송 로직 필요
+      // TODO: AI 번역 기능이 필요하면 여기서 처리 또는 서버에서 처리
+      // 예시: AI 튜터에게 보내면 잠시 후 답장 오는 시뮬레이션
+      if (_chatId == 'chat_ai_tutor') {
+        _simulateAiResponse(text);
+      }*/
+
+      addMessage(_chatId ??'noneChatId', newMessage);
+    }
+  }
+
 
   // AI 응답 시뮬레이션 (예시)
   void _simulateAiResponse(String userMessage) {
@@ -137,8 +202,23 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     }
   }
 
+  Stream<List<ChatMessageModel>> getMessagesRealtime(String chatId) {
+    return FirebaseFirestore.instance
+        .collection('chatMessages')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp') // 시간 순으로 정렬
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => ChatMessageModel.fromMap(doc.data()))
+          .toList();
+    });
+  }
+
+
   @override
-  Widget build(BuildContext context) {
+  /*Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -211,6 +291,95 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       ),
     );
   }
+*/
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new, color: colorScheme.onSurface),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          _chatPartnerName, // 로드된 상대방 이름 표시
+          style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          // 온라인 상태 표시기 (디자인 참고 - 녹색 점)
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: CircleAvatar(
+              radius: 12, // 크기 조절
+              backgroundColor: Colors.grey.shade300, // 기본 배경
+              child: CircleAvatar(
+                radius: 5, // 내부 점 크기
+                backgroundColor: Colors.greenAccent.shade400, // 온라인 상태 색상 (임시)
+              ),
+            ),
+          ),
+        ],
+        backgroundColor: colorScheme.surface, // AppBar 배경색
+        elevation: 1, // 약간의 그림자
+        centerTitle: false, // 제목 왼쪽 정렬
+      ),
+      body: Column(
+        children: [
+          // 메시지 목록 영역
+          Expanded(
+            child: StreamBuilder<List<ChatMessageModel>>(
+              stream: getMessagesRealtime(_chatId ?? ''), // 실시간 메시지 스트림
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center( // 메시지 없을 때 표시
+                    child: Text(
+                      'Start chatting!',
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                    ),
+                  );
+                }
+
+                final messages = snapshot.data!;
+
+                return GestureDetector( // 키보드 숨기기 위해 추가
+                  onTap: () => FocusScope.of(context).unfocus(),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    reverse: true, // 메시지가 아래부터 쌓이도록
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      bool isLastMessage = index == messages.length - 1;
+                      bool showRobot = isLastMessage && _chatId == 'chat_ai_tutor';
+
+                      return Column(
+                        children: [
+                          MessageBubble(message: messages[index]),
+                          if (showRobot) _buildAiRobotWidget(), // 로봇 위젯 추가
+                        ],
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+          // 입력 영역
+          _buildInputArea(context),
+        ],
+      ),
+    );
+  }
+
 
   // AI 로봇 위젯 빌더
   Widget _buildAiRobotWidget() {

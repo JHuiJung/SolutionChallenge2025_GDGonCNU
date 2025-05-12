@@ -62,6 +62,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     // TODO: 실제 서버에 참여 요청 보내는 로직 추가
     await Future.delayed(const Duration(milliseconds: 500)); // 서버 요청 시뮬레이션
 
+    // 메인 유저의 챗 정보에 해당 chatId 있는지 확인
+
+    List<String> userChats = mainUserInfo.chatIds;
+    bool isChatOn = false;
+
+
+    for (String chatId in userChats) {
+      if (chatId == _postDetail.meetupChatid) {
+        isChatOn = true;
+        break;
+      }
+    }
+
+    if(!isChatOn)
+      {
+        mainUserInfo.chatIds.add(_postDetail.meetupChatid);
+        updateUser();
+      }
+
+
+    // 없으면 추가 후 정보 업데이트
+
+
     if (mounted) {
       // 성공적으로 처리되었다고 가정
       _showSuccessDialog(); // 성공 팝업 표시

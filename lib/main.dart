@@ -37,6 +37,7 @@ void main() async {
   );
 
   // 테스트용 끝나고 지우기
+  firestoreManager.SetUpFireManager();
   //firestoreManager.getUserInfoByEmail("test1@dummy.com");
   //await testNetworkConnectivity();
   //await createDummyAccounts();

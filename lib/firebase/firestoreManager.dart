@@ -7,6 +7,7 @@ import 'imageManager.dart';
 import '../models/meetup_post.dart';
 import '../models/spot_detail_model.dart';
 import '../models/chat_list_item_model.dart';
+import '../models/chat_message_model.dart';
 
 late UserState mainUserInfo;
 
@@ -623,3 +624,34 @@ Future<ChatListItemModel?> getChat(String chatId) async {
 }
 
 
+Future<void> addMessage(String chatId, ChatMessageModel message) async {
+  try {
+    await FirebaseFirestore.instance
+        .collection('chatMessages')
+        .doc(chatId)
+        .collection('messages')
+        .doc(message.id) // 메시지 ID로 문서 추가
+        .set(message.toMap());
+  } catch (e) {
+    print('Error adding message: $e');
+  }
+}
+
+
+Future<List<ChatMessageModel>> getMessages(String chatId) async {
+  try {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('chatMessages')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp') // 시간 순으로 정렬
+        .get();
+
+    return snapshot.docs
+        .map((doc) => ChatMessageModel.fromMap(doc.data()))
+        .toList();
+  } catch (e) {
+    print('Error getting messages: $e');
+    return [];
+  }
+}

@@ -4,11 +4,11 @@ enum MessageSender { me, other, ai } // 메시지 발신자 타입
 class ChatMessageModel {
   final String id;
   final String text;
-  final String? originalText; // 번역된 경우 원문
+  final String? originalText;
   final DateTime timestamp;
   final MessageSender sender;
-  final bool isRead; // 내가 보낸 메시지의 읽음 상태
-  final bool isTranslatedByAI; // AI 번역 여부
+  final bool isRead;
+  final bool isTranslatedByAI;
 
   ChatMessageModel({
     required this.id,
@@ -19,6 +19,56 @@ class ChatMessageModel {
     this.isRead = false,
     this.isTranslatedByAI = false,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'text': text,
+      'originalText': originalText,
+      'timestamp': timestamp.toIso8601String(),
+      'sender': sender.name,
+      'isRead': isRead,
+      'isTranslatedByAI': isTranslatedByAI,
+    };
+  }
+
+  factory ChatMessageModel.fromMap(Map<String, dynamic> map) {
+    return ChatMessageModel(
+      id: map['id'],
+      text: map['text'],
+      originalText: map['originalText'],
+      timestamp: DateTime.parse(map['timestamp']),
+      sender: MessageSender.values.firstWhere((e) => e.name == map['sender']),
+      isRead: map['isRead'] ?? false,
+      isTranslatedByAI: map['isTranslatedByAI'] ?? false,
+    );
+  }
+}
+
+class ChatMessageInfoDB {
+  final String chatId;
+  final List<ChatMessageModel> messages;
+
+  ChatMessageInfoDB({
+    required this.chatId,
+    required this.messages,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'chatId': chatId,
+      'messages': messages.map((m) => m.toMap()).toList(),
+    };
+  }
+
+  factory ChatMessageInfoDB.fromMap(Map<String, dynamic> map) {
+    return ChatMessageInfoDB(
+      chatId: map['chatId'],
+      messages: (map['messages'] as List)
+          .map((m) => ChatMessageModel.fromMap(m))
+          .toList(),
+    );
+  }
 }
 
 
