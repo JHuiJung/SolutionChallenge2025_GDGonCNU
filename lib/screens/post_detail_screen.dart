@@ -164,15 +164,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     const SizedBox(height: 16),
                     _buildAuthorSection(context, textTheme),
                     const SizedBox(height: 24),
-                    Text(
-                      _postDetail.description,
-                      style: textTheme.bodyLarge?.copyWith(height: 1.6),
-                    ),
-                    const SizedBox(height: 24),
                     _buildInfoRow(context, Icons.location_on_outlined, _postDetail.eventLocation),
                     const SizedBox(height: 12),
                     _buildInfoRow(context, Icons.access_time_outlined, _postDetail.eventDateTimeString),
                     // 하단 버튼 공간 확보 (버튼 높이 + 패딩 고려)
+                    const SizedBox(height: 24),
+                    Text(
+                      _postDetail.description,
+                      style: textTheme.bodyLarge?.copyWith(height: 1.6),
+                    ),
+
 
                     const SizedBox(height: 100),
                   ]),

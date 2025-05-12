@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
       ),
 
       // 앱 시작 시 첫 화면 설정
-      initialRoute: '/login',
+      initialRoute: '/main',
 
       // 네비게이션 라우트 정의
       routes: {
