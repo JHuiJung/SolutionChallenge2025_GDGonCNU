@@ -1,5 +1,8 @@
 import google.generativeai as genai
 
+
+genai.configure(api_key="")
+
 # 롤플레잉 주문 봇: 해외 식당 주문 상황 역할극 진행
 roleplay_model = genai.GenerativeModel(
     "gemini-2.0-flash",
@@ -35,3 +38,13 @@ def simulate_order(user_text: str, history: list[str] | None = None) -> tuple[st
     history.append(f"점원: {reply}")
     return reply, history
 
+if __name__ == "__main__":
+    print("🍽️ 해외 식당 주문 역할극을 시작합니다. 그만하려면 'exit' 또는 'quit' 입력하세요.\n")
+    
+    while True:
+        user_input = input("사용자: ").strip()
+        if user_input.lower() in ("exit", "quit"):
+            print("종료합니다. 안녕히 가세요! 👋")
+            break
+        reply, history = simulate_order(user_input)
+        print(f"점원: {reply}\n")

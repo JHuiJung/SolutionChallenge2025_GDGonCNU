@@ -2,7 +2,7 @@ import google.generativeai as genai
 from firebase_utils import db
 
 # 단독 실행용 API 키 설정 (main.py 에서 이미 configure 했다면 생략 가능)
-genai.configure(api_key="AIzaSyCqb3HHXZ3qgtPXsRA2tx2FYKQAZZ-oeHM")
+genai.configure(api_key="")
 
 # AI 코멘트 모델 인스턴스
 comment_model = genai.GenerativeModel(
@@ -40,13 +40,13 @@ def generate_comment(event_id: str, user_id: str) -> str:
     # 이벤트 필드 매핑
     title = event.get("title", "")
     description = event.get("description", "")
-    location = event.get("eventLocation") or event.get("authorLocation") or "알 수 없는 장소"
+    location = event.get("eventLocation","") 
     date_time = event.get("eventDateTimeString", "")
     categories = event.get("categories", [])
     categories_str = ", ".join(categories) if isinstance(categories, list) else str(categories)
 
     # 사용자 필드 매핑
-    user_name = user.get("languages", {}).get("name") or user.get("name") or "사용자"
+    user_name = user.get("name") or "사용자"
     gender = user.get("gender", "")
     # 선호 여행 목적
     travel_purpose = user.get("preferTravelPurpose", [])
