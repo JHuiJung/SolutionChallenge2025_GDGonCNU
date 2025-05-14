@@ -269,6 +269,7 @@ class _MapScreenState extends State<MapScreen> {
       body: Stack(
         children: [
           // 1. Google Map 배경 (이미지 검색 UI가 활성화되지 않았을 때만 보이도록)
+          /*
           if (_imageSearchStatus == ImageSearchStatus.none)
             GoogleMap(
               mapType: MapType.normal,
@@ -284,7 +285,7 @@ class _MapScreenState extends State<MapScreen> {
               zoomControlsEnabled: false,
               padding: EdgeInsets.only(bottom: _panelMinHeight - 30),
             ),
-
+*/
           // 2. 슬라이딩 패널 (이미지 검색 UI가 활성화되지 않았을 때만 보이도록)
           if (_imageSearchStatus == ImageSearchStatus.none)
             SlidingUpPanel(

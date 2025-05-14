@@ -9,6 +9,7 @@ class ChatListItemModel {
   final String lastMessage; // 마지막 메시지
   final TimeOfDay timestamp; // 마지막 메시지 시간
   final bool isRead; // 읽음 여부 (디자인엔 없지만 보통 필요)
+  List<String>? memberIds = [];
 
   ChatListItemModel({
     required this.chatId,
@@ -18,7 +19,11 @@ class ChatListItemModel {
     required this.lastMessage,
     required this.timestamp,
     this.isRead = true,
-  });
+    List<String>? memberIds,
+  }) : memberIds = memberIds ?? [] {
+    // 생성자 본문에서 userId를 리스트에 추가
+    this.memberIds?.add(this.userId ?? 'noneEmail');
+  }
 }
 
 // --- 임시 더미 데이터 생성 함수 ---

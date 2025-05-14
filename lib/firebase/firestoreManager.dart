@@ -560,6 +560,7 @@ Future<void> addChat(ChatListItemModel chat) async {
         'minute': chat.timestamp.minute,
       },
       'isRead': chat.isRead,
+      'memberIds': chat.memberIds,
       'createdAt': FieldValue.serverTimestamp(),
     });
 
@@ -616,6 +617,7 @@ Future<ChatListItemModel?> getChat(String chatId) async {
       )
           : TimeOfDay(hour: 0, minute: 0), // 기본값 처리
       isRead: data['isRead'] as bool? ?? true,
+      memberIds: List<String>.from(data['memberIds'] ?? []),
     );
   } catch (e) {
     print('Error getting chat: $e');

@@ -33,14 +33,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
-  chaquopy:
-    dependency: "direct main"
-    description:
-      name: chaquopy
-      sha256: "105115a6e7d6216ea6fa60379f49c63c20924cc5240b223e2bdbf9830a7e86da"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.20"
   characters:
     dependency: transitive
     description:
@@ -462,7 +454,7 @@ packages:
     source: hosted
     version: "0.15.6"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       sha256: "2c11f3f94c687ee9bad77c171151672986360b2b001d109814ee7140b2cf261b"
