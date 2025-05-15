@@ -33,6 +33,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (ModalRoute.of(context)?.settings.arguments != null) {
         _postId = ModalRoute.of(context)?.settings.arguments as String;
+        print("🚑 (포스트 디테일) 포스트 아이디 : $_postId");
         _loadPostDetailsAndAiComment(_postId!); // AI 코멘트 로딩 함수 호출
       } else {
         if (mounted) {

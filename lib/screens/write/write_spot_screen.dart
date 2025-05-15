@@ -7,8 +7,8 @@ import '../../firebase/firestoreManager.dart';
 import '../../firebase/imageManager.dart';
 import '../../models/spot_detail_model.dart';
 import '../../firebase/imageManager.dart';
-import '../models/spot_detail_model.dart';
-import '../models/comment_model.dart'; // CommentModel 임포트
+import '../../models/spot_detail_model.dart';
+import '../../models/comment_model.dart'; // CommentModel 임포트
 import '../../firebase/firestoreManager.dart';
 
 class WriteSpotScreen extends StatefulWidget {
