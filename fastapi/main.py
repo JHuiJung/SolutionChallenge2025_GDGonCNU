@@ -12,6 +12,9 @@ from roleplaying_order import simulate_order
 from search_locate import ask_photo_location
 from meetup_comments import generate_comment
 from culture import get_cultural_differences
+from freetalking import simulate_freetalking
+from travel_phrases import generate_scenario_phrases
+
 
 app = FastAPI()
 
@@ -76,29 +79,25 @@ async def roleplay_endpoint(req: RoleplayRequest):
 
 @app.post("/locate")
 async def locate_endpoint(file: UploadFile = File(...)):
-    """
-    클라이언트가 올린 이미지를 임시 저장한 뒤,
-    ask_photo_location()에 파일 경로를 넘겨 결과를 반환합니다.
-    """
-    # 1) 확장자 보존해서 임시 파일명 생성
+    # 임시 파일로 저장
     ext = os.path.splitext(file.filename)[1]
     tmp_fname = f"/tmp/{uuid.uuid4()}{ext}"
-
     try:
-        # 2) 업로드된 이미지 쓰기
         contents = await file.read()
         with open(tmp_fname, "wb") as f:
             f.write(contents)
 
-        # 3) AI 호출
-        location = ask_photo_location(tmp_fname)
-        return {"location": location}
+        # unpack 순서 바뀜: (location_only, full_text)
+        location_only, full_text = ask_photo_location(tmp_fname)
+
+        return {
+            "location": location_only,
+            "recommendation": full_text
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
     finally:
-        # 4) 임시 파일 삭제
         if os.path.exists(tmp_fname):
             os.remove(tmp_fname)
             
@@ -137,3 +136,45 @@ async def culture(home: str, dest: str):
         return {"description": description}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"문화 차이 안내 실패: {e}")
+    
+    
+    
+    
+class FreeTalkRequest(BaseModel):
+    text: str = Field(..., description="사용자의 최신 발화")
+    history: Optional[List[str]] = Field(
+        None,
+        description="이전 대화 기록 (['User: ...', 'Hatchy: ...', ...])"
+    )
+
+class FreeTalkResponse(BaseModel):
+    message: str
+    history: List[str]
+
+@app.post("/free-talk", response_model=FreeTalkResponse)
+async def free_talk_endpoint(req: FreeTalkRequest):
+    try:
+        reply, updated_history = simulate_freetalking(req.text, req.history)
+        return {"message": reply, "history": updated_history}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"프리토킹 오류 발생: {e}")
+    
+    
+
+class ScenarioPhrasesRequest(BaseModel):
+    request: str = Field(..., description="예: '한국어로 공항에서 짐 부칠 때 쓰는 표현'")
+
+class ScenarioPhrasesResponse(BaseModel):
+    phrases: str = Field(..., description="세 줄 형식으로 구성된 필수 여행 회화문 블록")
+
+@app.post("/phrases", response_model=ScenarioPhrasesResponse)
+async def scenario_phrases_endpoint(req: ScenarioPhrasesRequest):
+    """
+    사용자의 한 문장 요청(req.request)에 맞춰
+    5개의 필수 여행 회화문을 세 줄(원어·발음·번역) 형식으로 반환합니다.
+    """
+    try:
+        text_block = generate_scenario_phrases(req.request)
+        return {"phrases": text_block}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"회화문 생성 오류: {e}")
