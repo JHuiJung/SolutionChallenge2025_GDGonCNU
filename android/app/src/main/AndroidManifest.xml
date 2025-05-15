@@ -13,7 +13,7 @@
 
         <!-- 여기에 Google Maps API 키를 추가합니다. -->
         <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAYs4Eybp4wveIqW6jH0kVhzyDp8VibPNU"/>
+            android:value=""/>
 
         <activity
             android:name=".MainActivity"

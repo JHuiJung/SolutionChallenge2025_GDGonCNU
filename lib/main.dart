@@ -15,7 +15,6 @@ import 'firebase/firestoreManager.dart' as firestoreManager;
 
 // import 'screens/create_post_screen.dart'; (삭제함)
 import 'screens/splash_screen.dart'; // *** 스플래시 스크린 임포트 ***
-import 'screens/login_screen.dart';
 import 'screens/preference_selection_screen.dart';
 import 'screens/profile_registration_screen.dart';
 import 'screens/main_screen.dart';

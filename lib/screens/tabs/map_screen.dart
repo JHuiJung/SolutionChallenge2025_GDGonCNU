@@ -31,6 +31,7 @@ class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _mapController;
   final PanelController _panelController = PanelController();
   final TextEditingController _searchController = TextEditingController();
+  List<SpotDetailModel> _allSpotPosts = []; // 모든 스팟 게시글 원본 저장
 
   late UserState userinfo;
 
@@ -42,7 +43,7 @@ class _MapScreenState extends State<MapScreen> {
 
 
   // 지도에 표시할 마커 (예시)
-  final Set<Marker> _markers = {
+  late Set<Marker> _markers = {
     const Marker(
       markerId: MarkerId('marker_1'),
       position: LatLng(37.5700, 126.9790),
@@ -70,28 +71,26 @@ class _MapScreenState extends State<MapScreen> {
   final double _buttonMarginAbovePanel = 16.0;
 
   get writeButtonColor => null;
-
   get writeIconColor => null; // 버튼과 패널 상단 사이의 여백
 
 
-  // --- 이미지 검색 관련 상태 변수 ---
+  // --- 이미지 검색 관련 상태 변수 수정 ---
   ImageSearchStatus _imageSearchStatus = ImageSearchStatus.none;
-  XFile? _pickedImageFile; // 사용자가 선택/촬영한 이미지 파일
-  String? _geminiSearchResult; // Gemini 검색 결과 텍스트
-  String _searchBarHintText = 'Search places or with photo...'; // 검색창 기본 힌트
+  XFile? _pickedImageFile;
+  String? _imageSearchFullText; // API의 'recommendation' (본문 내용)
+  String? _imageSearchLocationOnly; // API의 'location' (지도 이동 및 필터링용)
+  String _searchBarHintText = 'Search places or with photo...';
 
   final ImagePicker _picker = ImagePicker();
-
 
   @override
   void initState() {
     super.initState();
-    // 초기 버튼 위치 설정 (패널 최소 높이 기준)
-    // initState에서는 MediaQuery 사용이 안전하지 않을 수 있으므로,
-    // 초기값은 고정값으로 설정하고, 빌드 후 또는 onPanelSlide에서 업데이트
-    _buttonBottomOffset = _panelMinHeight + _buttonMarginAbovePanel;
+    // *** userinfo를 initState에서 바로 초기화 ***
+    userinfo = mainUserInfo; // mainUserInfo가 사용 가능하다고 가정
 
-    _loadTouristSpots();
+    _buttonBottomOffset = _panelMinHeight + _buttonMarginAbovePanel;
+    _loadAllSpotPosts(); // 이제 userinfo가 초기화된 후 호출됨
   }
 
   @override
@@ -99,6 +98,145 @@ class _MapScreenState extends State<MapScreen> {
     // _mapController?.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  // --- 모든 스팟 게시글을 로드하는 함수 (초기 로드 및 필터링의 원본 데이터로 사용) ---
+  Future<void> _loadAllSpotPosts() async {
+    if (!mounted) return;
+    setState(() => _isLoadingSpots = true); // 전체 로딩 상태
+    // userinfo = mainUserInfo; // 필요시 UserState 초기화
+
+    // 실제 DB 또는 API에서 모든 SpotDetailModel 데이터를 가져옵니다.
+    // 여기서는 Firestore의 getAllSpotPost()를 사용한다고 가정합니다.
+    _allSpotPosts = await getAllSpotPost(); // 모든 스팟 게시글 가져오기
+
+    // 초기에는 필터링 없이 모든 스팟을 TouristSpotModel로 변환하여 표시
+    _filterAndDisplayTouristSpots(null); // filterLocation을 null로 전달
+
+    if (!mounted) return;
+    setState(() => _isLoadingSpots = false);
+  }
+
+  // --- 특정 위치 또는 키워드로 관광지 목록을 필터링하고 표시하는 함수 ---
+  void _filterAndDisplayTouristSpots(String? filterKeyword) {
+    if (!mounted) return;
+    setState(() => _isLoadingSpots = true); // 필터링 중 로딩 표시
+
+    List<SpotDetailModel> filteredSpotPosts;
+
+    if (filterKeyword != null && filterKeyword.isNotEmpty) {
+      // filterKeyword를 사용하여 _allSpotPosts를 필터링합니다.
+      // 여기서는 장소 이름(name) 또는 위치(location)에 키워드가 포함되는지 확인합니다.
+      // 더 정교한 필터링 (예: 설명, 카테고리 등)도 추가할 수 있습니다.
+      filteredSpotPosts = _allSpotPosts.where((spotPost) {
+        final keywordLower = filterKeyword.toLowerCase();
+        return spotPost.name.toLowerCase().contains(keywordLower) ||
+            spotPost.location.toLowerCase().contains(keywordLower);
+      }).toList();
+    } else {
+      // 필터 키워드가 없으면 모든 스팟 게시글을 사용합니다.
+      filteredSpotPosts = List.from(_allSpotPosts);
+    }
+
+    // 필터링된 SpotDetailModel 리스트를 TouristSpotModel 리스트로 변환합니다.
+    _touristSpots = getTouristSpotsBySpotPostInfo(filteredSpotPosts);
+
+    if (mounted) {
+      setState(() => _isLoadingSpots = false);
+    }
+  }
+
+
+  // --- 검색 처리 함수 (지도 이동 및 스팟 필터링) ---
+  Future<void> _handleSearch(String query) async {
+    if (query.isEmpty) return;
+    print('Search submitted: $query');
+    FocusScope.of(context).unfocus();
+
+    try {
+      List<Location> locations = await locationFromAddress(query);
+
+      if (locations.isNotEmpty) {
+        final Location firstLocation = locations.first;
+        final LatLng searchedPosition = LatLng(firstLocation.latitude, firstLocation.longitude);
+        print('Found location: $searchedPosition');
+        _goToLocation(searchedPosition, zoom: 14.0); // 지도 이동
+
+        if (mounted) {
+          setState(() {
+            _markers.clear();
+            _markers.add(
+              Marker(markerId: MarkerId(query), position: searchedPosition, infoWindow: InfoWindow(title: query)),
+            );
+          });
+        }
+        // *** 검색된 쿼리(장소 이름)로 관광지 목록 필터링 ***
+        _filterAndDisplayTouristSpots(query);
+
+        // 슬라이딩 패널 열기 (선택 사항)
+        if (_panelController.isAttached && !_panelController.isPanelOpen) {
+          _panelController.open();
+        }
+
+      } else {
+        print('No location found for: $query');
+        if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Location not found for "$query"')));
+        // 위치를 찾지 못했을 경우, 키워드로만 스팟 필터링 시도
+        _filterAndDisplayTouristSpots(query);
+      }
+    } catch (e) {
+      print('Error during geocoding for "$query": $e');
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error finding location: ${e.toString()}')));
+      // Geocoding 에러 발생 시에도 키워드로 스팟 필터링 시도
+      _filterAndDisplayTouristSpots(query);
+    }
+  }
+
+
+  // --- 이미지 검색 결과에서 장소로 이동 및 스팟 표시 함수 수정 ---
+  Future<void> _goToIdentifiedLocationAndShowSpots() async {
+    if (_imageSearchLocationOnly == null || _imageSearchLocationOnly!.isEmpty) {
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location information is not available.')));
+      return;
+    }
+
+    final String placeQuery = _imageSearchLocationOnly!;
+    print('Attempting to geocode and move to from image: $placeQuery');
+
+    try {
+      List<Location> locations = await locationFromAddress(placeQuery);
+      if (locations.isNotEmpty) {
+        final Location firstLocation = locations.first;
+        final LatLng targetPosition = LatLng(firstLocation.latitude, firstLocation.longitude);
+
+        _closeImageSearchUI();
+        _goToLocation(targetPosition, zoom: 14.0);
+
+        if(mounted) {
+          setState(() {
+            _markers = {
+              Marker(markerId: MarkerId(placeQuery), position: targetPosition, infoWindow: InfoWindow(title: placeQuery))
+            };
+          });
+        }
+        // *** 이미지 검색으로 찾은 위치 키워드로 스팟 필터링 ***
+        _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
+
+        if (_panelController.isAttached && !_panelController.isPanelOpen) {
+          _panelController.open();
+        }
+      } else {
+        print('Could not geocode location from AI result: $placeQuery');
+        if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not find map location for "$placeQuery" from AI result.')));
+        // Geocoding 실패 시에도 AI가 알려준 위치 키워드로 스팟 필터링 시도
+        _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
+      }
+    } catch (e) {
+      print('Error in _goToIdentifiedLocationAndShowSpots: $e');
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error processing identified location: ${e.toString()}')));
+      // 에러 발생 시에도 AI가 알려준 위치 키워드로 스팟 필터링 시도
+      _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
+    }
   }
 
   // --- 글쓰기 화면 호출 및 결과 처리 함수 수정 ---
@@ -136,7 +274,7 @@ class _MapScreenState extends State<MapScreen> {
   // --- 함수 수정 끝 ---
 
   // 관광지 데이터 로드 함수 (예시)
-  Future<void> _loadTouristSpots() async {
+  Future<void> _loadTouristSpots({String? filterLocation}) async {
     userinfo = mainUserInfo;
 
     // setState 호출 전에 위젯이 마운트되었는지 확인 (선택 사항이지만 안전함)
@@ -185,79 +323,15 @@ class _MapScreenState extends State<MapScreen> {
   //   // _goToLocation(const LatLng(37.5512, 126.9882)); // 예시: 남산타워
   // }
 
-  Future<void> _handleSearch(String query) async {
-    if (query.isEmpty) return;
-    print('Search submitted: $query');
-    FocusScope.of(context).unfocus();
 
-    try {
-      // --- 1. locationFromAddress 호출 결과 확인 ---
-      List<Location> locations = await locationFromAddress(
-          query); // 여기서 예외가 발생하거나 빈 리스트 반환 가능성
 
-      // --- 2. locations 리스트가 null이 아니고 비어있지 않은지 확인 ---
-      if (locations.isNotEmpty) { // locations가 null일 가능성은 낮지만, 비어있을 수 있음
-        final Location firstLocation = locations
-            .first; // 리스트가 비어있으면 여기서 오류 발생 가능 (아래 null 체크로 방지)
-
-        // --- 3. firstLocation 객체 및 내부 속성 null 체크 ---
-        //    locationFromAddress가 Location 객체를 반환하지만,
-        //    혹시 모를 내부 오류로 인해 latitude/longitude가 null일 가능성 대비
-        if (firstLocation.latitude != null && firstLocation.longitude != null) {
-          final LatLng searchedPosition = LatLng(
-              firstLocation.latitude, firstLocation.longitude);
-          print('Found location: $searchedPosition');
-          _goToLocation(searchedPosition, zoom: 14.0);
-
-          if (mounted) {
-            setState(() {
-              _markers.clear();
-              _markers.add(
-                Marker(
-                  markerId: MarkerId(query),
-                  position: searchedPosition,
-                  infoWindow: InfoWindow(title: query),
-                ),
-              );
-            });
-          }
-        } else {
-          // firstLocation.latitude 또는 longitude가 null인 경우
-          print('Geocoding result for "$query" has null latitude/longitude.');
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text('Could not get coordinates for "$query".')),
-            );
-          }
-        }
-      } else {
-        // locations 리스트가 비어있는 경우
-        print('No location found for: $query');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Location not found for "$query"')),
-          );
-        }
-      }
-    } catch (e) {
-      // locationFromAddress 함수 호출 자체에서 예외가 발생한 경우
-      print('Error during geocoding for "$query": $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error finding location: ${e.toString()}')),
-        );
-      }
-    }
-  }
-
-  // --- 이미지 검색 관련 함수 (ApiService.locatePhoto 연동) ---
   Future<void> _pickImageAndSearch(ImageSource source) async {
     if (!mounted) return;
     setState(() {
       _imageSearchStatus = ImageSearchStatus.picking;
       _searchBarHintText = 'Selecting image...';
-      _geminiSearchResult = null;
+      _imageSearchFullText = null;
+      _imageSearchLocationOnly = null;
       _pickedImageFile = null;
     });
 
@@ -270,52 +344,35 @@ class _MapScreenState extends State<MapScreen> {
           _imageSearchStatus = ImageSearchStatus.searching;
           _searchBarHintText = 'Searching image...';
         });
-        // --- ApiService.locatePhoto 호출 ---
-        // *** 수정된 부분: XFile 객체를 직접 전달 ***
         _callLocatePhotoApi(pickedFile);
       } else {
-        if (!mounted) return;
-        setState(() {
-          _imageSearchStatus = ImageSearchStatus.none;
-          _searchBarHintText = 'Search places or with picture...';
-        });
+        if (!mounted) setState(() { _imageSearchStatus = ImageSearchStatus.none; _searchBarHintText = 'Search places or with photo...'; });
       }
     } catch (e) {
       print("Image picker error: $e");
-      if (mounted) {
-        setState(() {
-          _imageSearchStatus = ImageSearchStatus.error;
-          _searchBarHintText = 'Error picking image.';
-          _geminiSearchResult = 'Could not pick image: $e';
-        });
-      }
+      if (mounted) setState(() { _imageSearchStatus = ImageSearchStatus.error; _searchBarHintText = 'Error picking image.'; _imageSearchFullText = 'Could not pick image: $e'; });
     }
   }
 
-  // ApiService.locatePhoto 호출 함수 (플랫폼 분기 처리)
+  // ApiService.locatePhoto 호출 함수 수정
   Future<void> _callLocatePhotoApi(XFile imageXFile) async {
     if (!mounted) return;
     try {
-      String locationResult;
+      Map<String, String> locationData; // *** 반환 타입 Map으로 변경 ***
       if (kIsWeb) {
-        // 웹 환경: 바이트 데이터와 파일명, MIME 타입 전달
         final Uint8List imageBytes = await imageXFile.readAsBytes();
-        locationResult = await ApiService.locatePhoto(
-          fileBytes: imageBytes,
-          fileName: imageXFile.name, // XFile의 name 속성 사용
-          mimeType: imageXFile.mimeType, // XFile의 mimeType 속성 사용
-          filePath: '', // 웹에서는 filePath 불필요
+        locationData = await ApiService.locatePhoto(
+          fileBytes: imageBytes, fileName: imageXFile.name, mimeType: imageXFile.mimeType, filePath: '',
         );
       } else {
-        // 모바일 환경: 파일 경로 전달
-        locationResult = await ApiService.locatePhoto(
-          filePath: imageXFile.path, // XFile의 path 속성 사용
-        );
+        locationData = await ApiService.locatePhoto(filePath: imageXFile.path);
       }
 
       if (mounted) {
         setState(() {
-          _geminiSearchResult = locationResult;
+          // *** API 응답에 맞게 상태 변수 할당 ***
+          _imageSearchFullText = locationData['full_text'];
+          _imageSearchLocationOnly = locationData['location_only'];
           _imageSearchStatus = ImageSearchStatus.found;
           _searchBarHintText = 'Location found!';
         });
@@ -326,101 +383,25 @@ class _MapScreenState extends State<MapScreen> {
         setState(() {
           _imageSearchStatus = ImageSearchStatus.error;
           _searchBarHintText = 'Error finding location.';
-          _geminiSearchResult = 'Failed to find location from image: $e';
+          // 에러 시 두 변수 모두에 에러 메시지 할당 또는 특정 메시지 할당
+          _imageSearchFullText = 'Failed to find location from image: $e';
+          _imageSearchLocationOnly = null; // 위치 정보는 없으므로 null 처리
         });
       }
     }
   }
 
-  // 이미지 검색 UI 닫기 (결과 화면에서 뒤로가기 등)
   void _closeImageSearchUI() {
     if (!mounted) return;
     setState(() {
       _imageSearchStatus = ImageSearchStatus.none;
-      _searchBarHintText = 'Search places or with picture...';
-      _geminiSearchResult = null;
+      _searchBarHintText = 'Search places or with photo...';
+      _imageSearchFullText = null;
+      _imageSearchLocationOnly = null;
       _pickedImageFile = null;
+      _searchController.clear(); // 검색창도 비우기
     });
   }
-
-  // --- 이미지 검색 관련 함수 끝 ---
-
-
-  // --- 이미지 검색 결과에서 장소로 이동 및 스팟 표시 함수 ---
-  Future<void> _goToIdentifiedLocationAndShowSpots() async {
-    if (_geminiSearchResult == null || _geminiSearchResult!.isEmpty) return;
-
-    // AI 결과 텍스트에서 장소 이름만 추출 시도 (단순화된 방식)
-    // 실제로는 더 정교한 파싱 또는 API 응답 구조 활용 필요
-    String placeQuery = _geminiSearchResult!.split('\n').firstWhere(
-            (line) => !line.startsWith('*') && line.isNotEmpty,
-        // 첫번째 비어있지 않은 일반 텍스트 라인
-        orElse: () => _geminiSearchResult! // 못찾으면 전체 텍스트 사용
-    ).trim();
-    // "This is " 같은 문구 제거 시도
-    if (placeQuery.toLowerCase().startsWith("this is ")) {
-      placeQuery = placeQuery
-          .substring(8)
-          .split(',')
-          .first
-          .trim();
-    } else {
-      placeQuery = placeQuery
-          .split(',')
-          .first
-          .trim(); // 첫번째 콤마 앞부분만 사용
-    }
-
-
-    print('Attempting to geocode and move to: $placeQuery');
-
-    try {
-      List<Location> locations = await locationFromAddress(placeQuery);
-      if (locations.isNotEmpty) {
-        final Location firstLocation = locations.first;
-        final LatLng targetPosition = LatLng(
-            firstLocation.latitude, firstLocation.longitude);
-
-        // 1. 이미지 검색 UI 닫기
-        _closeImageSearchUI(); // UI 상태 변경 및 _geminiSearchResult 초기화
-
-        // 2. 지도를 해당 위치로 이동
-        _goToLocation(targetPosition, zoom: 14.0);
-
-        // 3. 해당 위치에 마커 추가 (선택 사항)
-        // if(mounted) {
-        //   setState(() {
-        //     _markers = { // 기존 마커 지우고 새 마커만 표시
-        //       Marker(
-        //         markerId: MarkerId(placeQuery),
-        //         position: targetPosition,
-        //         infoWindow: InfoWindow(title: placeQuery),
-        //       )
-        //     };
-        //   });
-        // }
-
-        // 4. 해당 지역의 Tourist Spots 로드 (시뮬레이션)
-        // 실제로는 이 placeQuery 또는 targetPosition을 기반으로 API 호출
-        // _loadTouristSpots(filterLocation: placeQuery);
-
-        // 5. 슬라이딩 패널 열기 (선택 사항)
-        if (_panelController.isAttached && !_panelController.isPanelOpen) {
-          _panelController.open();
-        }
-      } else {
-        print('Could not geocode location: $placeQuery');
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Could not find map location for "$placeQuery"')));
-      }
-    } catch (e) {
-      print('Error in _goToIdentifiedLocationAndShowSpots: $e');
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Error processing location: ${e.toString()}')));
-    }
-  }
-
-  // --- 함수 끝 ---
 
 
   @override
@@ -724,7 +705,7 @@ class _MapScreenState extends State<MapScreen> {
             elevation: 3,
             child: Icon(Icons.my_location, color: iconColor),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           // --- 수정된 Write 버튼 ---
           FloatingActionButton.small( // ElevatedButton 대신 사용
             heroTag: 'fab_write',
@@ -761,34 +742,32 @@ class _MapScreenState extends State<MapScreen> {
       child: Container(
         color: colorScheme.background.withOpacity(0.95),
         child: SafeArea(
-          // SafeArea의 bottom만 true로 하여 하단 시스템 UI는 피하고,
-          // 상단 패딩은 topOffset으로 직접 제어
-          bottom: true,
-          top: false, // SafeArea의 상단 패딩은 사용하지 않음
-          child: Padding( // topOffset 만큼 상단 패딩 추가
+          bottom: true, top: false,
+          child: Padding(
             padding: EdgeInsets.only(top: topOffset),
             child: Column(
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    // 내용 컨테이너의 상단 패딩은 이제 필요 없음 (바깥 Padding에서 처리)
-                    padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0), // 상단 패딩 0으로 변경
+                    padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (_imageSearchStatus == ImageSearchStatus.searching)
                           _buildSearchingIndicator(context, colorScheme, textTheme),
 
-                        if (_imageSearchStatus == ImageSearchStatus.found && _geminiSearchResult != null)
-                          _buildFoundResult(context, colorScheme, textTheme, _geminiSearchResult!, cardBackgroundColor),
+                        // *** _imageSearchFullText 표시 ***
+                        if (_imageSearchStatus == ImageSearchStatus.found && _imageSearchFullText != null)
+                          _buildFoundResult(context, colorScheme, textTheme, _imageSearchFullText!, cardBackgroundColor),
 
                         if (_imageSearchStatus == ImageSearchStatus.error)
-                          _buildErrorState(context, colorScheme, textTheme, _geminiSearchResult),
+                          _buildErrorState(context, colorScheme, textTheme, _imageSearchFullText), // 에러 시에도 fullText에 메시지 담김
                       ],
                     ),
                   ),
                 ),
-                if (_imageSearchStatus == ImageSearchStatus.found || _imageSearchStatus == ImageSearchStatus.error)
+                // 버튼 표시 조건: 결과가 있거나 에러일 때 + location_only 정보가 있을 때만 활성화 고려
+                if ((_imageSearchStatus == ImageSearchStatus.found && _imageSearchLocationOnly != null && _imageSearchLocationOnly!.isNotEmpty) || _imageSearchStatus == ImageSearchStatus.error)
                   _buildExploreButton(context, buttonBackgroundColor, buttonTextColor),
               ],
             ),
@@ -938,72 +917,3 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 }
-
-
-
-
-
-
-
-  // --- 이미지 검색 UI 빌더 (Gemini 결과 대신 API 결과 표시) (버튼 추가) ---
-//   Widget _buildImageSearchUI(BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
-//     return Positioned.fill(
-//       child: Container(
-//         color: colorScheme.background,
-//         padding: EdgeInsets.only(top: kToolbarHeight + MediaQuery.of(context).padding.top + 12 + 50 + 12),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.center,
-//           children: [
-//             if (_imageSearchStatus == ImageSearchStatus.searching) ...[
-//               //Icon(Icons.travel_explore, size: 40, color: colorScheme.primary),
-//               Image.asset(
-//                 'assets/images/egg.png', // egg.png 이미지 경로
-//                 width: 40,
-//                 height: 40,
-//                 fit: BoxFit.cover,
-//               ),
-//               const SizedBox(height: 16),
-//               Text('Please wait for a moment...\nGemini will search for the location.', style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.8)), textAlign: TextAlign.center),
-//               const SizedBox(height: 20),
-//               const CircularProgressIndicator(),
-//             ],
-//             if (_imageSearchStatus == ImageSearchStatus.found && _geminiSearchResult != null) ...[
-//               Expanded(
-//                 child: SingleChildScrollView(
-//                   padding: const EdgeInsets.all(16.0),
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Text(_geminiSearchResult!, style: textTheme.bodyLarge),
-//                       const SizedBox(height: 24), // 버튼과의 간격
-//                       // --- "Go to this location" 버튼 추가 ---
-//                       Center( // 버튼 중앙 정렬
-//                         child: ElevatedButton.icon(
-//                           icon: const Icon(Icons.map_outlined),
-//                           label: const Text('Explore this location'),
-//                           onPressed: _goToIdentifiedLocationAndShowSpots,
-//                           style: ElevatedButton.styleFrom(
-//                             backgroundColor: colorScheme.primary,
-//                             foregroundColor: colorScheme.onPrimary,
-//                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-//                             textStyle: textTheme.labelLarge,
-//                           ),
-//                         ),
-//                       ),
-//                       // --- 버튼 추가 끝 ---
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//             ],
-//             if (_imageSearchStatus == ImageSearchStatus.error) ...[
-//               Icon(Icons.error_outline, color: colorScheme.error, size: 40),
-//               const SizedBox(height: 16),
-//               Text(_geminiSearchResult ?? 'Failed to get information from the image.', style: textTheme.titleMedium?.copyWith(color: colorScheme.error), textAlign: TextAlign.center),
-//             ],
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// } // _MapScreenState 끝
