@@ -215,7 +215,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 // --- Info ---
                 _buildSectionTitle(context, 'Info'),
                 _buildInfoRow(context, Icons.location_on_outlined, userinfo.region ?? 'No Location'),
-                _buildInfoRow(context, Icons.access_time, "이 부분 수정 필요 ( 지역 시간 부분 )"),
+                _buildInfoRow(context, Icons.access_time, DateTime.now().toString().split('.').first),
                 const SizedBox(height: 24),
 
                 // --- Language ---
@@ -349,7 +349,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
   // 희중 버전
   Widget _buildLanguageRow(BuildContext context, UserLanguageInfo langinfo) {
     // TODO: languageCode에 맞는 실제 국기 이미지 에셋 필요
-    String flagAssetPath = 'assets/flags/korea.jpg'; // 예시 경로
+    String flagAssetPath = 'assets/flags/${langinfo.languageCode}.jpg'; // 예시 경로
     //String flagAssetPath = 'assets/flags/usa.jpg'; // 예시 경로
 
     return Padding(

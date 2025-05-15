@@ -108,11 +108,12 @@ Future<void> testNetworkConnectivity() async {
 
 Future<void> createDummyAccounts() async {
   final List<Map<String, String>> dummyUsers = [
-    {'email': 'test1@dummy.com', 'password': 'password123'},
-    {'email': 'test2@dummy.com', 'password': 'password123'},
-    {'email': 'test3@dummy.com', 'password': 'password123'},
-    {'email': 'test4@dummy.com', 'password': 'password123'},
-    {'email': 'test5@dummy.com', 'password': 'password123'},
+    {'email': 'test6@dummy.com', 'password': 'password123'},
+    {'email': 'test7@dummy.com', 'password': 'password123'},
+    {'email': 'test8@dummy.com', 'password': 'password123'},
+    {'email': 'test9@dummy.com', 'password': 'password123'},
+    {'email': 'test10@dummy.com', 'password': 'password123'},
+    {'email': 'test11@dummy.com', 'password': 'password123'},
   ];
 
   for (var user in dummyUsers) {

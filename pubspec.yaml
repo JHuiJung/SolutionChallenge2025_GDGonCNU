@@ -75,6 +75,8 @@ flutter:
   assets:
     - assets/images/
     - assets/flags/
+    - assets/flags/
+    - assets/flags/
     - assets/images/Google__G__logo.png
     - assets/images/egg1.png
     - assets/images/spring.jpg

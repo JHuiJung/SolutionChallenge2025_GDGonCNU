@@ -48,7 +48,7 @@ UserProfileModel getUserProfile(UserState userInfo) {
     name: userInfo.name ?? 'noneName',
     age: userInfo.birthYear ?? 0,
     location: userInfo.region ?? 'Seoul, Korea',
-    timeZoneInfo: "시간 계산 필요", // 실제로는 계산 필요
+    timeZoneInfo: DateTime.now().toString().split('.').first, // 실제로는 계산 필요
     profileImageUrl: userInfo.profileURL, // 다른 사용자 랜덤 이미지
     statusMessage: userInfo.statusMessage,
     languages: userInfo.languages,
@@ -126,6 +126,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     // _hostedPosts = getDummyHostedPosts(userId);
     _hostedPosts = [];
 
+    //print("🚒 가능한 언어 개수 : ${_userProfile.languages.length}");
+
     List<String> userHostIds = userInfo?.postIds ?? [];
 
     for(int i = 0 ; i < userHostIds.length;++i)
@@ -163,6 +165,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       print('Follow status toggled for user: $_userId. Now following: $_isFollowing');
     }
   }
+
+
 
   // 전화 걸기 함수 (Placeholder)
   void _handleCall() {
@@ -540,7 +544,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   // 언어 행 위젯 (국기 + 이름 + 능숙도)
   Widget _buildLanguageRow(BuildContext context, UserLanguageInfo language) {
-    String flagAssetPath = 'assets/flags/${language.languageCode}.png'; // 에셋 경로 확인 필요
+    String flagAssetPath = 'assets/flags/${language.languageCode}.jpg'; // 에셋 경로 확인 필요
+
+    print("✈️ Language Row: $flagAssetPath");
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),

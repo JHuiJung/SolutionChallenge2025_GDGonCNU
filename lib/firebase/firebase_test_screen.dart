@@ -19,7 +19,7 @@ class FirebaseTestScreen extends StatefulWidget {
 
 class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   String _status = 'Not authenticated';
-  String testDummyEmail = "test2@dummy.com";
+  String testDummyEmail = "test3@dummy.com";
   String testDummyPassword = "password123";
 
   // ✅ 구글 로그인 함수

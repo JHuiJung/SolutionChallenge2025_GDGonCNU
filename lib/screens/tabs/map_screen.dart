@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show Uint8List, kIsWeb; // kIsWeb 사�
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:naviya/main.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../models/spot_detail_model.dart';
 import '../../models/tourist_spot_model.dart';
@@ -12,6 +13,7 @@ import '../../widgets/tourist_spot_card.dart';
 import '../../models/spot_detail_model.dart'; // *** SpotDetailModel 임포트 추가
 import '../../firebase/firestoreManager.dart';
 import '../../services/api_service.dart';
+import 'dart:math';
 
 // --- 이미지 검색 상태를 나타내는 enum ---
 enum ImageSearchStatus { none, picking, searching, found, error }
@@ -146,6 +148,31 @@ class _MapScreenState extends State<MapScreen> {
 
     List<SpotDetailModel> spotDetailModels = await getAllSpotPost();
     _touristSpots = getTouristSpotsBySpotPostInfo(spotDetailModels);
+
+    //내용물 무작위로 섞기
+    final random = Random();
+    _touristSpots.shuffle(random);
+
+    /*
+    List<UserLanguageInfo> lang = [
+
+
+      new UserLanguageInfo(languageCode: "ko",
+          languageName: "Korean",
+          proficiency: 3),
+
+      new UserLanguageInfo(languageCode: "us",
+          languageName: "English",
+          proficiency: 1)
+
+    ];
+
+    mainUserInfo.languages = lang;
+    updateUser();
+
+    */
+
+
     if (!mounted) return;
     setState(() => _isLoadingSpots = false);
   }
