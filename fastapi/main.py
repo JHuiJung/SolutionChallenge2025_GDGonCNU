@@ -1,10 +1,12 @@
 import os
 import uuid
 import google.generativeai as genai
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, File, UploadFile
-from pydantic import BaseModel ,Field
-from typing import List, Literal, Optional
+from pydantic import BaseModel, Field
+from typing import List, Optional
 from translate import translate
 from topic_recommeder import recommend_topics
 from firebase_utils import db
@@ -15,36 +17,31 @@ from culture import get_cultural_differences
 from freetalking import simulate_freetalking
 from travel_phrases import generate_scenario_phrases
 
-
 app = FastAPI()
 
-# CORS 허용 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],            # 혹은 ["http://localhost:3000", "http://192.168.0.2:8000"] 같이 특정 origin만
+    allow_origins=["*"],           
     allow_credentials=True,
-    allow_methods=["*"],            # GET, POST, PUT 등
-    allow_headers=["*"],            # Content-Type, Authorization 등
+    allow_methods=["*"],            
+    allow_headers=["*"],            
 )
 
-GOOGLE_API_KEY = "AIzaSyCqb3HHXZ3qgtPXsRA2tx2FYKQAZZ-oeHM"
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# 루트 라우트
+
 @app.get("/")
-def printHello():
-    return "Solution Challenge 크크크"
+def print_hello():
+    return "Solution Challenge"
 
 
-# 텍스트 입력 모델 정의
 class InputText(BaseModel):
     text: str
 
-# POST 요청으로 텍스트를 받아 ai 함수에 전달하는 라우트
 @app.post("/translate")
 async def get_translate(input: InputText):
     translated = translate(input.text)
-    # 이제 "message" 하나만 반환합니다.
     return {"message": translated}
 
 
@@ -52,16 +49,15 @@ async def get_translate(input: InputText):
 async def get_topics(count: int = 5):
     topics = recommend_topics(count)
     if not topics:
-        raise HTTPException(status_code=500, detail="주제 추천 중 오류가 발생했습니다.")
+        raise HTTPException(status_code=500, detail="An error occurred while recommending topics.")
     return {"topics": topics}
 
 
-# --- 롤플레잉 엔드포인트 (컨텍스트 유지) ---
 class RoleplayRequest(BaseModel):
     text: str
     history: Optional[List[str]] = Field(
         None,
-        description="이전 대화 기록 목록 (['사용자: ...', '점원: ...', ...])"
+        description="List of previous dialogue history (e.g., ['User: ...', 'Clerk: ...', ...])"
     )
 
 class RoleplayResponse(BaseModel):
@@ -74,77 +70,58 @@ async def roleplay_endpoint(req: RoleplayRequest):
         reply, updated_history = simulate_order(req.text, req.history)
         return {"message": reply, "history": updated_history}
     except Exception:
-        raise HTTPException(status_code=500, detail="롤플레잉 오류 발생")
+        raise HTTPException(status_code=500, detail="Roleplay error occurred.")
 
 
 @app.post("/locate")
 async def locate_endpoint(file: UploadFile = File(...)):
-    # 임시 파일로 저장
     ext = os.path.splitext(file.filename)[1]
-    tmp_fname = f"/tmp/{uuid.uuid4()}{ext}"
+    temp_file = f"/tmp/{uuid.uuid4()}{ext}"
     try:
         contents = await file.read()
-        with open(tmp_fname, "wb") as f:
+        with open(temp_file, "wb") as f:
             f.write(contents)
 
-        # unpack 순서 바뀜: (location_only, full_text)
-        location_only, full_text = ask_photo_location(tmp_fname)
-
+        location_only, full_text = ask_photo_location(temp_file)
         return {
             "location": location_only,
             "recommendation": full_text
         }
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if os.path.exists(tmp_fname):
-            os.remove(tmp_fname)
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
             
-            
-# Meetup 이벤트 AI 코멘트 엔드포인트
+
 class CommentRequest(BaseModel):
-    event_id: str = Field(..., description="Meetup 포스트 문서 ID")
-    user_id:  str = Field(..., description="사용자 문서 ID")
+    event_id: str = Field(..., description="Meetup post document ID")
+    user_id:  str = Field(..., description="User document ID")
 
 @app.post("/comments")
 async def comments_endpoint(req: CommentRequest):
-    """
-    meetup_posts 컬렉션의 event_id와 users 컬렉션의 user_id를
-    받아, AI가 사용자 관점의 코멘트를 생성해 반환합니다.
-    """
     try:
         ai_comment = generate_comment(req.event_id, req.user_id)
         return {"comment": ai_comment}
     except ValueError as e:
-        # 잘못된 ID를 보냈을 때 404로 응답
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        # 그 외 AI 호출 중 에러
-        raise HTTPException(status_code=500, detail=f"코멘트 생성 실패: {e}")
-    
+        raise HTTPException(status_code=500, detail=f"Failed to generate comment: {e}")
     
 @app.get("/culture")
-async def culture(home: str, dest: str):
-    """
-    홈 국가(home)와 여행 국가(dest)를 입력 받아,
-    두 나라 간 주요 예절·문화 차이점을 문단 형식으로 반환합니다.
-    호출 예: GET /culture?home=한국&dest=일본
-    """
+async def culture_endpoint(home: str, dest: str):
     try:
         description = get_cultural_differences(home, dest)
         return {"description": description}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"문화 차이 안내 실패: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve cultural differences: {e}")
     
-    
-    
-    
+
 class FreeTalkRequest(BaseModel):
-    text: str = Field(..., description="사용자의 최신 발화")
+    text: str = Field(..., description="Latest user utterance")
     history: Optional[List[str]] = Field(
         None,
-        description="이전 대화 기록 (['User: ...', 'Hatchy: ...', ...])"
+        description="Previous conversation history (e.g., ['User: ...', 'Hatchy: ...', ...])"
     )
 
 class FreeTalkResponse(BaseModel):
@@ -157,24 +134,19 @@ async def free_talk_endpoint(req: FreeTalkRequest):
         reply, updated_history = simulate_freetalking(req.text, req.history)
         return {"message": reply, "history": updated_history}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"프리토킹 오류 발생: {e}")
-    
+        raise HTTPException(status_code=500, detail=f"Free-talking error occurred: {e}")
     
 
 class ScenarioPhrasesRequest(BaseModel):
-    request: str = Field(..., description="예: '한국어로 공항에서 짐 부칠 때 쓰는 표현'")
+    request: str = Field(..., description="e.g.: 'Expressions used when checking baggage at the airport in Korean'")
 
 class ScenarioPhrasesResponse(BaseModel):
-    phrases: str = Field(..., description="세 줄 형식으로 구성된 필수 여행 회화문 블록")
+    phrases: str = Field(..., description="Block of essential travel phrases composed in three-line format")
 
 @app.post("/phrases", response_model=ScenarioPhrasesResponse)
 async def scenario_phrases_endpoint(req: ScenarioPhrasesRequest):
-    """
-    사용자의 한 문장 요청(req.request)에 맞춰
-    5개의 필수 여행 회화문을 세 줄(원어·발음·번역) 형식으로 반환합니다.
-    """
     try:
         text_block = generate_scenario_phrases(req.request)
         return {"phrases": text_block}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"회화문 생성 오류: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating phrases: {e}")
