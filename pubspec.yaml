@@ -32,8 +32,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  intl: ^0.19.0 # 또는 최신 버전 (버전 확인 필요) # <--- 이 줄 추가
-  google_maps_flutter: ^2.5.0 # Google Maps 패키지 (최신 버전 확인)
+  intl: ^0.19.0
+  google_maps_flutter: ^2.5.0 # Google Maps
   sliding_up_panel: ^2.0.0+1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -44,27 +44,24 @@ dependencies:
   firebase_ui_oauth_google: ^1.4.1
   cloud_firestore: ^5.6.6
   http: ^1.4.0
-  http_parser: ^4.0.2 # MediaType 클래스를 위해 추가
-  path: ^1.8.3 # 파일 경로 및 확장자 처리를 위해 추가
+  http_parser: ^4.0.2
+  path: ^1.8.3
 
   timezone: ^0.10.1
   image_picker: ^1.1.2
   firebase_storage: ^12.4.5
-  #chaquopy: ^0.0.20
   google_generative_ai: ^0.4.7
+  geocoding: ^3.0.0
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  #flutter_lints: ^2.0.0
-
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  #flutter_lints: ^2.0.0
   flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
@@ -78,8 +75,9 @@ flutter:
     - assets/flags/
     - assets/flags/
     - assets/images/Google__G__logo.png
-    - assets/images/egg1.png
+    - assets/images/egg.png
     - assets/images/spring.jpg
+    - assets/images/user_profile.jpg
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

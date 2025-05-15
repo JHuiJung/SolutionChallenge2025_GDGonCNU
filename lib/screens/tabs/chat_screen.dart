@@ -57,11 +57,15 @@ class _ChatScreenState extends State<ChatScreen> {
     //    (AI Tutor는 항상 존재한다고 가정하고, 필요시 Firestore에서 로드)
     ChatListItemModel aiTutorChat = ChatListItemModel(
       chatId: 'chat_ai_tutor',
-      userId: 'ai_tutor_bot', // AI 튜터의 고유 ID
+      userId: 'ai_tutor_bot',
+      // AI 튜터의 고유 ID
       name: 'Hatchy',
-      imageUrl: 'assets/images/egg.png', // AI Tutor 프로필 이미지 경로
-      lastMessage: 'What can I help you?', // 초기 메시지 또는 마지막 메시지
-      timestamp: TimeOfDay.now(), // 항상 최신으로 보이도록 (또는 실제 마지막 대화 시간)
+      imageUrl: 'assets/images/egg.png',
+      // AI Tutor 프로필 이미지 경로
+      lastMessage: 'Hi! How can I help you?',
+      // 초기 메시지 또는 마지막 메시지
+      timestamp: TimeOfDay.now(),
+      // 항상 최신으로 보이도록 (또는 실제 마지막 대화 시간)
       isRead: true, // 기본값
     );
     // 만약 AI Tutor 채팅방 정보도 Firestore에서 관리한다면 여기서 getChat('chat_ai_tutor') 호출
@@ -91,19 +95,14 @@ class _ChatScreenState extends State<ChatScreen> {
               child: CustomScrollView(
                 slivers: [
                   // 1. 상단 헤더 (Chat 타이틀, MyPage 아이콘)
-                  _buildHeader(context, colorScheme, mainUserInfo), // mainUserInfo 전달
+                  _buildHeader(context, colorScheme, mainUserInfo),
+                  // mainUserInfo 전달
 
                   // 2. 채팅 목록
                   _buildChatList(colorScheme),
                 ],
               ),
             ),
-
-            // 3. AI 채팅 플로팅 버튼 (주석 처리된 부분 - 필요시 활성화)
-            // _buildAiChatFab(colorScheme),
-
-            // 4. 로봇 일러스트 (채팅 목록이 비어있을 때 - AI Tutor 제외)
-            // _buildEmptyChatIllustration(), // 조건부 표시 로직 수정 필요
           ],
         ),
       ),
@@ -113,9 +112,11 @@ class _ChatScreenState extends State<ChatScreen> {
   // --- UI 빌더 함수들 ---
 
   // 상단 헤더 빌드 함수
-  Widget _buildHeader(BuildContext context, ColorScheme colorScheme, UserState currentUserInfo) {
+  Widget _buildHeader(BuildContext context, ColorScheme colorScheme,
+      UserState currentUserInfo) {
     return SliverPadding(
-      padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
+      padding: const EdgeInsets.only(
+          left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
       sliver: SliverToBoxAdapter(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -133,7 +134,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 // 현재 사용자 프로필 이미지 표시
                 backgroundImage: (currentUserInfo.profileURL.isNotEmpty)
                     ? NetworkImage(currentUserInfo.profileURL)
-                    : const AssetImage('assets/images/default_profile.png') as ImageProvider, // 기본 이미지 에셋
+                    : const AssetImage(
+                    'assets/images/user_profile.jpg') as ImageProvider, // 기본 이미지 에셋
               ),
             ),
           ],
@@ -179,45 +181,4 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-
-// AI 채팅 플로팅 버튼 빌드 함수 (필요시 주석 해제하여 사용)
-/*
-  Widget _buildAiChatFab(ColorScheme colorScheme) {
-    return Positioned(
-      bottom: 20,
-      right: 20,
-      child: FloatingActionButton(
-        onPressed: () {
-          // 'chat_ai_tutor' ID를 사용하여 AI 채팅방으로 이동
-          Navigator.pushNamed(context, '/chat_room', arguments: 'chat_ai_tutor');
-        },
-        backgroundColor: colorScheme.primaryContainer,
-        child: Icon(Icons.smart_toy_outlined, color: colorScheme.onPrimaryContainer, size: 30),
-        tooltip: 'Chat with AI Hatchy',
-      ),
-    );
-  }
-  */
-
-// 채팅 목록 비었을 때 로봇 일러스트 (AI Tutor는 항상 있으므로 로직 수정 필요)
-/*
-  Widget _buildEmptyChatIllustration() {
-    // AI Tutor를 제외한 사용자 채팅이 없을 때만 표시하도록 조건 변경
-    bool showIllustration = !_isLoading && _chatList.where((chat) => chat.chatId != 'chat_ai_tutor').isEmpty;
-    if (!showIllustration) return const SizedBox.shrink();
-
-    return Positioned(
-      bottom: 80, // FAB 위치 고려
-      right: 10,
-      child: Opacity(
-        opacity: 0.8,
-        child: Image.asset(
-          'assets/images/robot_thinking.png', // 로봇 이미지 에셋
-          height: 120,
-          errorBuilder: (context, error, stackTrace) => const SizedBox(height: 120),
-        ),
-      ),
-    );
-  }
-  */
 }

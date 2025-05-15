@@ -33,10 +33,10 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
       bool isRight = await firestoreManager.getUserInfoByEmail(userinfo!.email!);  // await 추가
 
       if(isRight)
-        {
-          Navigator.pushReplacementNamed(_context, '/main');
-          return;
-        }
+      {
+        Navigator.pushReplacementNamed(_context, '/main');
+        return;
+      }
 
     }
 
@@ -189,7 +189,7 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
               onPressed: addUser,
               child: Text('사용자 추가'),
             ),
-            
+
              */
 
             const SizedBox(height: 25),

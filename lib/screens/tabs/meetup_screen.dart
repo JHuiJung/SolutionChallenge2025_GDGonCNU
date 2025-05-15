@@ -153,7 +153,7 @@ class _MeetupScreenState extends State<MeetupScreen> {
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                               ),
-                              const SizedBox(width: 15),
+                              const SizedBox(width: 2),
                               // 글쓰기 버튼
                               IconButton(
                                 icon: Icon(Icons.edit_outlined, color: colorScheme.onSurface, size: 28),
@@ -164,7 +164,7 @@ class _MeetupScreenState extends State<MeetupScreen> {
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                               ),
-                              const SizedBox(width: 21),
+                              const SizedBox(width: 10),
                               // 프로필 아바타
                               InkWell(
                                 onTap: () {
@@ -177,7 +177,7 @@ class _MeetupScreenState extends State<MeetupScreen> {
                                   // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
                                       ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
                                   // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
-                                      : AssetImage('assets/images/egg.png') as ImageProvider<Object>?, // 예시: 기본 프로필 이미지 경로,
+                                      : AssetImage('assets/images/user_profile.jpg') as ImageProvider<Object>?, // 예시: 기본 프로필 이미지 경로,
                                 ),
                               ),
                             ],

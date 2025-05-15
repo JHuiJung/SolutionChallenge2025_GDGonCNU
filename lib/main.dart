@@ -1,3 +1,6 @@
+import 'package:naviya/screens/write/write_meetup_screen.dart';
+import 'package:naviya/screens/write/write_spot_screen.dart';
+
 import 'theme/app_theme.dart'; // 테마 파일 임포트
 import 'dart:ui'; // import 추가
 
@@ -11,7 +14,7 @@ import 'firebase/firebase_test_screen.dart';
 import 'firebase/firestoreManager.dart' as firestoreManager;
 
 // import 'screens/create_post_screen.dart'; (삭제함)
-import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart'; // *** 스플래시 스크린 임포트 ***
 import 'screens/preference_selection_screen.dart';
 import 'screens/profile_registration_screen.dart';
 import 'screens/main_screen.dart';
@@ -19,7 +22,6 @@ import 'screens/mypage_screen.dart';
 import 'screens/post_detail_screen.dart';
 import 'screens/user_profile_screen.dart'; 
 import 'screens/chat/chat_room_screen.dart';
-import 'screens/chat/ai_chat_screen.dart';
 import 'screens/search_screen.dart'; // 검색 화면 임포트
 import 'screens/spot_detail_screen.dart'; // 관광지 상세 화면 임포트
 import 'screens/write/write_user_comment_screen.dart';
@@ -62,22 +64,19 @@ class MyApp extends StatelessWidget {
       ),
 
       // 앱 시작 시 첫 화면 설정
-      initialRoute: '/login',
+      initialRoute: '/splash',
 
       // 네비게이션 라우트 정의
       routes: {
+        '/splash': (context) => const SplashScreen(),
         '/login': (context) => const FirebaseTestScreen(),
-        //'/login': (context) => const LoginScreen(),
         '/profile': (context) => const ProfileRegistrationScreen(),
         '/preference': (context) => const PreferenceSelectionScreen(),
         '/main': (context) => const MainScreen(),
         '/mypage': (context) => const MyPageScreen(), // MyPage 라우트 추가
-        //'/create_post': (context) => const CreatePostScreen(), // 게시글 작성 라우트 (삭제함)
         '/post_detail': (context) => const PostDetailScreen(), // 게시글 상세 라우트 추가
         '/user_profile': (context) => const UserProfileScreen(), // 사용자 프로필 라우트 추가
         '/chat_room': (context) => const ChatRoomScreen(), // 개별 채팅방 라우트 추가
-        '/ai_chat': (context) => const AiChatScreen(),   // AI 채팅방 라우트 추가
-        //'/write': (context) => const WriteScreen(), // 글쓰기 화면 라우트 추가 >> 삭제하기
         '/spot_detail': (context) => const SpotDetailScreen(),
         '/search': (context) => const SearchScreen(), // 검색 화면 라우트 추가
         '/write_user_comment': (context) => const WriteUserCommentScreen(), // 사용자 코멘트 작성 라우트 추가

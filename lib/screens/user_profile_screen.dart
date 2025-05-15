@@ -242,7 +242,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   // 프로필 사진 (MyPageScreen과 동일, onTap 제거)
                   Positioned(
-                    top: 40,
+                    top: 70,
                     child: CircleAvatar( // InkWell 제거
                       radius: 65,
                       backgroundColor: Colors.white,
@@ -273,7 +273,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   // --- 새로운 액션 버튼 영역 ---
                   Positioned(
-                    top: 230, // 상태 메시지 아래 위치 조정
+                    top: 235, // 상태 메시지 아래 위치 조정
                     left: 0,
                     right: 0,
                     child: Container(
@@ -318,13 +318,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
           // 3. 정보 섹션 (Info, Language, Preferences) - MyPageScreen과 동일한 위젯 사용
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 15.0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _buildSectionTitle(context, 'Info'),
                 _buildInfoRow(context, Icons.location_on_outlined, _userProfile.location),
                 _buildInfoRow(context, Icons.access_time, _userProfile.timeZoneInfo),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
                 _buildSectionTitle(context, 'Language'),
                 ..._userProfile.languages.map((lang) => _buildLanguageRow(context, lang)),
@@ -347,7 +347,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   backgroundColor: prefBoxBgColor, titleColor: prefBoxTitleColor,
                   contentColor: prefBoxContentColor, borderColor: prefBoxBorderColor,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 15),
               ]),
             ),
           ),

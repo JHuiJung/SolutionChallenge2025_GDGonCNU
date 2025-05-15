@@ -5,8 +5,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:naviya/firebase/imageManager.dart';
 // 모델 임포트 (경로 확인 필요)
-import '../../models/meetup_post.dart';
+import '../../firebase/firestoreManager.dart';
 import '../../models/chat_list_item_model.dart';
+import '../../models/meetup_post.dart';
+import '../models/meetup_post.dart';
+import '../models/chat_list_item_model.dart';
 import '../../firebase/firestoreManager.dart';
 
 class WriteMeetupScreen extends StatefulWidget {

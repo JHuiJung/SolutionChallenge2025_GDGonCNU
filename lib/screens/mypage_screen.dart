@@ -11,7 +11,6 @@ import '../widgets/preference_display_box.dart'; // 선호도 박스 위젯
 import '../firebase/firestoreManager.dart' as firestoreManager;
 import '../firebase/imageManager.dart' as imageManager;
 
-
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
 
@@ -178,7 +177,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
                               ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
                           // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
-                              : AssetImage('assets/images/egg.png') as ImageProvider<Object>?, // 예시: 기본 프로필 이미지 경로
+                              : AssetImage('assets/images/user_profile.jpg') as ImageProvider<Object>?, // 예시: 기본 프로필 이미지 경로
                           backgroundColor: Colors.grey.shade300,
                         ),
                       ),

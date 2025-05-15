@@ -31,23 +31,38 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   // 추천 메시지 목록 (API 또는 고정값으로 로드)
   List<String> _recommendedMessages = [];
+  // AI 대화 컨텍스트(history) 저장을 위한 상태 변수
+  List<String> _aiChatHistory = [];
+  // 현재 AI 대화 모드 (롤플레잉, 자유대화 등)
+  String? _currentAiMode; // 예: 'roleplay_ordering', 'free_talk'
+  String _currentLanguage = 'English'; // 현재 대화 언어 (기본값 영어)
 
-  late ChatListItemModel chatRoomInfo;
-  List<UserState> userinfos = [];
+  // AI Tutor 고정 추천 메시지 (모드 식별자)
+  final Map<String, String> _aiTutorFixedRecommendations = {
+    'Free-talking with Hatchy': 'free_talk',
+    'Study essential travel phrases': 'study_scenario_phrases',
+    'Role-play ordering with Hatchy': 'roleplay_ordering',
+    'Cultural do’s and don’ts': 'culture_info',
+  };
+
+  // 여행 회화문 요청 상태를 위한 플래그
+  bool _isWaitingForPhraseRequestDetail = false;
 
   @override
   void initState() {
     super.initState();
     // 위젯 빌드 완료 후 실행
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (ModalRoute.of(context)?.settings.arguments != null) {
-        _chatId = ModalRoute.of(context)?.settings.arguments as String;
-        _loadChatDataAndRecommendations(_chatId!); // 데이터 및 추천 메시지 로드
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        _chatId = arguments;
+        _loadChatDataAndRecommendations(_chatId!);
       } else {
         // 채팅 ID가 없는 경우 에러 처리
         if (mounted) setState(() => _isLoading = false);
-        print("오류: 채팅 ID가 제공되지 않았습니다.");
-        // Navigator.pop(context); // 이전 화면으로 돌아가기 (선택 사항)
+        print("오류: 채팅 ID가 제공되지 않았거나 형식이 올바르지 않습니다.");
+        // Optionally, navigate back or show an error message
+        // if (Navigator.canPop(context)) Navigator.pop(context);
       }
     });
   }
@@ -59,98 +74,76 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     super.dispose();
   }
 
-  // 채팅 데이터 및 추천 메시지 로드 함수
   Future<void> _loadChatDataAndRecommendations(String chatId) async {
     if (!mounted) return;
     setState(() => _isLoading = true);
 
-    // 1. 채팅 상대방 정보 로드 (Firestore 또는 더미)
     try {
-      // ChatListItemModel dummy = getDummyChatListItems().firstWhere((item) => item.chatId == chatId, orElse: () => getDummyChatListItems()[0]); // 더미 데이터 사용
-      // chatListItemModel = await getChat(chatId) ?? dummy; // Firestore에서 가져오기
-      // _chatPartnerName = chatListItemModel.name;
-      // --- 임시: 파트너 이름 설정 (실제 로직으로 대체 필요) ---
-      if (chatId == 'chat_ai_tutor') _chatPartnerName = 'Hatchy';
-      else if (chatId == 'chat_user_1') _chatPartnerName = 'Brian';
-      else if (chatId == 'chat_user_2') _chatPartnerName = 'Alice';
-      else _chatPartnerName = 'Unknown User';
-      // --- 임시 끝 ---
+      // 1. 채팅 상대방 정보 로드 (임시 로직)
+      // TODO: Firestore 또는 실제 데이터 소스에서 채팅 상대방 정보 로드
+      if (chatId == 'chat_ai_tutor') {
+        _chatPartnerName = 'Hatchy';
+      } else if (chatId == 'chat_user_1') {
+        _chatPartnerName = 'Brian';
+      } else if (chatId == 'chat_user_2') {
+        _chatPartnerName = 'Alice';
+      } else {
+        _chatPartnerName = 'Unknown User';
+      }
+
+      // 2. 메시지 목록 로드 (임시 로직)
+      // TODO: Firestore 또는 실제 데이터 소스에서 메시지 목록 로드
+      _messages = _getDummyMessagesForChat(chatId);
+
+      // 3. 추천 메시지 로드
+      await _loadRecommendedMessages();
 
     } catch (e) {
-      print("채팅 상대방 정보 로드 오류: $e");
-      _chatPartnerName = "Error";
-    }
-
-    // 채팅방 정보 가져오기
-    ChatListItemModel dummyChatlistItem =  getDummyChatListItems()[0];
-    chatRoomInfo = await getChat(_chatId ?? 'noneIds') ?? dummyChatlistItem;
-
-    // 유저 정보 업데이트
-
-    for(int i = 0 ; i < chatRoomInfo.memberIds!.length ; i++)
-    {
-      UserState? _userinfo = await getAnotherUserInfoByEmail(chatRoomInfo.memberIds![i]);
-
-      if(_userinfo != null)
-        {
-          userinfos.add(_userinfo);
-        }
-    }
-
-
-
-    // 채팅방 유저 정보 가져오기
-
-
-    // 2. 메시지 목록 로드 (Firestore 또는 더미)
-    // TODO: Firestore 연동 시 StreamBuilder 사용 또는 여기서 초기 메시지 로드
-    // _messages = getDummyChatMessages(chatId); // 더미 메시지 사용
-    // --- 임시: 더미 메시지 로드 ---
-    _messages = _getDummyMessagesForChat(chatId);
-    // --- 임시 끝 ---
-
-
-    // 3. 추천 메시지 로드
-    await _loadRecommendedMessages();
-
-    if (mounted) {
-      setState(() => _isLoading = false);
-      // 메시지 로드 후 맨 아래로 스크롤
-      Timer(const Duration(milliseconds: 100), _scrollToBottom);
+      print("채팅 데이터 로드 중 오류 발생: $e");
+      if (mounted) {
+        _chatPartnerName = "Error Loading";
+        // Consider showing an error message to the user
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        Timer(const Duration(milliseconds: 100), _scrollToBottom);
+      }
     }
   }
 
-  // 임시 더미 메시지 생성 함수 (실제 로직으로 대체 필요)
   List<ChatMessageModel> _getDummyMessagesForChat(String chatId) {
     final now = DateTime.now();
     if (chatId == 'chat_ai_tutor') {
       return [
-        ChatMessageModel(id: 'ai_intro', text: '안녕하세요! 무엇을 도와드릴까요, 해치?', timestamp: now.subtract(const Duration(minutes:1)), sender: MessageSender.other),
-      ];
-    } else {
-      return [
-        ChatMessageModel(id: 'user_greeting', text: '안녕하세요!', timestamp: now.subtract(const Duration(minutes:1)), sender: MessageSender.other),
+        ChatMessageModel(
+            id: 'ai_intro',
+            text: 'Hi! I am Hatchy. Choose any topic you want!',
+            timestamp: now.subtract(const Duration(minutes: 1)),
+            sender: MessageSender.other),
       ];
     }
+    return [
+      ChatMessageModel(
+          id: 'user_greeting',
+          text: 'Hello!',
+          timestamp: now.subtract(const Duration(minutes: 1)),
+          sender: MessageSender.other),
+    ];
   }
 
-  // 추천 메시지 로드 함수
   Future<void> _loadRecommendedMessages() async {
     if (!mounted) return;
     List<String> topics = [];
     try {
       if (_isAiTutorChat) {
-        topics = [ /* ... AI Tutor 고정 추천 메시지 ... */
-          'Study essential travel phrases', 'Study essential travel vocabulary',
-          'Role-play ordering with Hatchy', 'Role-play meet up with Hatchy',
-          'Free-talking with Hatchy',
-        ];
+        topics = _aiTutorFixedRecommendations.keys.toList();
       } else {
-        topics = await ApiService.fetchTopics(5); // 다른 사용자와의 채팅 시 토픽 추천
+        topics = await ApiService.fetchTopics(5); // 일반 채팅용 추천 토픽
       }
     } catch (e) {
       print("추천 메시지 로드 오류: $e");
-      // 사용자에게 오류 알림 (선택 사항)
+      // Optionally, set topics to an empty list or default error messages
     }
     if (mounted) {
       setState(() {
@@ -159,9 +152,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     }
   }
 
-  // 메시지 전송 함수 (번역 기능 조건부 실행)
-  Future<void> _sendMessage({String? predefinedText}) async {
-    if (_isSending) return; // 중복 전송 방지
+  // 메시지 전송 함수
+  Future<void> _sendMessage({String? predefinedText, String? aiMode}) async {
+    if (_isSending && predefinedText == null) return;
 
     final originalText = predefinedText ?? _textController.text.trim();
     if (originalText.isEmpty) return;
@@ -170,88 +163,272 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
     final messageId = 'msg_${DateTime.now().millisecondsSinceEpoch}';
     final sentTime = DateTime.now();
-    String? translatedText; // 번역된 텍스트를 저장할 변수
+    String? translatedText;
 
-    // --- AI Tutor 채팅이 아닐 때만 번역 실행 ---
-    if (!_isAiTutorChat) {
-      try {
-        translatedText = await ApiService.translate(originalText);
-      } catch (e) {
-        print("번역 API 오류: $e");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('메시지 번역에 실패했습니다.')),
-          );
-        }
-        // 번역 실패 시 원본 메시지만 전송 (또는 에러 처리 후 전송 안 함)
-      }
-    }
-    // --- 번역 로직 끝 ---
-
-    // 메시지 객체 생성
+    // 사용자가 보낸 메시지 UI에 먼저 추가
     final newMessage = ChatMessageModel(
       id: messageId,
-      text: translatedText ?? originalText, // 번역본이 있으면 번역본, 없으면 원본을 주 텍스트로
-      originalText: (_isAiTutorChat || translatedText == null) ? null : originalText, // AI 채팅이 아니면서 번역 성공 시에만 원본 저장
+      text: (_isAiTutorChat || translatedText == null) ? originalText : translatedText, // AI Tutor는 원본, 아니면 번역본 우선
+      originalText: (!_isAiTutorChat && translatedText != null) ? originalText : null,
       timestamp: sentTime,
       sender: MessageSender.me,
       isRead: false,
-      isTranslatedByAI: !_isAiTutorChat && translatedText != null, // AI 채팅 아니고 번역 성공 시 true
+      isTranslatedByAI: !_isAiTutorChat && translatedText != null,
     );
 
-    // Firestore에 메시지 저장 (실제 구현 필요)
-    // await addMessageToChat(_chatId!, newMessage.toMap());
-
     if (mounted) {
-      setState(() {
-        _messages.insert(0, newMessage); // UI에 메시지 추가
-        if (predefinedText == null) _textController.clear(); // 직접 입력한 경우 입력창 비우기
-        _isSending = false; // 전송 완료
-      });
-      _scrollToBottom(); // 스크롤 맨 아래로
-    }
-
-    // AI Tutor 채팅방이면 AI 응답 시뮬레이션
-    if (_isAiTutorChat) {
-      _simulateAiResponse(originalText); // AI는 원본 메시지에 대해 응답
-    }
-  }
-
-  // AI 응답 시뮬레이션 함수 (번역 로직 없음)
-  Future<void> _simulateAiResponse(String userMessage) async {
-    await Future.delayed(const Duration(seconds: 1)); // 응답 지연 시뮬레이션
-    // TODO: 실제 Gemini API 호출하여 응답 받기
-    final aiResponseText = "AI Hatchy: \"$userMessage\"라고 하셨군요! 더 도와드릴 것이 있나요?";
-    final aiResponseMessage = ChatMessageModel(
-      id: 'ai_resp_${DateTime.now().millisecondsSinceEpoch}',
-      text: aiResponseText,
-      timestamp: DateTime.now(),
-      sender: MessageSender.other, // 또는 MessageSender.ai (enum에 추가 필요)
-    );
-
-    // Firestore에 AI 응답 저장 (선택 사항)
-    // await addMessageToChat(_chatId!, aiResponseMessage.toMap());
-
-    if (mounted) {
-      setState(() {
-        _messages.insert(0, aiResponseMessage);
-      });
+      setState(() { _messages.insert(0, newMessage); });
+      if (predefinedText == null) _textController.clear();
       _scrollToBottom();
     }
+
+    // 번역 (AI Tutor가 아닐 때만)
+    if (!_isAiTutorChat) {
+      try {
+        translatedText = await ApiService.translate(originalText);
+        // 번역 성공 시 메시지 업데이트 (선택적 UI 업데이트)
+        final messageIndex = _messages.indexWhere((msg) => msg.id == messageId);
+        if (messageIndex != -1 && mounted) {
+          final updatedMessage = ChatMessageModel(
+            id: _messages[messageIndex].id, text: translatedText!, originalText: originalText,
+            timestamp: _messages[messageIndex].timestamp, sender: _messages[messageIndex].sender,
+            isRead: _messages[messageIndex].isRead, isTranslatedByAI: true,
+          );
+        }
+      } catch (e) {
+        print("번역 API 오류: $e");
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('메시지 번역에 실패했습니다.')));
+      }
+    }
+
+    // --- AI Tutor 응답 처리 ---
+    if (_isAiTutorChat) {
+      // 1. 여행 회화문 요청 상태 처리
+      if (_isWaitingForPhraseRequestDetail) {
+        // 사용자가 입력한 내용(originalText)이 회화문 요청 상세 내용임
+        _handleActualScenarioPhrasesRequest(originalText);
+        _isWaitingForPhraseRequestDetail = false; // 상태 초기화
+        if (mounted) setState(() => _isSending = false);
+        return; // 다른 AI 로직 건너뛰기
+      }
+
+      // 2. 추천 토픽 클릭 또는 기존 모드에 따른 처리
+      String? modeForApiCall;
+      if (aiMode != null) { // 추천 토픽 클릭 시
+        _currentAiMode = aiMode;
+        _aiChatHistory.clear(); // 새 모드 시작 시 히스토리 초기화
+        modeForApiCall = _currentAiMode;
+
+        if (modeForApiCall == 'study_scenario_phrases') {
+          // "Study essential travel phrases" 클릭 시 Hatchy의 질문 표시
+          final aiQuestion = ChatMessageModel(
+            id: 'ai_phrase_q_${DateTime.now().millisecondsSinceEpoch}',
+            text: "AI Hatchy: What kind of Travel Phrases do you want to know? (e.g., Ordering food at a restaurant in Japanese)",
+            timestamp: DateTime.now(),
+            sender: MessageSender.other,
+          );
+          if (mounted) setState(() { _messages.insert(0, aiQuestion); });
+          _scrollToBottom();
+          _isWaitingForPhraseRequestDetail = true; // 다음 사용자 입력 대기 상태로 설정
+          if (mounted) setState(() => _isSending = false);
+          return; // API 호출 로직 건너뛰기
+        } else if (modeForApiCall == 'culture_info') {
+          _handleCulturalInfoRequest(originalText); // 문화 정보 요청은 별도 처리
+          // _isSending은 _handleCulturalInfoRequest 내부에서 관리
+          return;
+        }
+        //  else if (modeForApiCall == 'study_phrases' /* || modeForApiCall == 'study_vocabulary' */) {
+        //   _simulateStudyResponse(originalText, modeForApiCall); // 기타 스터디 임시 응답
+        //   if (mounted) setState(() => _isSending = false);
+        //   return;
+        // }
+      } else if (_currentAiMode != null) {
+        // 사용자가 직접 입력했고, 이전에 AI 모드가 활성화된 상태
+        modeForApiCall = _currentAiMode;
+      }
+
+      // 3. 롤플레잉 또는 자유대화 API 호출
+      if (modeForApiCall != null && (modeForApiCall.startsWith('roleplay') || modeForApiCall == 'free_talk')) {
+        _aiChatHistory.add("user: $originalText");
+        Map<String, dynamic> aiApiResponse;
+        try {
+          if (modeForApiCall.startsWith('roleplay')) {
+            aiApiResponse = await ApiService.roleplay(text: originalText, history: _aiChatHistory, language: _currentLanguage);
+          } else { // free_talk
+            aiApiResponse = await ApiService.freeTalk(text: originalText, history: _aiChatHistory, language: _currentLanguage);
+          }
+
+          final aiResponseText = aiApiResponse['message'] as String;
+          final List<String> updatedHistory = List<String>.from(aiApiResponse['history'] as List);
+          _aiChatHistory = updatedHistory;
+
+          final aiResponseMessage = ChatMessageModel(
+            id: 'ai_resp_${DateTime.now().millisecondsSinceEpoch}',
+            text: aiResponseText,
+            timestamp: DateTime.now(),
+            sender: MessageSender.other,
+          );
+          if (mounted) setState(() => _messages.insert(0, aiResponseMessage));
+          _scrollToBottom();
+
+        } catch (e) {
+          print("AI API 오류 ($modeForApiCall): $e");
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('AI 응답을 가져오는데 실패했습니다: ${e.toString()}')));
+          }
+          if (_aiChatHistory.isNotEmpty && _aiChatHistory.last == "user: $originalText") {
+            _aiChatHistory.removeLast(); // 실패 시 히스토리 추가 롤백
+          }
+        }
+      } else {
+        // 사용자가 직접 입력했고, 아직 AI 모드가 선택되지 않은 경우.
+        // 또는 처리되지 않은 추천 토픽 클릭 시 (이 경우는 위 `else` 블록에서 처리되도록 유도)
+        final aiPromptMessage = ChatMessageModel(
+            id: 'ai_prompt_${DateTime.now().millisecondsSinceEpoch}',
+            text: 'AI Hatchy: To start the conversation, choose one of the recommended topics below! If you want to have a free conversation, choose Free-talking with Hatchy!',
+            timestamp: DateTime.now(),
+            sender: MessageSender.other);
+        if (mounted) setState(() => _messages.insert(0, aiPromptMessage));
+        _scrollToBottom();
+      }
+    }
+    // 모든 메시지 처리(AI 응답 포함) 완료 후 _isSending 해제
+    if (mounted) setState(() => _isSending = false);
   }
 
-  // 스크롤 맨 아래로 이동
+  Future<void> _handleCulturalInfoRequest(String topicText) async {
+    // _sendMessage에서 _isSending = true로 설정했으므로, 여기서는 API 호출 상태만 관리
+    if (!mounted) return;
+    // setState(() => _isSending = true); // 이미 _sendMessage에서 설정됨
+
+    String? homeCountry;
+    String? destCountry;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final homeController = TextEditingController();
+        final destController = TextEditingController();
+        return AlertDialog(
+          title: const Text('Enter Country Information'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: homeController, decoration: const InputDecoration(labelText: 'Your Home Country (e.g., Korea)')),
+              TextField(controller: destController, decoration: const InputDecoration(labelText: 'Destination Country (e.g., Japan)')),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () {
+                homeCountry = homeController.text.trim();
+                destCountry = destController.text.trim();
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (homeCountry != null && homeCountry!.isNotEmpty && destCountry != null && destCountry!.isNotEmpty) {
+      final thinkingMessage = ChatMessageModel(
+        id: 'ai_thinking_culture_${DateTime.now().millisecondsSinceEpoch}',
+        text: "AI Hatchy: Comparing cultural differences between $homeCountry and $destCountry...",
+        timestamp: DateTime.now(),
+        sender: MessageSender.other,
+      );
+      if (mounted) setState(() { _messages.insert(0, thinkingMessage); });
+      _scrollToBottom();
+
+      try {
+        final culturalInfo = await ApiService.fetchCulturalDifferences(
+          homeCountry: homeCountry!,
+          destinationCountry: destCountry!,
+        );
+        final aiResponseMessage = ChatMessageModel(
+          id: 'ai_culture_resp_${DateTime.now().millisecondsSinceEpoch}',
+          text: "AI Hatchy: Here are some cultural notes for traveling from $homeCountry to $destCountry:\n\n$culturalInfo",
+          timestamp: DateTime.now(),
+          sender: MessageSender.other,
+        );
+        if (mounted) setState(() { _messages.insert(0, aiResponseMessage); });
+      } catch (e) {
+        print("문화 정보 API 오류: $e");
+        final errorMessage = ChatMessageModel(
+          id: 'ai_culture_err_${DateTime.now().millisecondsSinceEpoch}',
+          text: "AI Hatchy: Sorry, I couldn't fetch the cultural information at the moment. Please try again later.",
+          timestamp: DateTime.now(),
+          sender: MessageSender.other,
+        );
+        if (mounted) setState(() { _messages.insert(0, errorMessage); });
+      }
+    } else {
+      final promptMessage = ChatMessageModel(
+        id: 'ai_culture_prompt_again_${DateTime.now().millisecondsSinceEpoch}',
+        text: "AI Hatchy: To provide cultural information, I need both your home country and destination. Please select '$topicText' again and enter the details.",
+        timestamp: DateTime.now(),
+        sender: MessageSender.other,
+      );
+      if (mounted) setState(() { _messages.insert(0, promptMessage); });
+    }
+
+    _scrollToBottom();
+    if (mounted) setState(() => _isSending = false); // 이 핸들러의 작업 완료, 전송 상태 해제
+  }
+
+  // --- 실제 여행 회화문 요청 처리 함수 ---
+  Future<void> _handleActualScenarioPhrasesRequest(String userScenarioRequest) async {
+    if (!mounted) return;
+    // _isSending은 _sendMessage에서 이미 true로 설정되어 있음
+
+    final thinkingMessage = ChatMessageModel(
+      id: 'ai_thinking_phrases_${DateTime.now().millisecondsSinceEpoch}',
+      text: "AI Hatchy: Got it! Generating travel phrases for \"$userScenarioRequest\"...",
+      timestamp: DateTime.now(),
+      sender: MessageSender.other,
+    );
+    if (mounted) setState(() { _messages.insert(0, thinkingMessage); });
+    _scrollToBottom();
+
+    try {
+      final phrasesBlock = await ApiService.fetchScenarioPhrases(userRequest: userScenarioRequest);
+      final aiResponseMessage = ChatMessageModel(
+        id: 'ai_phrases_resp_${DateTime.now().millisecondsSinceEpoch}',
+        text: "AI Hatchy: Here are some phrases for \"$userScenarioRequest\":\n\n$phrasesBlock",
+        timestamp: DateTime.now(),
+        sender: MessageSender.other,
+      );
+      if (mounted) setState(() { _messages.insert(0, aiResponseMessage); });
+    } catch (e) {
+      print("여행 회화문 API 오류: $e");
+      final errorMessage = ChatMessageModel(
+        id: 'ai_phrases_err_${DateTime.now().millisecondsSinceEpoch}',
+        text: "AI Hatchy: Sorry, I couldn't generate travel phrases at the moment. Please try again.",
+        timestamp: DateTime.now(),
+        sender: MessageSender.other,
+      );
+      if (mounted) setState(() { _messages.insert(0, errorMessage); });
+    }
+    _scrollToBottom();
+    // _isSending 상태는 _sendMessage 함수의 finally 블록에서 해제됨
+  }
+  // --- 실제 여행 회화문 요청 처리 함수 끝 ---
+
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
-        0.0,
+        0.0, // Scroll to the top as list is reversed
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
     }
   }
 
-  // --- UI 빌드 함수들 ---
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
@@ -260,17 +437,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       appBar: _buildAppBar(colorScheme),
       body: Column(
         children: [
-          _buildMessageList(), // 메시지 목록
-          // 추천 메시지 블록 (AI Tutor 또는 다른 유저 채팅 시 조건부 표시)
-          if (_isAiTutorChat || (!_isAiTutorChat && _recommendedMessages.isNotEmpty))
+          _buildMessageListArea(),
+          if (_recommendedMessages.isNotEmpty)
             _buildRecommendedMessages(context, colorScheme),
-          _buildInputArea(colorScheme), // 메시지 입력 영역
+          _buildInputArea(colorScheme),
         ],
       ),
     );
   }
 
-  // AppBar 빌드 함수
   AppBar _buildAppBar(ColorScheme colorScheme) {
     return AppBar(
       leading: IconButton(
@@ -284,12 +459,12 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16.0),
-          child: CircleAvatar(
+          child: CircleAvatar( // 임시 온라인 상태 표시
             radius: 12,
             backgroundColor: Colors.grey.shade300,
             child: CircleAvatar(
               radius: 5,
-              backgroundColor: Colors.greenAccent.shade400, // 온라인 상태 표시 (임시)
+              backgroundColor: Colors.greenAccent.shade400,
             ),
           ),
         ),
@@ -300,122 +475,155 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
-  // 메시지 목록 빌드 함수
-  Widget _buildMessageList() {
+  Widget _buildMessageListArea() {
+    if (_isLoading) {
+      return const Expanded(child: Center(child: CircularProgressIndicator()));
+    }
+    if (_messages.isEmpty && !_isAiTutorChat) { // AI Tutor는 초기 메시지가 있을 수 있음
+      return Expanded(
+        child: Center(
+          child: Text(
+            'Start a conversation!',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+          ),
+        ),
+      );
+    }
+    // AI Tutor의 경우 _messages가 비어있어도 초기 추천 메시지 UI가 나올 수 있도록 Expanded를 유지
+    // 또는 _getDummyMessagesForChat에서 항상 초기 메시지를 제공하도록 보장
     return Expanded(
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _messages.isEmpty
-          ? Center(
-        child: Text('대화를 시작해보세요!', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
-      )
-          : GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(), // 키보드 숨기기
         child: ListView.builder(
           controller: _scrollController,
-          reverse: true,
+          reverse: true, // 최신 메시지가 하단에 표시
           padding: const EdgeInsets.symmetric(vertical: 10.0),
           itemCount: _messages.length,
           itemBuilder: (context, index) {
             final message = _messages[index];
-            // 마지막 메시지이고 AI Tutor 채팅방일 때만 AI 로봇 이미지 표시 (선택 사항)
-            // bool isLastMessage = index == 0; // reverse: true이므로 첫 번째 아이템이 마지막 메시지
-            // bool showAiRobot = isLastMessage && _isAiTutorChat;
-            return Column(
-              children: [
-                MessageBubble(message: message),
-                // if (showAiRobot) _buildAiRobotWidget(),
-              ],
-            );
+            return MessageBubble(message: message);
           },
         ),
       ),
     );
   }
 
-  // AI 로봇 위젯 (필요시 구현)
-  // Widget _buildAiRobotWidget() { ... }
-
-  // 메시지 입력 영역 빌드 함수
   Widget _buildInputArea(ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        boxShadow: [BoxShadow(offset: const Offset(0, -1), blurRadius: 4, color: Colors.black.withOpacity(0.05))],
+        boxShadow: [
+          BoxShadow(
+            offset: const Offset(0, -1),
+            blurRadius: 4,
+            color: Colors.black.withOpacity(0.05),
+          )
+        ],
       ),
       child: SafeArea(
         child: Row(
           children: [
-            IconButton(icon: Icon(Icons.add_circle, color: Colors.green.shade600, size: 30), onPressed: () {/* 첨부 기능 */}),
+            IconButton(
+              icon: Icon(Icons.add_circle, color: Colors.green.shade600, size: 30),
+              onPressed: _isSending ? null : () { /* TODO: 첨부 파일 기능 */ },
+            ),
             Expanded(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                decoration: BoxDecoration(color: colorScheme.surfaceVariant.withOpacity(0.6), borderRadius: BorderRadius.circular(20.0)),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceVariant.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
                 child: TextField(
                   controller: _textController,
-                  decoration: const InputDecoration(hintText: 'Enter a message...', border: InputBorder.none, contentPadding: EdgeInsets.symmetric(vertical: 10.0)),
+                  decoration: const InputDecoration(
+                    hintText: 'Enter a message...',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 10.0), // TextField 내부 패딩 조정
+                  ),
                   textCapitalization: TextCapitalization.sentences,
                   minLines: 1,
-                  maxLines: 5,
-                  onSubmitted: (_) => _sendMessage(),
+                  maxLines: 5, // 여러 줄 입력 가능
+                  onSubmitted: _isSending ? null : (_) => _sendMessage(),
                   enabled: !_isSending,
                 ),
               ),
             ),
             const SizedBox(width: 4),
             _isSending
-                ? const Padding(padding: EdgeInsets.all(12.0), child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5)))
-                : IconButton(icon: Icon(Icons.arrow_upward, color: colorScheme.primary, size: 28), onPressed: _sendMessage),
+                ? const Padding(
+                padding: EdgeInsets.all(12.0), // IconButton과 유사한 크기 유지
+                child: SizedBox(
+                    width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5)))
+                : IconButton(
+              icon: Icon(Icons.arrow_upward, color: colorScheme.primary, size: 28),
+              onPressed: _sendMessage,
+            ),
           ],
         ),
       ),
     );
   }
 
-  // 추천 메시지 블록 빌드 함수
   Widget _buildRecommendedMessages(BuildContext context, ColorScheme colorScheme) {
-    final Color chipBackgroundColor = colorScheme.brightness == Brightness.light ? Colors.deepPurple.shade100 : Colors.deepPurple.shade800;
-    final Color chipTextColor = colorScheme.brightness == Brightness.light ? Colors.deepPurple.shade900 : Colors.deepPurple.shade50;
-    final String sectionTitle = _isAiTutorChat ? 'Recommended Topics' : 'Recommended Topics By Gemini';
+    final Color chipBackgroundColor = colorScheme.brightness == Brightness.light
+        ? Colors.deepPurple.shade50 // 밝은 테마에 대한 색상 조정
+        : Colors.deepPurple.shade800;
+    final Color chipTextColor = colorScheme.brightness == Brightness.light
+        ? Colors.deepPurple.shade900
+        : Colors.deepPurple.shade50;
+    final String sectionTitle = _isAiTutorChat ? 'Recommended Topics with Hatchy' : 'Recommended Topics By Gemini';
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withOpacity(0.5),
+        color: colorScheme.surfaceVariant.withOpacity(0.3), // 투명도 약간 조정
         border: Border(top: BorderSide(color: colorScheme.outline.withOpacity(0.2), width: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
-            child: Text(sectionTitle, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant.withOpacity(0.8), fontWeight: FontWeight.w500)),
+            padding: const EdgeInsets.only(left: 16.0, bottom: 6.0, top:2.0), // 패딩 미세 조정
+            child: Text(
+              sectionTitle,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant.withOpacity(0.9), // 가독성 개선
+                fontWeight: FontWeight.w600, // 약간 더 강조
+              ),
+            ),
           ),
           SizedBox(
-            height: 30, // 높이 조절
+            height: 38, // Chip 높이에 맞게 조정
             child: _recommendedMessages.isEmpty
-                ? const Center(child: Text('Loading recommened messages...', style: TextStyle(color: Colors.grey)))
+                ? Center(child: Text('Loading recommendations...', style: TextStyle(color: Colors.grey.shade500)))
                 : ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0), // 좌우 패딩 추가
               itemCount: _recommendedMessages.length,
               itemBuilder: (context, index) {
-                final message = _recommendedMessages[index];
+                final messageText = _recommendedMessages[index];
+                final String? aiMode = _isAiTutorChat ? _aiTutorFixedRecommendations[messageText] : null;
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: ActionChip(
-                    label: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 1.0), // 텍스트 수직 패딩 조절
-                      child: Text(message, textAlign: TextAlign.center, style: TextStyle(color: chipTextColor, fontSize: 13, fontWeight: FontWeight.w500)),
+                    label: Text(
+                      messageText,
+                      style: TextStyle(color: chipTextColor, fontSize: 13, fontWeight: FontWeight.w500),
                     ),
                     backgroundColor: chipBackgroundColor,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0), side: BorderSide.none),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0), // 좀 더 둥글게
+                        side: BorderSide(color: chipTextColor.withOpacity(0.2)) // 은은한 테두리
+                    ),
+                    elevation: 0.5, // 미세한 그림자
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                    onPressed: () {
-                      _sendMessage(predefinedText: message); // 추천 메시지 클릭 시 전송
-                    },
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0), // 내부 패딩
+                    onPressed: _isSending
+                        ? null // 메시지 전송 중에는 비활성화
+                        : () => _sendMessage(predefinedText: messageText, aiMode: aiMode),
                   ),
                 );
               },

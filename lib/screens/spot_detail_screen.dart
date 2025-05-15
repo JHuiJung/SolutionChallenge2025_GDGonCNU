@@ -201,17 +201,17 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 위치
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.white, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        _spotDetail.location,
-                        style: textTheme.bodyMedium?.copyWith(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
+                  // Row(
+                  //   children: [
+                  //     const Icon(Icons.location_on, color: Colors.white, size: 16),
+                  //     const SizedBox(width: 4),
+                  //     Text(
+                  //       _spotDetail.location,
+                  //       style: textTheme.bodyMedium?.copyWith(color: Colors.white),
+                  //     ),
+                  //   ],
+                  // ),
+                  // const SizedBox(height: 8),
                   // 장소 이름
                   Text(
                     _spotDetail.name,

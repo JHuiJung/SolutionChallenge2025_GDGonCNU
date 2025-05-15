@@ -63,17 +63,17 @@ class TouristSpotCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 위치 정보 (아이콘 + 텍스트)
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.white, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        spot.location,
-                        style: textTheme.bodySmall?.copyWith(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
+                  // Row(
+                  //   children: [
+                  //     const Icon(Icons.location_on, color: Colors.white, size: 16),
+                  //     const SizedBox(width: 4),
+                  //     Text(
+                  //       spot.location,
+                  //       style: textTheme.bodySmall?.copyWith(color: Colors.white),
+                  //     ),
+                  //   ],
+                  // ),
+                  // const SizedBox(height: 4),
                   // 관광지 이름
                   Text(
                     spot.name,

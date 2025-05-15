@@ -5,6 +5,9 @@ import '../widgets/overlapping_avatars.dart'; // 참여자 아바타 위젯 임�
 import 'dart:async'; // Timer 사용 위해 추가
 import 'dart:ui'; // ImageFilter 사용 위해 추가 (하단 버튼 블러 효과용)
 import '../firebase/firestoreManager.dart';
+import '../models/comment_model.dart';
+import '../widgets/comment_item.dart';
+import '../services/api_service.dart'; // *** ApiService 임포트 ***
 
 class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({super.key});
@@ -19,6 +22,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   String? _postId;
   bool _isJoined = false; // 참여 상태를 저장할 변수 추가
   bool _isProcessing = false; // 버튼 클릭 처리 중인지 확인하는 플래그
+  List<CommentModel> _comments = [];
+  // --- AI 코멘트 상태 변수 추가 ---
+  String? _aiComment;
+  bool _isLoadingAiComment = false; // AI 코멘트 로딩 상태
 
   @override
   void initState() {
@@ -26,7 +33,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (ModalRoute.of(context)?.settings.arguments != null) {
         _postId = ModalRoute.of(context)?.settings.arguments as String;
-        _loadPostDetails(_postId!);
+        _loadPostDetailsAndAiComment(_postId!); // AI 코멘트 로딩 함수 호출
       } else {
         if (mounted) {
           setState(() => _isLoading = false);
@@ -37,18 +44,54 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     });
   }
 
-  Future<void> _loadPostDetails(String postId) async {
+  // 게시글 상세 정보 및 AI 코멘트 로드
+  Future<void> _loadPostDetailsAndAiComment(String postIdFromRoute) async { // 파라미터 이름 변경
     if (!mounted) return;
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 300)); // Simulate loading
-    // TODO: 실제 API 호출 또는 DB 조회
-    // = getDummyPostDetail(postId); // 더미 데이터 사용
-    MeetupPost dummyMeetupPost = getDummyPostDetail(postId);
+    setState(() {
+      _isLoading = true;
+      _isLoadingAiComment = true;
+    });
 
-    _postDetail = await getMeetUpPostById(postId) ?? dummyMeetupPost; // 더미 데이터 사용
-    // TODO: 사용자의 이 이벤트 참여 여부를 확인하여 _isJoined 초기값 설정
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+    // 게시글 상세 정보 로드
+    await Future.delayed(const Duration(milliseconds: 300));
+    // postIdFromRoute를 사용하여 _postDetail 로드
+    _postDetail = getDummyPostDetail(postIdFromRoute);
+    _comments = getDummyComments();
+
+    // AI 코멘트 로드
+    try {
+      // --- 실제 eventId와 userId 사용 ---
+      final String eventIdForApi = '1746956554711';
+      final String currentUserIdForApi = '52s2pEJSCSvWLwd6T6vj'; // 제공된 userId 사용
+
+      print('Fetching AI comment for eventId: $eventIdForApi, userId: $currentUserIdForApi'); // 로그 추가
+
+      final fetchedAiComment = await ApiService.fetchComment(
+        eventId: eventIdForApi,
+        userId: currentUserIdForApi,
+      );
+      // --- ---
+
+      if (mounted) {
+        setState(() {
+          _aiComment = fetchedAiComment;
+        });
+      }
+    } catch (e) {
+      print("Error fetching AI comment: $e");
+      if (mounted) {
+        setState(() {
+          _aiComment = "Failed to load AI comment."; // 에러 메시지 표시
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingAiComment = false; // AI 코멘트 로딩 완료 (성공/실패 모두)
+          _isLoading = false; // 전체 로딩 완료
+        });
+      }
+    }
   }
 
   // 참여 버튼 클릭 처리 함수
@@ -81,9 +124,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         updateUser();
       }
 
-
     // 없으면 추가 후 정보 업데이트
-
 
     if (mounted) {
       // 성공적으로 처리되었다고 가정
@@ -122,7 +163,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     showDialog(
       context: context,
       barrierDismissible: false, // 배경 탭으로 닫기 비활성화
-      barrierColor: Colors.black.withValues(alpha: 0.1), // 배경 약간 어둡게
+      barrierColor: Colors.black.withValues(alpha: 0.7), // 배경 약간 어둡게
       builder: (BuildContext context) {
         // 1초 후에 자동으로 팝업 닫기
         Timer(const Duration(seconds: 1), () {
@@ -139,14 +180,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             mainAxisSize: MainAxisSize.min, // 내용 크기만큼만 차지
             children: [
               Image.asset(
-                'assets/images/egg1.png', // 추가한 이미지 경로
-                height: 150, // 이미지 크기 조절
+                'assets/images/egg.png', // 추가한 이미지 경로
+                height: 200, // 이미지 크기 조절
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               const Text(
-                'Successfully joined!',
+                'Successfully Joined!',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.pinkAccent, // 디자인 참고 색상
                 ),
@@ -163,6 +204,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final TextTheme textTheme = Theme.of(context).textTheme;
+    final Color surfaceVariantWithOpacity = colorScheme.surfaceVariant.withOpacity(0.7);
+    final Color onSurfaceWithOpacity = colorScheme.onSurface.withOpacity(0.7);
+    final Color surfaceWithOpacity = colorScheme.surface.withOpacity(0.9);
+    final Color blackWithOpacityLow = Colors.black.withOpacity(0.1);
+    final Color blackWithOpacityMid = Colors.black.withOpacity(0.3);
+    final Color primaryWithOpacity = colorScheme.primary.withOpacity(0.5);
+    final Color grey600WithOpacity = Colors.grey.shade600.withOpacity(0.5);
+    // --- AI 코멘트 박스 배경색 (디자인 참고) ---
+    final Color aiCommentBoxColor = colorScheme.brightness == Brightness.light
+        ? Colors.grey.shade200.withOpacity(0.7) // 밝은 모드
+        : Colors.grey.shade800.withOpacity(0.7); // 어두운 모드
 
     return Scaffold(
       body: _isLoading
@@ -178,31 +230,47 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   delegate: SliverChildListDelegate([
                     // 카테고리, 제목, 인원 등 기존 내용...
                     _buildCategoryChips(context, colorScheme),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 12), // 카테고리와 제목 사이 간격
                     Text(
                       _postDetail.title,
                       style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6), // 제목과 인원 사이 간격
                     Text(
                       '${_postDetail.totalPeople} people · ${_postDetail.spotsLeft} left',
                       style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.7)),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12), // 인원과 유저 프로필 사이 간격
                     _buildAuthorSection(context, textTheme),
-                    const SizedBox(height: 24),
+                    // 구분짓는 가로 선
+                    const SizedBox(height: 6), // 유저와 정보 사이 간격
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.0),
+                      child: Divider(thickness: 1.5, height: 1.5),
+                    ),
+                    const SizedBox(height: 3),
                     _buildInfoRow(context, Icons.location_on_outlined, _postDetail.eventLocation),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8), // 위치와 시간 사이 간격
                     _buildInfoRow(context, Icons.access_time_outlined, _postDetail.eventDateTimeString),
+                    const SizedBox(height: 3),
+                    // 구분짓는 가로 선
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Divider(thickness: 1.5, height: 1.5),
+                    ),
                     // 하단 버튼 공간 확보 (버튼 높이 + 패딩 고려)
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 10),
                     Text(
                       _postDetail.description,
                       style: textTheme.bodyLarge?.copyWith(height: 1.6),
                     ),
 
+                    // --- "Comments by AI" 섹션 추가 ---
+                    _buildAiCommentSection(context, textTheme, aiCommentBoxColor),
+                    const SizedBox(height: 40), // 사용자 코멘트 섹션 전 여백
+                    // --- "Comments by AI" 섹션 끝 ---
 
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 90),
                   ]),
                 ),
               ),
@@ -370,11 +438,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       ),
       child: _isProcessing
           ? const SizedBox( // 로딩 인디케이터 표시
-        height: 20,
+        height: 15,
         width: 20,
         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
       )
-          : const Text('Join this event'),
+          : const Text('Join this event', style: TextStyle(fontSize: 18.0))
     );
   }
 
@@ -398,7 +466,47 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         width: 20,
         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
       )
-          : const Text('Cancel'),
+          : const Text('Cancel', style: TextStyle(fontSize: 18.0)),
     );
   }
+
+
+  // --- "Comments by AI" 섹션 빌더 ---
+  Widget _buildAiCommentSection(BuildContext context, TextTheme textTheme, Color boxBackgroundColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20), // 본문과 ai comment 부분 사이 간격
+        Text(
+          ' Comments by Gemini',
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+         const SizedBox(height: 5), // 'Comments by AI과 내용 부분 사이 간격
+        Container(
+          width: double.infinity, // 가로 꽉 채우기
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: boxBackgroundColor, // 디자인 참고 배경색
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: _isLoadingAiComment
+              ? const Center( // 로딩 중 표시
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+          )
+              : Text(
+            _aiComment ?? 'No AI comment available.', // AI 코멘트 또는 기본 메시지
+            style: textTheme.bodyLarge?.copyWith(
+              height: 1.5, // 줄 간격
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8), // 약간 흐린 텍스트
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+// --- "Comments by AI" 섹션 빌더 끝 ---
 }
