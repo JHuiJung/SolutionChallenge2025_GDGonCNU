@@ -8,8 +8,8 @@ import 'package:naviya/firebase/imageManager.dart';
 import '../../firebase/firestoreManager.dart';
 import '../../models/chat_list_item_model.dart';
 import '../../models/meetup_post.dart';
-import '../models/meetup_post.dart';
-import '../models/chat_list_item_model.dart';
+import '../../models/meetup_post.dart';
+import '../../models/chat_list_item_model.dart';
 import '../../firebase/firestoreManager.dart';
 
 class WriteMeetupScreen extends StatefulWidget {
