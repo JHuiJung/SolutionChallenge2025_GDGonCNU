@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../models/chat_list_item_model.dart'; // 채팅 모델 임포트
 import '../../widgets/chat_list_item.dart'; // 채팅 아이템 위젯 임포트
-import '../../firebase/firestoreManager.dart';
+import '../../firebase/firestoreManager.dart'; // Firestore 매니저 임포트
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -12,190 +12,178 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  late List<ChatListItemModel> _chatList;
-  bool _isLoading = true;
-
-  late UserState userinfo;
+  List<ChatListItemModel> _chatList = []; // 화면에 표시될 전체 채팅 목록
+  bool _isLoading = true; // 데이터 로딩 상태
+  // late UserState userinfo; // 현재 사용자 정보 (mainUserInfo를 직접 사용하거나, 필요시 상태로 관리)
 
   @override
   void initState() {
     super.initState();
-    _loadChatList();
+    _loadAndProcessChatList(); // 채팅 목록 로드 및 처리 함수 호출
   }
 
-  Future<void> _loadChatList() async {
+  // 채팅 목록 로드 및 AI Tutor 고정 처리 함수
+  Future<void> _loadAndProcessChatList() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
 
-    userinfo = mainUserInfo;
+    // UserState userinfo = mainUserInfo; // 전역 변수 사용 (또는 Provider 등으로 주입)
+    List<ChatListItemModel> fetchedUserChats = [];
 
-    // Simulate loading data
-    await Future.delayed(const Duration(milliseconds: 300));
+    // 1. 현재 사용자의 채팅 ID 목록을 기반으로 각 채팅방 정보 가져오기
+    //    (mainUserInfo.chatIds가 Firestore에서 가져온 채팅방 ID 리스트라고 가정)
+    if (mainUserInfo.chatIds.isNotEmpty) {
+      for (String chatId in mainUserInfo.chatIds) {
+        // 'chat_ai_tutor'는 별도로 처리하므로 여기서는 스킵
+        if (chatId == 'chat_ai_tutor') continue;
 
-
-    //_chatList = getDummyChatListItems();
-    List<ChatListItemModel> _dummyChatList = getDummyChatListItems();
-
-    List<ChatListItemModel> usersChats = [];
-
-    for(int i = 0 ; i < mainUserInfo.chatIds.length ; ++i)
-    {
-      ChatListItemModel? newChat = await getChat(mainUserInfo.chatIds[i]);
-
-      if(newChat != null)
-        {
-          usersChats.add(newChat);
+        ChatListItemModel? chatItem = await getChat(
+            chatId); // Firestore에서 채팅방 정보 가져오기
+        if (chatItem != null) {
+          fetchedUserChats.add(chatItem);
         }
-
+      }
     }
 
-    _chatList = usersChats;
-
-    setState(() {
-     //_chatList = getDummyChatListItems(); // 더미 데이터 사용
-
-
-
-      // 더미 데이터 사용
-
-
-      // 시간 순으로 정렬 (최신 메시지가 위로) - TimeOfDay 비교
-      /*_chatList.sort((a, b) {
-        final aDateTime = DateTime(0,0,0, a.timestamp.hour, a.timestamp.minute);
-        final bDateTime = DateTime(0,0,0, b.timestamp.hour, b.timestamp.minute);
-        return bDateTime.compareTo(aDateTime); // 내림차순 정렬
-      });*/
-      usersChats.sort((a, b) {
-        final aDateTime = DateTime(0,0,0, a.timestamp.hour, a.timestamp.minute);
-        final bDateTime = DateTime(0,0,0, b.timestamp.hour, b.timestamp.minute);
-        return bDateTime.compareTo(aDateTime); // 내림차순 정렬
-      });
-      _isLoading = false;
+    // 2. 사용자 채팅 목록을 시간 순으로 정렬 (최신 메시지가 위로)
+    fetchedUserChats.sort((a, b) {
+      // TimeOfDay를 비교 가능한 형태로 변환 (오늘 날짜 기준)
+      final now = DateTime.now();
+      final aDateTime = DateTime(
+          now.year, now.month, now.day, a.timestamp.hour, a.timestamp.minute);
+      final bDateTime = DateTime(
+          now.year, now.month, now.day, b.timestamp.hour, b.timestamp.minute);
+      return bDateTime.compareTo(aDateTime); // 내림차순 정렬
     });
+
+    // 3. AI Tutor 채팅방 정보 생성 또는 로드
+    //    (AI Tutor는 항상 존재한다고 가정하고, 필요시 Firestore에서 로드)
+    ChatListItemModel aiTutorChat = ChatListItemModel(
+      chatId: 'chat_ai_tutor',
+      userId: 'ai_tutor_bot',
+      // AI 튜터의 고유 ID
+      name: 'Hatchy',
+      imageUrl: 'assets/images/egg.png',
+      // AI Tutor 프로필 이미지 경로
+      lastMessage: 'Hi! How can I help you?',
+      // 초기 메시지 또는 마지막 메시지
+      timestamp: TimeOfDay.now(),
+      // 항상 최신으로 보이도록 (또는 실제 마지막 대화 시간)
+      isRead: true, // 기본값
+    );
+    // 만약 AI Tutor 채팅방 정보도 Firestore에서 관리한다면 여기서 getChat('chat_ai_tutor') 호출
+
+    // 4. 최종 채팅 목록 구성: AI Tutor를 맨 앞에 추가
+    List<ChatListItemModel> finalChatList = [aiTutorChat, ...fetchedUserChats];
+
+    if (mounted) {
+      setState(() {
+        _chatList = finalChatList;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final ColorScheme colorScheme = Theme
+        .of(context)
+        .colorScheme;
+    // UserState userinfo = mainUserInfo; // 빌드 메서드 내에서 필요시 다시 참조
 
     return Scaffold(
       body: SafeArea(
-        child: Stack( // AI 챗봇 버튼을 위에 띄우기 위해 Stack 사용
+        child: Stack(
           children: [
-            CustomScrollView(
-              slivers: [
-                // 1. 상단 헤더 (Chat 타이틀, MyPage 아이콘)
-                SliverPadding(
-                  padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
-                  sliver: SliverToBoxAdapter(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Chat",
-                          style: TextStyle(
-                            fontSize: 32, // Meetup과 동일하게
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            // MyPage 화면으로 이동
-                            Navigator.pushNamed(context, '/mypage');
-                            print('Navigate to MyPage');
-                          },
-                          child: CircleAvatar(
-                            radius: 22,
-                            backgroundColor: Colors.grey.shade300,
-                            // TODO: 실제 사용자 프로필 이미지로 교체
-                            backgroundImage: (userinfo != null && userinfo.profileURL != null && userinfo.profileURL.isNotEmpty)
-                            // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
-                                ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
-                            // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
-                                : AssetImage('assets/images/egg.png') as ImageProvider<Object>?,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+            RefreshIndicator( // 당겨서 새로고침 기능 추가
+              onRefresh: _loadAndProcessChatList,
+              child: CustomScrollView(
+                slivers: [
+                  // 1. 상단 헤더 (Chat 타이틀, MyPage 아이콘)
+                  _buildHeader(context, colorScheme, mainUserInfo),
+                  // mainUserInfo 전달
 
-                // 2. 채팅 목록
-                _isLoading
-                    ? const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                )
-                    : _chatList.isEmpty
-                    ? SliverFillRemaining( // 채팅 목록이 없을 때 표시할 내용 (선택 사항)
-                  child: Center(
-                    child: Text(
-                      'No chats yet!',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                  ),
-                )
-                    : SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                      // 구분선 추가 (마지막 아이템 제외)
-                      return Column(
-                        children: [
-                          ChatListItem(chat: _chatList[index]),
-                          if (index < _chatList.length - 1)
-                            Divider(
-                              height: 1,
-                              thickness: 1,
-                              indent: 88, // 프로필 사진 너비 + 여백 만큼 들여쓰기
-                              color: colorScheme.surfaceVariant.withOpacity(0.5),
-                            ),
-                        ],
-                      );
-                    },
-                    childCount: _chatList.length,
-                  ),
-                ),
-                // 하단 여백 (AI 버튼에 가려지지 않도록)
-                const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
-              ],
-            ),
-
-            // // 3. AI 채팅 버튼 (로봇 모양)
-            // Positioned(
-            //   bottom: 20,
-            //   right: 20,
-            //   child: FloatingActionButton(
-            //     onPressed: () {
-            //       // AI 채팅방으로 이동
-            //       Navigator.pushNamed(context, '/ai_chat');
-            //       print('Navigate to AI Chat');
-            //     },
-            //     backgroundColor: colorScheme.primaryContainer, // 테마 색상 활용
-            //     child: Icon(
-            //       Icons.smart_toy_outlined, // 로봇 아이콘 (혹은 Image 위젯 사용)
-            //       color: colorScheme.onPrimaryContainer,
-            //       size: 30,
-            //     ),
-            //     // tooltip: 'Chat with AI', // 길게 눌렀을 때 힌트 (선택 사항)
-            //   ),
-            // ),
-
-            // 4. 로봇 일러스트 (선택 사항 - 목록이 비어있을 때만 표시하거나 항상 표시)
-            // 실제 이미지 에셋 필요
-            // if (!_isLoading && _chatList.isEmpty) // 목록이 비어있을 때만 표시
-            Positioned(
-              bottom: 80, // FAB 위에 위치하도록 조정
-              right: 10,
-              child: Opacity( // 약간 투명하게 (선택 사항)
-                opacity: 0.8,
-                child: Image.asset( // 실제 이미지 경로로 변경 필요
-                  'assets/images/robot_thinking.png', // 예시 경로
-                  height: 120,
-                  // 에러 처리
-                  errorBuilder: (context, error, stackTrace) => const SizedBox(height: 120), // 에러 시 빈 공간
-                ),
+                  // 2. 채팅 목록
+                  _buildChatList(colorScheme),
+                ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // --- UI 빌더 함수들 ---
+
+  // 상단 헤더 빌드 함수
+  Widget _buildHeader(BuildContext context, ColorScheme colorScheme,
+      UserState currentUserInfo) {
+    return SliverPadding(
+      padding: const EdgeInsets.only(
+          left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
+      sliver: SliverToBoxAdapter(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              "Chat",
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            InkWell(
+              onTap: () => Navigator.pushNamed(context, '/mypage'),
+              child: CircleAvatar(
+                radius: 22,
+                backgroundColor: Colors.grey.shade300,
+                // 현재 사용자 프로필 이미지 표시
+                backgroundImage: (currentUserInfo.profileURL.isNotEmpty)
+                    ? NetworkImage(currentUserInfo.profileURL)
+                    : const AssetImage(
+                    'assets/images/user_profile.jpg') as ImageProvider, // 기본 이미지 에셋
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 채팅 목록 빌드 함수
+  Widget _buildChatList(ColorScheme colorScheme) {
+    if (_isLoading) {
+      return const SliverFillRemaining(
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_chatList.isEmpty) {
+      // AI Tutor도 없으면 이 메시지 표시 (실제로는 AI Tutor는 항상 있으므로 이 경우는 드묾)
+      return const SliverFillRemaining(
+        child: Center(
+          child: Text('No chats yet!',
+              style: TextStyle(fontSize: 18, color: Colors.grey)),
+        ),
+      );
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+            (context, index) {
+          return Column(
+            children: [
+              ChatListItem(chat: _chatList[index]),
+              if (index < _chatList.length - 1) // 마지막 아이템 제외하고 구분선 추가
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: 88, // 프로필 사진 너비 + 여백
+                  color: colorScheme.surfaceVariant.withOpacity(0.5),
+                ),
+            ],
+          );
+        },
+        childCount: _chatList.length,
       ),
     );
   }

@@ -63,7 +63,8 @@ class ChatListItem extends StatelessWidget {
                   Text(
                     chat.name,
                     style: textTheme.titleMedium?.copyWith(
-                      fontWeight: chat.isRead ? FontWeight.normal : FontWeight.bold, // 안 읽으면 굵게
+                      // fontWeight: chat.isRead ? FontWeight.normal : FontWeight.bold, // 안 읽으면 굵게
+                      fontWeight: FontWeight.bold, // 항상 굵게 표시
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -73,7 +74,8 @@ class ChatListItem extends StatelessWidget {
                     chat.lastMessage,
                     style: textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurface.withValues(alpha: 0.6), // 약간 흐린 색
-                      fontWeight: chat.isRead ? FontWeight.normal : FontWeight.bold, // 안 읽으면 굵게
+                      //fontWeight: chat.isRead ? FontWeight.normal : FontWeight.bold, // 안 읽으면 굵게
+                      fontWeight: FontWeight.bold, // 항상 굵게 표시
                     ),
                     maxLines: 2, // 최대 2줄
                     overflow: TextOverflow.ellipsis,

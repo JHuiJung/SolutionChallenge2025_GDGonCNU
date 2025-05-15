@@ -2,11 +2,19 @@
 
     <!-- 여기에 인터넷 권한을 추가했습니다 -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 위치 정보 사용 시 추가 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:label="naviya"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <!-- 여기에 Google Maps API 키를 추가합니다. -->
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAYs4Eybp4wveIqW6jH0kVhzyDp8VibPNU"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -20,9 +28,6 @@
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
                  to determine the Window background behind the Flutter UI. -->
-            <meta-data
-                android:name="com.google.android.geo.API_KEY"
-                android:value="YOUR_API_KEY_HERE"/>
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"

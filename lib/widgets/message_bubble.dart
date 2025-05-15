@@ -80,7 +80,7 @@ class MessageBubble extends StatelessWidget {
             if (message.isTranslatedByAI)
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Text('AI에서 번역된 문장입니다.', style: aiNoticeStyle),
+                child: Text('Translated by Gemini', style: aiNoticeStyle),
               ),
             // 시간 및 읽음 상태 (내 메시지 또는 상대 메시지 아래)
             Padding(

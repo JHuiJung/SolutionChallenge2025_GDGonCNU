@@ -8,7 +8,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as path_lib; // path와 http.path 충돌 방지 위해 별칭 사용
 
 class ApiService {
-  static const _baseUrl = 'http://127.0.0.1:8000';
+  // static const _baseUrl = 'http://127.0.0.1:8000';
+  static const _baseUrl = 'http://10.0.2.2:8000'; // 에뮬레이터에서 호스트 머신의 localhost 접근 위한 특별 IP 주소
 
   // 공통적으로 JSON POST
   static Future<Map<String, dynamic>> _post(
@@ -35,13 +36,13 @@ class ApiService {
     throw Exception('API Error ${resp.statusCode}: ${resp.body}');
   }
 
-  /// 1) 번역
+  /// 1) 번역 (완료)
   static Future<String> translate(String text) async {
     final data = await _post('/translate', {'text': text});
     return data['message'] as String;
   }
 
-  /// 2) 토픽 추천
+  /// 2) 토픽 추천 (완료)
   static Future<List<String>> fetchTopics(int count) async {
     final data = await _get('/topics?count=$count');
     return List<String>.from(data['topics'] as List);
@@ -95,20 +96,20 @@ class ApiService {
   //   return List<String>.from(data['lessons'] as List);
   // }
 
-  /// 7) 자유 대화
-  static Future<Map<String, dynamic>> freeTalk({
-    required String text,
-    List<String>? history,
-  }) async {
-    final body = {'text': text, if (history != null) 'history': history};
-    final data = await _post('/free-talk', body);
-    return {
-      'message': data['message'] as String,
-      'history': List<String>.from(data['history'] as List)
-    };
-  }
+  // /// 7) 자유 대화
+  // static Future<Map<String, dynamic>> freeTalk({
+  //   required String text,
+  //   List<String>? history,
+  // }) async {
+  //   final body = {'text': text, if (history != null) 'history': history};
+  //   final data = await _post('/free-talk', body);
+  //   return {
+  //     'message': data['message'] as String,
+  //     'history': List<String>.from(data['history'] as List)
+  //   };
+  // }
 
-  /// 8) 사진 위치 인식 (모바일 및 웹 호환)
+  /// 8) 사진 위치 인식 (모바일 및 웹 호환) (완료)
   static Future<String> locatePhoto(
       {required String filePath, // 모바일용: 파일 경로
         Uint8List? fileBytes, // 웹용: 파일 바이트
@@ -185,4 +186,6 @@ class ApiService {
       throw Exception('사진 위치 인식 API 실패 ${streamedResponse.statusCode}: $responseString');
     }
   }
+
+  static freeTalk({required String text, required List<String> history}) {}
 }

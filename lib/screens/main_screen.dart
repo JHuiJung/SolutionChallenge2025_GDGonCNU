@@ -45,9 +45,10 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_getAppBarTitle(_selectedIndex)), // 선택된 탭에 따라 제목 변경
-      ),
+      // 상단의 앱 바 삭제
+      // appBar: AppBar(
+      //   title: Text(_getAppBarTitle(_selectedIndex)), // 선택된 탭에 따라 제목 변경
+      // ),
       body: Center(
         // 선택된 인덱스에 해당하는 화면 표시
         child: _widgetOptions.elementAt(_selectedIndex),
