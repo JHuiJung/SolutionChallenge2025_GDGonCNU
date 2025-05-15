@@ -11,6 +11,8 @@ from firebase_utils import db
 from roleplaying_order import simulate_order
 from search_locate import ask_photo_location
 from meetup_comments import generate_comment
+from culture import get_cultural_differences
+
 app = FastAPI()
 
 # CORS 허용 설정
@@ -22,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],            # Content-Type, Authorization 등
 )
 
-GOOGLE_API_KEY = ""
+GOOGLE_API_KEY = "AIzaSyCqb3HHXZ3qgtPXsRA2tx2FYKQAZZ-oeHM"
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # 루트 라우트
@@ -121,3 +123,17 @@ async def comments_endpoint(req: CommentRequest):
     except Exception as e:
         # 그 외 AI 호출 중 에러
         raise HTTPException(status_code=500, detail=f"코멘트 생성 실패: {e}")
+    
+    
+@app.get("/culture")
+async def culture(home: str, dest: str):
+    """
+    홈 국가(home)와 여행 국가(dest)를 입력 받아,
+    두 나라 간 주요 예절·문화 차이점을 문단 형식으로 반환합니다.
+    호출 예: GET /culture?home=한국&dest=일본
+    """
+    try:
+        description = get_cultural_differences(home, dest)
+        return {"description": description}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"문화 차이 안내 실패: {e}")
