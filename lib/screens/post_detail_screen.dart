@@ -1,4 +1,5 @@
 // lib/screens/post_detail_screen.dart
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/meetup_post.dart'; // MeetupPost 모델 임포트 (경로 확인)
 import '../widgets/overlapping_avatars.dart'; // 참여자 아바타 위젯 임포트 (경로 확인)
@@ -55,22 +56,54 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     // 게시글 상세 정보 로드
     await Future.delayed(const Duration(milliseconds: 300));
     // postIdFromRoute를 사용하여 _postDetail 로드
-    _postDetail = getDummyPostDetail(postIdFromRoute);
+    //_postDetail = getDummyPostDetail(postIdFromRoute);
+    MeetupPost _dummy = getDummyPostDetail(postIdFromRoute);
+    _postDetail = await getMeetUpPostById(_postId!)??_dummy;
     _comments = getDummyComments();
 
     // AI 코멘트 로드
     try {
-      // --- 실제 eventId와 userId 사용 ---
-      final String eventIdForApi = '1746956554711';
-      final String currentUserIdForApi = '52s2pEJSCSvWLwd6T6vj'; // 제공된 userId 사용
+      // --- 1. 현재 로그인한 사용자 ID 가져오기 ---
+      final User? currentUser = FirebaseAuth.instance.currentUser;
+      String? currentUserIdForApi;
 
-      print('Fetching AI comment for eventId: $eventIdForApi, userId: $currentUserIdForApi'); // 로그 추가
+      if (currentUser != null) {
+        currentUserIdForApi = currentUser.uid;
+      } else {
+        // 사용자가 로그인되어 있지 않은 경우 처리
+        print("Error: User not logged in. Cannot fetch AI comment.");
+        if (mounted) {
+          setState(() {
+            _aiComment = "Please log in to see AI comments.";
+            _isLoadingAiComment = false;
+            _isLoading = false; // 전체 로딩도 완료 처리
+          });
+        }
+        return; // 함수 종료
+      }
+
+      // --- 2. eventId는 전달받은 postIdFromRoute 사용 ---
+      final String eventIdForApi = postIdFromRoute;
+
+      // --- API 호출 전 ID 값 확인 (디버깅용) ---
+      if (currentUserIdForApi.isEmpty || eventIdForApi.isEmpty) {
+        print("Error: Invalid IDs for AI comment. UserID: '$currentUserIdForApi', EventID: '$eventIdForApi'");
+        if(mounted) {
+          setState(() {
+            _aiComment = "Error: Could not fetch AI comment due to invalid IDs.";
+            _isLoadingAiComment = false;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+      print('Fetching AI comment for eventId: $eventIdForApi, userId: $currentUserIdForApi');
+
 
       final fetchedAiComment = await ApiService.fetchComment(
         eventId: eventIdForApi,
         userId: currentUserIdForApi,
       );
-      // --- ---
 
       if (mounted) {
         setState(() {
@@ -81,14 +114,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       print("Error fetching AI comment: $e");
       if (mounted) {
         setState(() {
-          _aiComment = "Failed to load AI comment."; // 에러 메시지 표시
+          _aiComment = "Failed to load AI comment: ${e.toString()}";
         });
       }
     } finally {
       if (mounted) {
         setState(() {
-          _isLoadingAiComment = false; // AI 코멘트 로딩 완료 (성공/실패 모두)
-          _isLoading = false; // 전체 로딩 완료
+          _isLoadingAiComment = false;
+          // _isLoading은 게시글 상세 정보 로딩과 AI 코멘트 로딩이 모두 끝나야 false로 설정
+          // 여기서는 AI 코멘트 로딩만 완료되었으므로, _isLoading은 그대로 두거나
+          // 게시글 상세 로딩과 AI 코멘트 로딩을 분리하여 관리해야 함.
+          // 현재 구조에서는 _loadPostDetailsAndAiComment 시작 시 _isLoading = true,
+          // finally에서 _isLoading = false로 설정하는 것이 적절해 보임.
+          if (!_isLoadingAiComment && !_isLoading) { // 만약 다른 비동기 작업도 있다면 그 완료 시점도 고려
+            // 이미 게시글 로드가 끝났다고 가정하면 여기서 false
+          }
+          _isLoading = false; // AI 코멘트 로딩이 마지막 작업이라고 가정하고 전체 로딩 완료
         });
       }
     }
@@ -119,10 +160,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
 
     if(!isChatOn)
-      {
-        mainUserInfo.chatIds.add(_postDetail.meetupChatid);
-        updateUser();
-      }
+    {
+      mainUserInfo.chatIds.add(_postDetail.meetupChatid);
+      updateUser();
+    }
 
     // 없으면 추가 후 정보 업데이트
 
@@ -424,25 +465,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // Join 버튼 위젯
   Widget _buildJoinButton(BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
     return ElevatedButton(
-      onPressed: _isProcessing ? null : _handleJoin, // 처리 중이면 비활성화
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-        textStyle: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
+        onPressed: _isProcessing ? null : _handleJoin, // 처리 중이면 비활성화
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          textStyle: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          // 처리 중일 때 비활성화 스타일 (선택 사항)
+          disabledBackgroundColor: colorScheme.primary.withValues(alpha: 0.5),
         ),
-        // 처리 중일 때 비활성화 스타일 (선택 사항)
-        disabledBackgroundColor: colorScheme.primary.withValues(alpha: 0.5),
-      ),
-      child: _isProcessing
-          ? const SizedBox( // 로딩 인디케이터 표시
-        height: 15,
-        width: 20,
-        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-      )
-          : const Text('Join this event', style: TextStyle(fontSize: 18.0))
+        child: _isProcessing
+            ? const SizedBox( // 로딩 인디케이터 표시
+          height: 15,
+          width: 20,
+          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+        )
+            : const Text('Join this event', style: TextStyle(fontSize: 18.0))
     );
   }
 
@@ -481,7 +522,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           ' Comments by Gemini',
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
-         const SizedBox(height: 5), // 'Comments by AI과 내용 부분 사이 간격
+        const SizedBox(height: 5), // 'Comments by AI과 내용 부분 사이 간격
         Container(
           width: double.infinity, // 가로 꽉 채우기
           padding: const EdgeInsets.all(16.0),

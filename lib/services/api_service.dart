@@ -12,7 +12,7 @@ import 'package:path/path.dart' as path_lib; // Aliased to avoid conflict with h
 class ApiService {
   // Use 10.0.2.2 for Android emulator to connect to host's localhost.
   // For iOS simulator or physical devices, use your machine's local network IP.
-  // static const _baseUrl = 'http://127.0.0.1:8000'; // For testing with local server directly
+  //static const _baseUrl = 'http://127.0.0.1:8000'; // For testing with local server directly
   static const _baseUrl = 'http://10.0.2.2:8000';
 
   /// Generic helper function for making POST requests with JSON body.
@@ -151,7 +151,7 @@ class ApiService {
     http.MultipartFile multipartFile;
 
     if (kIsWeb) {
-      // --- Web platform ---
+      // --- 웹 환경 처리 ---
       if (fileBytes == null || fileName == null) {
         throw ArgumentError('For web, fileBytes and fileName are required.');
       }
@@ -162,10 +162,8 @@ class ApiService {
           parsedMediaType = MediaType.parse(mimeType);
         } catch (e) {
           print('Warning: Could not parse provided MIME type: $mimeType. Defaulting...');
-          // Fallback to octet-stream or try to guess from fileName
         }
       }
-
       if (parsedMediaType == null && fileName.contains('.')) {
         final extension = fileName.split('.').last.toLowerCase();
         if (extension == 'jpg' || extension == 'jpeg') {
@@ -173,32 +171,31 @@ class ApiService {
         } else if (extension == 'png') {
           parsedMediaType = MediaType('image', 'png');
         }
-        // Add more common types if needed
       }
-      // Default if still null
       parsedMediaType ??= MediaType('application', 'octet-stream');
 
       multipartFile = http.MultipartFile.fromBytes(
-        'file', // Field name expected by the server
+        'file',
         fileBytes,
         filename: fileName,
         contentType: parsedMediaType,
       );
     } else {
-      // --- Mobile (iOS/Android) platform ---
-      if (filePath == null || filePath.isEmpty) {
-        throw ArgumentError('For mobile, filePath is required.');
+      // --- 모바일 (iOS/Android) 환경 처리 ---
+      if (filePath == null || filePath.isEmpty) { // filePath null 또는 빈 문자열 체크
+        throw ArgumentError('For mobile, filePath is required and cannot be empty.');
       }
-      final imageFile = File(filePath); // dart:io File
+      // 이 블록은 !kIsWeb 일 때만 실행되므로, dart:io의 File 사용 가능
+      final imageFile = File(filePath); // dart:io의 File 생성
       if (!await imageFile.exists()) {
         throw Exception('Image file not found at path: $filePath');
       }
 
       String fileExtension = path_lib.extension(imageFile.path).replaceFirst('.', '').toLowerCase();
-      if (fileExtension.isEmpty) fileExtension = 'jpg'; // Default extension
+      if (fileExtension.isEmpty) fileExtension = 'jpg';
 
       multipartFile = await http.MultipartFile.fromPath(
-        'file', // Field name
+        'file',
         imageFile.path,
         contentType: MediaType('image', fileExtension),
       );
@@ -208,19 +205,15 @@ class ApiService {
 
     try {
       final streamedResponse = await request.send();
-      final responseString = await streamedResponse.stream.bytesToString(); // Read response once
+      final responseString = await streamedResponse.stream.bytesToString();
 
       if (streamedResponse.statusCode >= 200 && streamedResponse.statusCode < 300) {
         final data = jsonDecode(responseString) as Map<String, dynamic>;
-
-        // Null-safe access to response data
         final String locationOnly = data['location'] as String? ?? '';
         final String fullText = data['recommendation'] as String? ?? 'No additional information available.';
-
-        return {'location_only': locationOnly, 'full_text': fullText};
+        return {'location': locationOnly, 'recommendation': fullText};
       } else {
-        throw Exception(
-            'Photo location API failed: ${streamedResponse.statusCode} - $responseString');
+        throw Exception('Photo location API failed: ${streamedResponse.statusCode} - $responseString');
       }
     } catch (e) {
       throw Exception('Error during photo location request: $e');

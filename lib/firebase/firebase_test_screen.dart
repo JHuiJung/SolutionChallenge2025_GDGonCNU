@@ -19,7 +19,7 @@ class FirebaseTestScreen extends StatefulWidget {
 
 class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   String _status = 'Not authenticated';
-  String testDummyEmail = "test3@dummy.com";
+  String testDummyEmail = "test2@dummy.com";
   String testDummyPassword = "password123";
 
   // ✅ 구글 로그인 함수
@@ -175,9 +175,14 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
                 style: TextStyle(fontSize: 32),
               ),
             ),
-
+            Image.asset(
+              'assets/images/egg.png', // Assuming egg.png is in assets/images/
+              height: 170, // Adjust size as needed based on your image
+            ),
+            SizedBox(height: 24),
             const Text(
-              "Let's Get Started",
+              "Travel Local\nConnect Deeper",
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -192,14 +197,14 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
              */
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 50),
 
             // Google G Logo Button
             GestureDetector(
               onTap: () => _signInWithGoogle(context),
               child: Container(
-                width: 150,
-                height: 150,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.rectangle,
                   borderRadius: BorderRadius.circular(20),
@@ -216,24 +221,27 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
                 child: Center(
                   child: Image.asset(
                     'assets/images/Google__G__logo.png',
-                    width: 120,
-                    height: 120,
+                    width: 170,
+                    height: 170,
                     fit: BoxFit.contain,
                   ),
                 ),
               ),
             ),
-
-            const SizedBox(height: 25),
-
+            const SizedBox(height: 15),
             const Text(
-              'Start with Google',
-              style: TextStyle(fontSize: 18),
-            ),
+                'Start with Google',
+                style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 55),
+            const Text(
+                'By Team Gromits.',
+                style: TextStyle(fontSize: 24)),
+            const Text(
+                'GDG on campus: Chonnam National Univ.',
+                style: TextStyle(fontSize: 18)),
           ],
         ),
       ),
     );
   }
-
 }
