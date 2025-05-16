@@ -153,7 +153,7 @@ class ApiService {
     http.MultipartFile multipartFile;
 
     if (kIsWeb) {
-      // --- 웹 환경 처리 ---
+      // --- web ---
       if (fileBytes == null || fileName == null) {
         throw ArgumentError('For web, fileBytes and fileName are required.');
       }
@@ -183,12 +183,12 @@ class ApiService {
         contentType: parsedMediaType,
       );
     } else {
-      // --- 모바일 (iOS/Android) 환경 처리 ---
+      // --- Mobile (iOS/Android) ---
       if (filePath == null || filePath.isEmpty) { // filePath null 또는 빈 문자열 체크
         throw ArgumentError('For mobile, filePath is required and cannot be empty.');
       }
-      // 이 블록은 !kIsWeb 일 때만 실행되므로, dart:io의 File 사용 가능
-      final imageFile = File(filePath); // dart:io의 File 생성
+      // This block is only executed when !kIsWeb.
+      final imageFile = File(filePath); // Generate File of dart:io
       if (!await imageFile.exists()) {
         throw Exception('Image file not found at path: $filePath');
       }

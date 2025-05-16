@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:io' if (dart.library.html) 'dart:typed_data'; // Conditional import
 
 import 'package:flutter/foundation.dart' show Uint8List, kIsWeb; // Using kIsWeb
@@ -37,11 +38,9 @@ class _MapScreenState extends State<MapScreen> {
   // Initial map position (e.g., Seoul)
   static const CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(37.5665, 126.9780),
-    zoom: 13.0,
+    zoom: 14.0,
   );
 
-
-  // Markers to display on the map (example)
   late Set<Marker> _markers = {
     const Marker(
       markerId: MarkerId('marker_1'),
@@ -50,6 +49,10 @@ class _MapScreenState extends State<MapScreen> {
     const Marker(
       markerId: MarkerId('marker_2'),
       position: LatLng(37.5650, 126.9770),
+    ),
+    const Marker(
+      markerId: MarkerId('marker_3'),
+      position: LatLng(37.5685, 126.9760),
     ),
     const Marker(
       markerId: MarkerId('marker_3'),
@@ -90,11 +93,23 @@ class _MapScreenState extends State<MapScreen> {
 
     _buttonBottomOffset = _panelMinHeight + _buttonMarginAbovePanel;
     _loadAllSpotPosts(); // Now called after userinfo is initialized
+
+    // Markers to display on the map (example)
+    for (int i = 0; i < 20; i++) {
+      var longtitude = Random().nextDouble()/20 + 37.57;
+      var latitude = Random().nextDouble()/20 + 126.97;
+
+      Marker marker = Marker(
+        markerId: MarkerId('marker_1'),
+        position: LatLng(longtitude, latitude),);
+
+      _markers.add(marker);
+    }
   }
 
   @override
   void dispose() {
-    // _mapController?.dispose();
+    _mapController?.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -108,6 +123,7 @@ class _MapScreenState extends State<MapScreen> {
     // Fetch all SpotDetailModel data from actual DB or API.
     // Assuming Firestore's getAllSpotPost() is used here.
     _allSpotPosts = await getAllSpotPost(); // Get all spot posts
+    _allSpotPosts.shuffle();
 
     // Initially display all spots as TouristSpotModel without filtering
     _filterAndDisplayTouristSpots(null); // Pass filterLocation as null
@@ -122,6 +138,8 @@ class _MapScreenState extends State<MapScreen> {
     setState(() => _isLoadingSpots = true); // Show loading during filtering
 
     List<SpotDetailModel> filteredSpotPosts;
+
+    print("🥹🥹filterKeyword: $filterKeyword");
 
     if (filterKeyword != null && filterKeyword.isNotEmpty) {
       // Filter _allSpotPosts using filterKeyword.
@@ -159,7 +177,7 @@ class _MapScreenState extends State<MapScreen> {
         final Location firstLocation = locations.first;
         final LatLng searchedPosition = LatLng(firstLocation.latitude, firstLocation.longitude);
         print('Found location: $searchedPosition');
-        _goToLocation(searchedPosition, zoom: 14.0); // Map movement
+        _goToLocation(searchedPosition, zoom: 30.0); // Map movement
 
         if (mounted) {
           setState(() {
@@ -192,50 +210,112 @@ class _MapScreenState extends State<MapScreen> {
   }
 
 
-  // --- Modified function to move to place identified from image search results and display spots ---
+  // // --- Modified function to move to place identified from image search results and display spots ---
+  // Future<void> _goToIdentifiedLocationAndShowSpots() async {
+  //   if (_imageSearchLocationOnly == null || _imageSearchLocationOnly!.isEmpty) {
+  //     if(mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location information is not available.')));
+  //     return;
+  //   }
+  //
+  //   final String placeQuery = _imageSearchLocationOnly!;
+  //   print('Attempting to geocode and move to from image: $placeQuery');
+  //
+  //   try {
+  //     List<Location> locations = await locationFromAddress(placeQuery);
+  //     if (locations.isNotEmpty) {
+  //       final Location firstLocation = locations.first;
+  //       final LatLng targetPosition = LatLng(firstLocation.latitude, firstLocation.longitude);
+  //
+  //       _closeImageSearchUI();
+  //       await _goToLocation(targetPosition, zoom: 15.0);
+  //       // *** Filter spots by location keyword found from image search ***
+  //       _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
+  //
+  //       if(mounted) {
+  //         setState(() {
+  //           _markers = {
+  //             Marker(markerId: MarkerId(placeQuery), position: targetPosition, infoWindow: InfoWindow(title: placeQuery))
+  //           };
+  //         });
+  //       }
+  //
+  //       if (_panelController.isAttached && !_panelController.isPanelOpen) {
+  //         _panelController.open();
+  //       }
+  //     } else {
+  //       print('Could not geocode location from AI result: $placeQuery');
+  //       if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not find map location for "$placeQuery" from AI result.')));
+  //       // Even if Geocoding fails, attempt to filter spots using the location keyword provided by AI
+  //       _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
+  //     }
+  //   } catch (e) {
+  //     print('Error in _goToIdentifiedLocationAndShowSpots: $e');
+  //     if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error processing identified location: ${e.toString()}')));
+  //     // Even if an error occurs, attempt to filter spots using the location keyword provided by AI
+  //     _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
+  //   }
+  // }
+
+  // --- 이미지 검색 결과에서 장소로 이동 및 스팟 표시 함수 수정 ---
   Future<void> _goToIdentifiedLocationAndShowSpots() async {
     if (_imageSearchLocationOnly == null || _imageSearchLocationOnly!.isEmpty) {
-      if(mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location information is not available.')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Location information is not available.')));
       return;
     }
 
     final String placeQuery = _imageSearchLocationOnly!;
     print('Attempting to geocode and move to from image: $placeQuery');
 
-    try {
-      List<Location> locations = await locationFromAddress(placeQuery);
-      if (locations.isNotEmpty) {
-        final Location firstLocation = locations.first;
-        final LatLng targetPosition = LatLng(firstLocation.latitude, firstLocation.longitude);
+    String location = _imageSearchLocationOnly!;
 
-        _closeImageSearchUI();
-        _goToLocation(targetPosition, zoom: 14.0);
+    // 먼저 이미지 검색 UI를 닫고, 지도를 다시 표시하도록 상태 변경
+    _closeImageSearchUI();
 
-        if(mounted) {
-          setState(() {
-            _markers = {
-              Marker(markerId: MarkerId(placeQuery), position: targetPosition, infoWindow: InfoWindow(title: placeQuery))
-            };
-          });
+    // 상태 변경이 반영되어 GoogleMap 위젯이 다시 빌드되고
+    // 네이티브 지도가 초기화될 시간을 벌기 위해 다음 프레임 이후에 지도 이동 로직 실행
+    WidgetsBinding.instance.addPostFrameCallback((_) async { // <-- 이 부분을 추가
+      try {
+        List<Location> locations = await locationFromAddress(placeQuery);
+        if (locations.isNotEmpty) {
+          final Location firstLocation = locations.first;
+          final LatLng targetPosition = LatLng(
+              firstLocation.latitude, firstLocation.longitude);
+
+          _goToLocation(targetPosition, zoom: 30.0);
+
+          if (mounted) {
+            setState(() {
+              _markers = {
+                Marker(markerId: MarkerId(placeQuery),
+                    position: targetPosition,
+                    infoWindow: InfoWindow(title: placeQuery))
+              };
+            });
+          }
+
+          print("🥹imageSearchLocationOnly ${location}");
+          _filterAndDisplayTouristSpots(location);
+
+          if (_panelController.isAttached && !_panelController.isPanelOpen) {
+            _panelController.open();
+          }
+        } else {
+          print('Could not geocode location from AI result: $placeQuery');
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                  'Could not find map location for "$placeQuery" from AI result.')));
+          _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
         }
-        // *** Filter spots by location keyword found from image search ***
-        _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
-
-        if (_panelController.isAttached && !_panelController.isPanelOpen) {
-          _panelController.open();
-        }
-      } else {
-        print('Could not geocode location from AI result: $placeQuery');
-        if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not find map location for "$placeQuery" from AI result.')));
-        // Even if Geocoding fails, attempt to filter spots using the location keyword provided by AI
+      } catch (e) {
+        print(
+            'Error in _goToIdentifiedLocationAndShowSpots (after callback): $e'); // 로그 메시지 수정
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                'Error processing identified location: ${e.toString()}')));
         _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
       }
-    } catch (e) {
-      print('Error in _goToIdentifiedLocationAndShowSpots: $e');
-      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error processing identified location: ${e.toString()}')));
-      // Even if an error occurs, attempt to filter spots using the location keyword provided by AI
-      _filterAndDisplayTouristSpots(_imageSearchLocationOnly);
-    }
+    }); // <-- addPostFrameCallback 끝
   }
 
   // --- Modified function to call write screen and process result ---
@@ -301,7 +381,7 @@ class _MapScreenState extends State<MapScreen> {
     ));
   }*/
 
-  Future<void> _goToLocation(LatLng position, {double zoom = 15.0}) async {
+  Future<void> _goToLocation(LatLng position, {double zoom = 30.0}) async {
     // Add zoom parameter
     final GoogleMapController controller = await _mapControllerCompleter.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(
@@ -373,6 +453,8 @@ class _MapScreenState extends State<MapScreen> {
           _imageSearchLocationOnly = locationData['location']; // 'location_only' -> 'location'
           _imageSearchStatus = ImageSearchStatus.found;
           _searchBarHintText = 'Location found!';
+          print("🥹location: ${locationData['location']}");
+          print("🥹recommendation: ${locationData['recommendation']}");
         });
       }
       // --- End of modification ---
@@ -894,7 +976,7 @@ class _MapScreenState extends State<MapScreen> {
             .background, // Match SafeArea background
       ),
       child: ElevatedButton(
-        onPressed: _goToIdentifiedLocationAndShowSpots,
+        onPressed: _goToIdentifiedLocationAndShowSpots, //1111111111111
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: textColor,

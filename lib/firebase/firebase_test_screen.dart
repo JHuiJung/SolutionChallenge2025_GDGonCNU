@@ -26,7 +26,6 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   Future<void> _signInWithGoogle(BuildContext _context) async {
 
     // Get login information
-    // 로그인 정보 가져오기
     /*
     final userinfo = FirebaseAuth.instance.currentUser;
 
@@ -42,6 +41,8 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
     }
     */
+
+
 
     // Not signed in -> Move to login screen
     if (kIsWeb) {
@@ -91,25 +92,25 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
 
     try {
-      print("😍 모바일 이벤트1");
+      print("😍 Mobile event1");
 
       final GoogleSignIn googleSignIn = GoogleSignIn();
       await googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-      print("😍 모바일 이벤트2");
+      print("😍 Mobile event2");
 
       if (googleUser == null) {
-        print("😥 Google 로그인 취소");
+        print("😥 Google Login Canceled");
         if (context.mounted) {
           Navigator.pushReplacementNamed(context, '/login');
         }
         return;
       }
 
-      print("😍 모바일 이벤트3");
+      print("😍 Mobile event3");
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      print("😍 모바일 이벤트4");
+      print("😍 Mobile event4");
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -117,16 +118,16 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
       );
 
       final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-      print("🎉 로그인 성공: ${userCredential.user?.email}");
+      print("🎉 login success: ${userCredential.user?.email}");
 
     } catch (e, stack) {
-      print("❌ 로그인 중 오류 발생: $e");
+      print("❌ error accured: $e");
       print(stack);
       // 오류 처리 UI 혹은 fallback 로직 추가 가능
     }
 
     /*
-    print("😍 모바일 이벤트1");
+    print("😍 Mobile event1");
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
@@ -203,19 +204,19 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextButton(
-              onPressed: () {
-                signInWithEmailPassword(
-                  context: context,
-                  email: testDummyEmail,
-                  password: testDummyPassword,
-                );
-              },
-              child: const Text(
-                "테스트 더미 로그인",
-                style: TextStyle(fontSize: 32),
-              ),
-            ),
+            // TextButton(
+            //   onPressed: () {
+            //     signInWithEmailPassword(
+            //       context: context,
+            //       email: testDummyEmail,
+            //       password: testDummyPassword,
+            //     );
+            //   },
+            //   child: const Text(
+            //     "Test Dummy Login",
+            //     style: TextStyle(fontSize: 32),
+            //   ),
+            // ),
             Image.asset(
               'assets/images/egg.png', // Assuming egg.png is in assets/images/
               height: 170, // Adjust size as needed based on your image

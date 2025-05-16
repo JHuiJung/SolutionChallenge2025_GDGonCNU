@@ -195,11 +195,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     // Preference box style (same as MyPageScreen)
     final Color prefBoxBgColor = colorScheme.brightness == Brightness.light
-        ? Colors.purple.shade50.withValues(alpha: 0.7)
-        : Colors.purple.shade900.withValues(alpha: 0.5);
-    final Color prefBoxTitleColor = colorScheme.onSurface.withValues(alpha: 0.6);
+        ? Color(0xffE3DCF2).withValues(alpha: 0.5)
+        : Color(0xffE3DCF2).withValues(alpha: 0.3);
+    final Color prefBoxTitleColor = colorScheme.onSurface.withValues(alpha: 0.9);
     final Color prefBoxContentColor = colorScheme.onSurface;
-    final Color prefBoxBorderColor = Colors.purple.shade300;
+    final Color prefBoxBorderColor = Color(0xffE3DCF2).withValues(alpha: 0.9);
 
     return Scaffold(
       body: _isLoading

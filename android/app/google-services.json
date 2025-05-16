@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "194283088715-8eo04g8505npkhcpm96qb83t9doevlrq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.naviya",
+            "certificate_hash": "4f9a0b7cc35cca2dc278080f4783bb8aac72f04f"
+          }
+        },
+        {
           "client_id": "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com",
           "client_type": 3
         }

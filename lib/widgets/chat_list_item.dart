@@ -43,14 +43,14 @@ class ChatListItem extends StatelessWidget {
                 backgroundColor: Colors.grey.shade300, // Default background color
                 backgroundImage: chat.imageUrl != null
                     ? NetworkImage(chat.imageUrl!) // URL image
-                    : null, // Only background color if no URL
+                    : AssetImage('assets/images/egg.png') as ImageProvider, // Only background color if no URL
                 child: chat.imageUrl == null
-                    ? Icon( // Default icon when no image (e.g.: group icon)
+                    ? null
+                    : Icon( // Default icon when no image (e.g.: group icon)
                   chat.userId == 'group_1' ? Icons.group : Icons.person,
                   size: 30,
                   color: Colors.grey.shade600,
-                )
-                    : null, // Don't display icon if image exists
+                ), // Don't display icon if image exists
               ),
             ),
             const SizedBox(width: 16),

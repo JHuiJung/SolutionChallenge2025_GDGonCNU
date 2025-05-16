@@ -59,7 +59,7 @@ class _ChatScreenState extends State<ChatScreen> {
       chatId: 'chat_ai_tutor',
       userId: 'ai_tutor_bot', // AI Tutor's unique ID
       name: 'Hatchy',
-      imageUrl: 'assets/images/egg.png', // AI Tutor profile image path
+      imageUrl: null, // AI Tutor profile image path
       lastMessage: 'Hi! How can I help you?', // Initial or last message
       timestamp: TimeOfDay.now(), // To always appear latest (or use actual last message time)
       isRead: true, // Default value

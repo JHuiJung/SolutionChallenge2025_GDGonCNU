@@ -167,7 +167,7 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                       borderRadius: BorderRadius.circular(30), // Rounded button
                     ),
                   ),
-                  child: const Text('완료'),
+                  child: const Text('Done'),
                 ),
               ),
               const SizedBox(height: 40), // Bottom padding
@@ -175,20 +175,20 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
           ),
         ),
       ),
-      // Bottom completion button (using FloatingActionButton)
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Add logic to save selected preferences
-          print('Selected Preferences: $_selectedPreferences');
-          Navigator.pushReplacementNamed(context, '/main');
-        },
-        backgroundColor: chipBackgroundColor, // Button color (similar to unselected chip color)
-        elevation: 2,
-        child: Icon(
-          Icons.arrow_forward,
-          color: chipTextColor, // Icon color
-        ),
-      ),
+      //Bottom completion button (using FloatingActionButton)
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     // TODO: Add logic to save selected preferences
+      //     print('Selected Preferences: $_selectedPreferences');
+      //     Navigator.pushReplacementNamed(context, '/main');
+      //   },
+      //   backgroundColor: chipBackgroundColor, // Button color (similar to unselected chip color)
+      //   elevation: 2,
+      //   child: Icon(
+      //     Icons.arrow_forward,
+      //     color: chipTextColor, // Icon color
+      //   ),
+      // ),
     );
   }
 
