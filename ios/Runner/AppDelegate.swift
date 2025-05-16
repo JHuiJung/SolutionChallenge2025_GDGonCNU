@@ -19,7 +19,7 @@ import GoogleMaps // google maps lib 추가
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GMSServices.provideAPIKey("AIzaSyAYs4Eybp4wveIqW6jH0kVhzyDp8VibPNU") // API 키 등록
+    GMSServices.provideAPIKey("INPUT_YOUR_API_KEY") // API 키 등록
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
