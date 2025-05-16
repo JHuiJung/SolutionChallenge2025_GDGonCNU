@@ -31,6 +31,7 @@ import 'screens/write/write_meetup_screen.dart'; // Meetup 게시글 작성 화�
 import 'screens/write/write_spot_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,8 +39,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // 테스트용 끝나고 지우기
   firestoreManager.SetUpFireManager();
+  //await _googleSignIn.signOut();
   //firestoreManager.getUserInfoByEmail("test1@dummy.com");
   //await testNetworkConnectivity();
   //await createDummyAccounts();
@@ -90,7 +91,7 @@ class MyApp extends StatelessWidget {
 }
 
 
-
+/*
 Future<void> testNetworkConnectivity() async {
   try {
     // 구글 홈페이지 같은 잘 알려진 외부 URL로 테스트
@@ -104,7 +105,9 @@ Future<void> testNetworkConnectivity() async {
     print('Network test exception: $e');
   }
 }
+*/
 
+/*
 Future<void> createDummyAccounts() async {
   final List<Map<String, String>> dummyUsers = [
     {'email': 'test6@dummy.com', 'password': 'password123'},
@@ -131,6 +134,7 @@ Future<void> createDummyAccounts() async {
     }
   }
 }
+*/
 // 이 함수를 호출하는 버튼이나 이벤트 리스너 추가
 // ElevatedButton(
 //   onPressed: testNetworkConnectivity,
