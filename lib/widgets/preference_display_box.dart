@@ -22,7 +22,7 @@ class PreferenceDisplayBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity, // 부모 너비 채우기
+      width: double.infinity, // Fill parent width
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -45,12 +45,12 @@ class PreferenceDisplayBox extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               color: contentColor,
-              fontWeight: FontWeight.w500, // 내용 텍스트도 약간 굵게
-              height: 1.4, // 줄 간격
+              fontWeight: FontWeight.w500, // Content text also slightly bold
+              height: 1.4, // Line spacing
             ),
           ),
           const SizedBox(height: 8),
-          // 하단 보라색 선
+          // Bottom purple line
           Container(
             height: 2,
             color: borderColor,

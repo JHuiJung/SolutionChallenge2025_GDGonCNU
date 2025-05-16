@@ -1,5 +1,5 @@
 // lib/models/chat_message_model.dart
-enum MessageSender { me, other, ai } // 메시지 발신자 타입
+enum MessageSender { me, other, ai } // Message sender type
 
 class ChatMessageModel {
   final String id;
@@ -73,9 +73,9 @@ class ChatMessageInfoDB {
 
 
 
-// --- 임시 더미 데이터 생성 함수 ---
+// --- Temporary Dummy Data Creation Function ---
 List<ChatMessageModel> getDummyChatMessages(String chatId) {
-  // chatId에 따라 다른 대화 내용을 보여줄 수 있음 (지금은 동일)
+  // Can show different conversation based on chatId (currently same)
   final now = DateTime.now();
   return [
     ChatMessageModel(
@@ -89,7 +89,7 @@ List<ChatMessageModel> getDummyChatMessages(String chatId) {
     ChatMessageModel(
       id: 'msg_4',
       text: "no, It's my first time.",
-      timestamp: now.subtract(const Duration(minutes: 1, seconds: 5)), // 원문이 조금 더 빠름
+      timestamp: now.subtract(const Duration(minutes: 1, seconds: 5)), // Original is slightly earlier
       sender: MessageSender.other,
     ),
     ChatMessageModel(
@@ -97,16 +97,16 @@ List<ChatMessageModel> getDummyChatMessages(String chatId) {
       text: 'Have you ever been to Korea?',
       timestamp: now.subtract(const Duration(minutes: 2)),
       sender: MessageSender.me,
-      isRead: true, // 읽음 상태
+      isRead: true, // Read status
     ),
     ChatMessageModel(
-      id: 'msg_2_ko', // ID 구분
+      id: 'msg_2_ko', // ID differentiation
       text: '한국에 와 본 적이 있나요?',
-      originalText: 'Have you ever been to Korea?', // 원문
+      originalText: 'Have you ever been to Korea?', // Original text
       timestamp: now.subtract(const Duration(minutes: 2)),
       sender: MessageSender.me,
       isRead: true,
-      isTranslatedByAI: true, // AI 번역됨
+      isTranslatedByAI: true, // Translated by AI
     ),
     ChatMessageModel(
       id: 'msg_1_ko',

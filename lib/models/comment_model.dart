@@ -3,10 +3,10 @@ class CommentModel {
   final String commentId;
   final String commenterId;
   final String commenterName;
-  final String commenterInfo; // 예: "America, 20"
+  final String commenterInfo; // e.g., "America, 20"
   final String commenterImageUrl;
   final String commentText;
-  final DateTime timestamp; // 코멘트 작성 시간
+  final DateTime timestamp; // Comment creation time
 
   CommentModel({
     required this.commentId,
@@ -19,7 +19,7 @@ class CommentModel {
   });
 }
 
-// --- 임시 더미 데이터 생성 함수 ---
+// --- Temporary Dummy Data Creation Function ---
 List<CommentModel> getDummyComments() {
   return [
     CommentModel(

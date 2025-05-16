@@ -20,12 +20,12 @@ class LanguageIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min, // 필요한 만큼만 너비 차지
+      mainAxisSize: MainAxisSize.min, // Take up only necessary width
       children: List.generate(maxProficiency, (index) {
         return Container(
           width: dotSize,
           height: dotSize,
-          margin: EdgeInsets.only(left: index == 0 ? 0 : dotSize / 2), // 점 사이 간격
+          margin: EdgeInsets.only(left: index == 0 ? 0 : dotSize / 2), // Spacing between dots
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: index < proficiency ? activeColor : inactiveColor,

@@ -1,7 +1,7 @@
 // lib/screens/spot_detail_screen.dart
 import 'package:flutter/material.dart';
 import '../models/spot_detail_model.dart';
-import '../widgets/preference_display_box.dart'; // 재사용
+import '../widgets/preference_display_box.dart'; // Reuse
 import '../widgets/spot_comment_card.dart';
 import '../firebase/firestoreManager.dart';
 import '../models/spot_comment_model.dart';
@@ -25,16 +25,16 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // 빌드 후 spotId를 가져와 데이터 로드
+    // Get spotId after build and load data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (ModalRoute.of(context)?.settings.arguments != null) {
         _spotId = ModalRoute.of(context)?.settings.arguments as String;
         _loadSpotDetails(_spotId!);
       } else {
-        // ID가 없을 경우 처리
+        // Handle case where ID is missing
         setState(() => _isLoading = false);
         print("Error: Spot ID not provided.");
-        // Navigator.pop(context); // 또는 에러 메시지 표시
+        // Navigator.pop(context); // Or display an error message
       }
     });
 
@@ -46,7 +46,7 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
     if (!mounted) return;
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(milliseconds: 400)); // Simulate loading
-    // TODO: 실제 API 호출 또는 DB 조회로 spotId에 맞는 데이터 가져오기
+    // TODO: Fetch data matching spotId from actual API or DB query
     //_spotDetail = getDummySpotDetail(spotId);
     SpotDetailModel _spotdummy = getDummySpotDetail(spotId);
     _spotDetail = await getSpotPostById(spotId) ?? _spotdummy;
@@ -59,7 +59,7 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final TextTheme textTheme = Theme.of(context).textTheme;
 
-    // 선호도 박스 스타일 (MyPage와 유사하게)
+    // Preference box style (similar to MyPage)
     final Color prefBoxBgColor = colorScheme.brightness == Brightness.light
         ? Colors.purple.shade50.withValues(alpha: 0.7)
         : Colors.purple.shade900.withValues(alpha: 0.5);
@@ -72,22 +72,22 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
         slivers: <Widget>[
-          // 1. 상단 이미지 및 정보 영역 (SliverAppBar)
+          // 1. Top image and info area (SliverAppBar)
           _buildSliverAppBar(context, colorScheme, textTheme),
 
-          // 2. 본문 내용 영역 (SliverList)
+          // 2. Main content area (SliverList)
           SliverPadding(
             padding: const EdgeInsets.all(16.0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // 여행지 설명
+                // Tourist spot description
                 Text(
                   _spotDetail.description,
-                  style: textTheme.bodyLarge?.copyWith(height: 1.5), // 줄 간격
+                  style: textTheme.bodyLarge?.copyWith(height: 1.5), // Line spacing
                 ),
                 const SizedBox(height: 24),
 
-                // 추천 대상
+                // Recommended to
                 PreferenceDisplayBox(
                   title: 'Recommend to',
                   content: _spotDetail.recommendTo,
@@ -98,7 +98,7 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // 즐길 거리
+                // Can enjoy
                 PreferenceDisplayBox(
                   title: 'You can enjoy',
                   content: _spotDetail.canEnjoy,
@@ -109,8 +109,8 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // --- Comments 섹션 제목 수정 ---
-                Row( // 제목과 버튼을 위한 Row
+                // --- Modify Comments section title ---
+                Row( // Row for title and button
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -118,11 +118,11 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                       'Comments',
                       style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    // 코멘트 작성 버튼 추가
+                    // Add comment write button
                     IconButton(
                       icon: Icon(Icons.edit_outlined, color: colorScheme.onSurface.withOpacity(0.7)),
                       onPressed: () {
-                        // 스팟 코멘트 작성 화면으로 이동 (spotId 전달)
+                        // Navigate to spot comment write screen (pass spotId)
                         Navigator.pushNamed(context, '/write_spot_comment', arguments: _spotId);
                       },
                       tooltip: 'Write a comment',
@@ -131,53 +131,53 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                     ),
                   ],
                 ),
-                Divider(thickness: 1, height: 20, color: outlineColorWithOpacity), // 구분선
-                // --- Comments 섹션 제목 수정 끝 ---
+                Divider(thickness: 1, height: 20, color: outlineColorWithOpacity), // Divider
+                // --- End of Comments section title modification ---
               ]),
             ),
           ),
 
-          // 3. 댓글 목록 (가로 스크롤)
+          // 3. Comment list (horizontal scroll)
           _buildCommentsSection(context),
 
-          // 하단 여백 추가
+          // Add bottom padding
           const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
         ],
       ),
     );
   }
 
-  // SliverAppBar 빌더
+  // SliverAppBar builder
   Widget _buildSliverAppBar(BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
     return SliverAppBar(
-      expandedHeight: 350.0, // 이미지 영역 높이
-      stretch: true, // 오버스크롤 시 이미지 늘어나도록
-      pinned: true, // 스크롤 시 상단에 AppBar 고정
-      backgroundColor: colorScheme.surface, // 고정될 때 AppBar 배경색
-      iconTheme: const IconThemeData(color: Colors.white), // 뒤로가기 버튼 색상 (초기)
-      // 고정될 때 아이콘 색상 변경 (선택 사항)
+      expandedHeight: 350.0, // Image area height
+      stretch: true, // Allow image to stretch on overscroll
+      pinned: true, // Pin AppBar to the top when scrolling
+      backgroundColor: colorScheme.surface, // AppBar background color when pinned
+      iconTheme: const IconThemeData(color: Colors.white), // Back button color (initial)
+      // Change icon color when pinned (optional)
       // surfaceTintColor: colorScheme.onSurface,
 
       flexibleSpace: FlexibleSpaceBar(
         stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
-        // 제목은 사용하지 않음 (직접 배치)
+        // Title is not used (placed directly)
         // title: Text('Details'),
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // 배경 이미지
+            // Background image
             Image.network(
               _spotDetail.imageUrl,
               fit: BoxFit.cover,
               loadingBuilder: (context, child, progress) => progress == null
                   ? child
-                  : Container(color: Colors.grey.shade300), // 로딩 중 회색 배경
+                  : Container(color: Colors.grey.shade300), // Grey background while loading
               errorBuilder: (context, error, stack) => Container(
                 color: Colors.grey.shade400,
                 child: const Icon(Icons.broken_image, color: Colors.white54, size: 50),
               ),
             ),
-            // 어두운 Gradient 오버레이
+            // Dark Gradient overlay
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -188,11 +188,11 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                     Colors.black.withValues(alpha: 0.2),
                     Colors.black.withValues(alpha: 0.7),
                   ],
-                  stops: const [0.0, 0.5, 1.0], // 그라데이션 범위 조절
+                  stops: const [0.0, 0.5, 1.0], // Adjust gradient range
                 ),
               ),
             ),
-            // 이미지 위 텍스트 및 프로필 정보 (하단 정렬)
+            // Text and profile info above the image (bottom aligned)
             Positioned(
               bottom: 16.0,
               left: 16.0,
@@ -200,7 +200,7 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 위치
+                  // Location
                   // Row(
                   //   children: [
                   //     const Icon(Icons.location_on, color: Colors.white, size: 16),
@@ -212,26 +212,26 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
                   //   ],
                   // ),
                   // const SizedBox(height: 8),
-                  // 장소 이름
+                  // Place name
                   Text(
                     _spotDetail.name,
-                    style: textTheme.displaySmall?.copyWith( // 더 큰 제목 스타일
+                    style: textTheme.displaySmall?.copyWith( // Larger title style
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       shadows: [Shadow(blurRadius: 2, color: Colors.black.withValues(alpha: 0.5))],
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // 한 줄 소개 (Quote)
+                  // One-line introduction (Quote)
                   Text(
                     _spotDetail.quote,
                     style: textTheme.titleMedium?.copyWith(color: Colors.white.withValues(alpha: 0.9)),
                   ),
                   const SizedBox(height: 12),
-                  // 작성자 정보
-                  InkWell( // 클릭 가능하도록
+                  // Author info
+                  InkWell( // Make it clickable
                     onTap: () {
-                      // 작성자 프로필 화면으로 이동
+                      // Navigate to author's profile screen
                       Navigator.pushNamed(context, '/user_profile', arguments: _spotDetail.authorId);
                     },
                     child: Row(
@@ -258,22 +258,22 @@ class _SpotDetailScreenState extends State<SpotDetailScreen> {
     );
   }
 
-  // 댓글 섹션 빌더 (가로 스크롤)
+  // Comments section builder (horizontal scroll)
   Widget _buildCommentsSection(BuildContext context) {
-    // SliverToBoxAdapter를 사용하여 CustomScrollView 내부에 가로 ListView 배치
+    // Use SliverToBoxAdapter to place a horizontal ListView inside CustomScrollView
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 150, // 댓글 카드 높이 + 여백 고려
+        height: 150, // Comment card height + padding consideration
         //child: _spotDetail.comments.isEmpty
         child: spotComments.isEmpty
-            ? Center( // 댓글 없을 때 메시지
+            ? Center( // Message when no comments
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text('No comments yet.', style: TextStyle(color: Colors.grey)),
           ),
         )
             : ListView.builder(
-          scrollDirection: Axis.horizontal, // 가로 스크롤
+          scrollDirection: Axis.horizontal, // Horizontal scroll
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           //itemCount: _spotDetail.comments.length,
           itemCount: spotComments.length,

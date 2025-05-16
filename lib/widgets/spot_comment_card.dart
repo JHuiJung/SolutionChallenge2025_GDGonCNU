@@ -13,11 +13,11 @@ class SpotCommentCard extends StatelessWidget {
     final TextTheme textTheme = Theme.of(context).textTheme;
 
     return Container(
-      width: MediaQuery.of(context).size.width * 0.7, // 카드 너비
+      width: MediaQuery.of(context).size.width * 0.7, // Card width
       margin: const EdgeInsets.only(right: 12.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withValues(alpha: 0.5), // 반투명 배경
+        color: colorScheme.surfaceVariant.withValues(alpha: 0.5), // Translucent background
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Column(
@@ -25,7 +25,7 @@ class SpotCommentCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              // 댓글 작성자 프로필 사진
+              // Comment author's profile picture
               CircleAvatar(
                 radius: 18,
                 backgroundColor: Colors.grey.shade400,
@@ -37,7 +37,7 @@ class SpotCommentCard extends StatelessWidget {
                     : null,
               ),
               const SizedBox(width: 8),
-              // 댓글 작성자 이름
+              // Comment author's name
               Expanded(
                 child: Text(
                   comment.commenterName,
@@ -48,23 +48,23 @@ class SpotCommentCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // 별점 표시
+          // Display rating
           Row(
             children: List.generate(5, (index) {
               return Icon(
-                index < comment.rating.floor() // 채워진 별
+                index < comment.rating.floor() // Filled star
                     ? Icons.star_rounded
-                    : index < comment.rating // 반쪽 별 (필요시 구현)
+                    : index < comment.rating // Half star (implement if needed)
                     ? Icons.star_half_rounded
-                    : Icons.star_outline_rounded, // 빈 별
+                    : Icons.star_outline_rounded, // Empty star
                 color: Colors.amber,
                 size: 16,
               );
             }),
           ),
           const SizedBox(height: 8),
-          // 댓글 내용 (최대 2줄)
-          Expanded( // 남은 공간 채우도록 Expanded 추가
+          // Comment text (max 2 lines)
+          Expanded( // Add Expanded to fill remaining space
             child: Text(
               comment.text,
               style: textTheme.bodyMedium,

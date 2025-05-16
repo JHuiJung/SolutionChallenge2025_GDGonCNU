@@ -1,7 +1,7 @@
 // lib/widgets/chat_list_item.dart
 import 'package:flutter/material.dart';
 import '../models/chat_list_item_model.dart';
-import 'package:intl/intl.dart'; // 시간 포맷팅 위해 추가 (pubspec.yaml에 intl 추가 필요)
+import 'package:intl/intl.dart'; // Added for time formatting (needs intl added to pubspec.yaml)
 
 class ChatListItem extends StatelessWidget {
   final ChatListItemModel chat;
@@ -12,15 +12,15 @@ class ChatListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final TextTheme textTheme = Theme.of(context).textTheme;
-    // 시간 포맷터 (예: 12:00 PM)
+    // Time formatter (e.g.: 12:00 PM)
     final timeFormatter = DateFormat('h:mm a');
-    // TimeOfDay를 DateTime으로 변환 (오늘 날짜 기준)
+    // Convert TimeOfDay to DateTime (based on today's date)
     final now = DateTime.now();
     final dateTime = DateTime(now.year, now.month, now.day, chat.timestamp.hour, chat.timestamp.minute);
 
-    return InkWell( // 전체 행 클릭 가능
+    return InkWell( // Entire row clickable
       onTap: () {
-        // 개별 채팅방으로 이동 (chat.chatId 전달)
+        // Navigate to individual chat room (pass chat.chatId)
         Navigator.pushNamed(context, '/chat_room', arguments: chat.chatId);
         print('Navigate to chat room: ${chat.chatId}');
       },
@@ -28,34 +28,34 @@ class ChatListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Row(
           children: [
-            // 1. 프로필 사진
+            // 1. Profile Picture
             InkWell(
               onTap: () {
-                // AI 튜터가 아닌 경우 사용자 프로필로 이동
-                if (chat.userId != 'ai_tutor_bot' && chat.userId != 'group_1') { // 그룹 ID도 제외
+                // Navigate to user profile if not AI tutor
+                if (chat.userId != 'ai_tutor_bot' && chat.userId != 'group_1') { // Exclude group ID as well
                   Navigator.pushNamed(context, '/user_profile', arguments: chat.userId);
                   print('Navigate to user profile: ${chat.userId}');
                 }
-                // AI 튜터나 그룹 채팅 프로필 클릭 시 동작은 정의하지 않음 (또는 다른 동작 추가)
+                // No action defined for AI tutor or group chat profile click (or add different action)
               },
               child: CircleAvatar(
                 radius: 28,
-                backgroundColor: Colors.grey.shade300, // 기본 배경색
+                backgroundColor: Colors.grey.shade300, // Default background color
                 backgroundImage: chat.imageUrl != null
-                    ? NetworkImage(chat.imageUrl!) // URL 이미지
-                    : null, // URL 없으면 배경색만
+                    ? NetworkImage(chat.imageUrl!) // URL image
+                    : null, // Only background color if no URL
                 child: chat.imageUrl == null
-                    ? Icon( // 이미지 없을 때 기본 아이콘 (예: 그룹 아이콘)
+                    ? Icon( // Default icon when no image (e.g.: group icon)
                   chat.userId == 'group_1' ? Icons.group : Icons.person,
                   size: 30,
                   color: Colors.grey.shade600,
                 )
-                    : null, // 이미지 있으면 아이콘 표시 안 함
+                    : null, // Don't display icon if image exists
               ),
             ),
             const SizedBox(width: 16),
 
-            // 2. 이름, 마지막 메시지
+            // 2. Name, Last Message
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,8 +63,8 @@ class ChatListItem extends StatelessWidget {
                   Text(
                     chat.name,
                     style: textTheme.titleMedium?.copyWith(
-                      // fontWeight: chat.isRead ? FontWeight.normal : FontWeight.bold, // 안 읽으면 굵게
-                      fontWeight: FontWeight.bold, // 항상 굵게 표시
+                      // fontWeight: chat.isRead ? FontWeight.normal : FontWeight.bold, // Bold if unread
+                      fontWeight: FontWeight.bold, // Always display bold
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -73,11 +73,11 @@ class ChatListItem extends StatelessWidget {
                   Text(
                     chat.lastMessage,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.6), // 약간 흐린 색
-                      //fontWeight: chat.isRead ? FontWeight.normal : FontWeight.bold, // 안 읽으면 굵게
-                      fontWeight: FontWeight.bold, // 항상 굵게 표시
+                      color: colorScheme.onSurface.withValues(alpha: 0.6), // Slightly faded color
+                      //fontWeight: chat.isRead ? FontWeight.normal : FontWeight.bold, // Bold if unread
+                      fontWeight: FontWeight.bold, // Always display bold
                     ),
-                    maxLines: 2, // 최대 2줄
+                    maxLines: 2, // Maximum 2 lines
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -85,18 +85,18 @@ class ChatListItem extends StatelessWidget {
             ),
             const SizedBox(width: 16),
 
-            // 3. 시간, 이동 아이콘
+            // 3. Time, Navigation Icon
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center, // 세로 중앙 정렬
+              mainAxisAlignment: MainAxisAlignment.center, // Vertical center alignment
               children: [
                 Text(
-                  timeFormatter.format(dateTime), // 포맷된 시간 표시
+                  timeFormatter.format(dateTime), // Display formatted time
                   style: textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
-                const SizedBox(height: 4), // 시간과 아이콘 사이 간격
+                const SizedBox(height: 4), // Space between time and icon
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 14,

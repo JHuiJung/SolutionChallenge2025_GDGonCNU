@@ -1,8 +1,8 @@
 import 'package:naviya/screens/write/write_meetup_screen.dart';
 import 'package:naviya/screens/write/write_spot_screen.dart';
 
-import 'theme/app_theme.dart'; // 테마 파일 임포트
-import 'dart:ui'; // import 추가
+import 'theme/app_theme.dart'; // Import theme file
+import 'dart:ui'; // Add import
 
 import 'package:flutter/material.dart';
 import 'package:naviya/screens/spot_detail_screen.dart';
@@ -13,21 +13,21 @@ import 'firebase_options.dart';
 import 'firebase/firebase_test_screen.dart';
 import 'firebase/firestoreManager.dart' as firestoreManager;
 
-// import 'screens/create_post_screen.dart'; (삭제함)
-import 'screens/splash_screen.dart'; // *** 스플래시 스크린 임포트 ***
+// import 'screens/create_post_screen.dart'; (Deleted)
+import 'screens/splash_screen.dart'; // *** Import Splash Screen ***
 import 'screens/preference_selection_screen.dart';
 import 'screens/profile_registration_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/mypage_screen.dart';
 import 'screens/post_detail_screen.dart';
-import 'screens/user_profile_screen.dart'; 
+import 'screens/user_profile_screen.dart';
 import 'screens/chat/chat_room_screen.dart';
-import 'screens/search_screen.dart'; // 검색 화면 임포트
-import 'screens/spot_detail_screen.dart'; // 관광지 상세 화면 임포트
+import 'screens/search_screen.dart'; // Import Search Screen
+import 'screens/spot_detail_screen.dart'; // Import Tourist Spot Detail Screen
 import 'screens/write/write_user_comment_screen.dart';
 import 'screens/write/write_spot_comment_screen.dart';
-import 'screens/edit_mypage_screen.dart'; // 프로필 수정 화면 임포트
-import 'screens/write/write_meetup_screen.dart'; // Meetup 게시글 작성 화면 임포트
+import 'screens/edit_mypage_screen.dart'; // Import Profile Edit Screen
+import 'screens/write/write_meetup_screen.dart'; // Import Meetup Post Write Screen
 import 'screens/write/write_spot_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
@@ -38,7 +38,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // 테스트용 끝나고 지우기
+  // For testing, delete after use
   firestoreManager.SetUpFireManager();
   //firestoreManager.getUserInfoByEmail("test1@dummy.com");
   //await testNetworkConnectivity();
@@ -53,37 +53,38 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Quokka',
-      theme: AppTheme.lightTheme, // 밝은 테마 적용
-      darkTheme: AppTheme.darkTheme, // 다크 테마 적용
-      // themeMode: ThemeMode.system, // 시스템 설정에 따라 테마 자동 전환
-      themeMode: ThemeMode.light, // 항상 밝은 모드
-      debugShowCheckedModeBanner: false, // 디버그 배너 숨김
+      title: 'Hatch',
+      theme: AppTheme.lightTheme, // Apply light theme
+      darkTheme: AppTheme.darkTheme, // Apply dark theme
+      // themeMode: ThemeMode.system, // Auto switch theme based on system settings
+      themeMode: ThemeMode.light, // Always light mode
+      debugShowCheckedModeBanner: false, // Hide debug banner
       scrollBehavior: MaterialScrollBehavior().copyWith(
         dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
       ),
 
-      // 앱 시작 시 첫 화면 설정
+      // Set the first screen when the app starts
       initialRoute: '/splash',
+      //initialRoute: '/profile',
 
-      // 네비게이션 라우트 정의
+      // Define navigation routes
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/login': (context) => const FirebaseTestScreen(),
         '/profile': (context) => const ProfileRegistrationScreen(),
         '/preference': (context) => const PreferenceSelectionScreen(),
         '/main': (context) => const MainScreen(),
-        '/mypage': (context) => const MyPageScreen(), // MyPage 라우트 추가
-        '/post_detail': (context) => const PostDetailScreen(), // 게시글 상세 라우트 추가
-        '/user_profile': (context) => const UserProfileScreen(), // 사용자 프로필 라우트 추가
-        '/chat_room': (context) => const ChatRoomScreen(), // 개별 채팅방 라우트 추가
+        '/mypage': (context) => const MyPageScreen(), // Add MyPage route
+        '/post_detail': (context) => const PostDetailScreen(), // Add Post Detail route
+        '/user_profile': (context) => const UserProfileScreen(), // Add User Profile route
+        '/chat_room': (context) => const ChatRoomScreen(), // Add individual Chat Room route
         '/spot_detail': (context) => const SpotDetailScreen(),
-        '/search': (context) => const SearchScreen(), // 검색 화면 라우트 추가
-        '/write_user_comment': (context) => const WriteUserCommentScreen(), // 사용자 코멘트 작성 라우트 추가
-        '/write_spot_comment': (context) => const WriteSpotCommentScreen(), // 관광지 코멘트 작성 라우트 추가
-        '/edit_mypage': (context) => const EditMyPageScreen(), // 프로필 수정 라우트 추가
+        '/search': (context) => const SearchScreen(), // Add Search Screen route
+        '/write_user_comment': (context) => const WriteUserCommentScreen(), // Add User Comment Write route
+        '/write_spot_comment': (context) => const WriteSpotCommentScreen(), // Add Tourist Spot Comment Write route
+        '/edit_mypage': (context) => const EditMyPageScreen(), // Add Profile Edit route
         '/write_meetup': (context) => const WriteMeetupScreen(),
-        '/write_spot': (context) => const WriteSpotScreen(), // *** 추가 ***
+        '/write_spot': (context) => const WriteSpotScreen(), // *** Added ***
       },
     );
   }
@@ -93,7 +94,7 @@ class MyApp extends StatelessWidget {
 
 Future<void> testNetworkConnectivity() async {
   try {
-    // 구글 홈페이지 같은 잘 알려진 외부 URL로 테스트
+    // Test with a well-known external URL like Google homepage
     var response = await http.get(Uri.parse('https://www.google.com'));
     if (response.statusCode == 200) {
       print('Network test successful! Google homepage loaded.');
@@ -131,7 +132,7 @@ Future<void> createDummyAccounts() async {
     }
   }
 }
-// 이 함수를 호출하는 버튼이나 이벤트 리스너 추가
+// Add a button or event listener to call this function
 // ElevatedButton(
 //   onPressed: testNetworkConnectivity,
 //   child: Text('Test Network'),

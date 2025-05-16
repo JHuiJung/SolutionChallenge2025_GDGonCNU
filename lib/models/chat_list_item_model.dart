@@ -1,14 +1,14 @@
 // lib/models/chat_list_item_model.dart
-import 'package:flutter/material.dart'; // TimeOfDay 사용 위해 추가
+import 'package:flutter/material.dart'; // Added for TimeOfDay usage
 
 class ChatListItemModel {
-  final String chatId; // 채팅방 고유 ID
-  final String userId; // 상대방 사용자 ID
-  final String name; // 상대방 이름 또는 채팅방 이름
-  final String? imageUrl; // 상대방 프로필 이미지 URL (null 가능)
-  final String lastMessage; // 마지막 메시지
-  final TimeOfDay timestamp; // 마지막 메시지 시간
-  final bool isRead; // 읽음 여부 (디자인엔 없지만 보통 필요)
+  final String chatId; // Chat room unique ID
+  final String userId; // Other user ID
+  final String name; // Other user's name or chat room name
+  final String? imageUrl; // Other user's profile image URL (nullable)
+  final String lastMessage; // Last message
+  final TimeOfDay timestamp; // Last message time
+  final bool isRead; // Read status (not in design, but usually needed)
   List<String>? memberIds = [];
 
   ChatListItemModel({
@@ -21,19 +21,19 @@ class ChatListItemModel {
     this.isRead = true,
     List<String>? memberIds,
   }) : memberIds = memberIds ?? [] {
-    // 생성자 본문에서 userId를 리스트에 추가
+    // Add userId to the list in the constructor body
     this.memberIds?.add(this.userId ?? 'noneEmail');
   }
 }
 
-// --- 임시 더미 데이터 생성 함수 ---
+// --- Temporary Dummy Data Creation Function ---
 List<ChatListItemModel> getDummyChatListItems() {
   return [
     ChatListItemModel(
       chatId: 'chat_ai_tutor',
-      userId: 'ai_tutor_bot', // AI 튜터 ID
+      userId: 'ai_tutor_bot', // AI tutor ID
       name: 'Hatchy',
-      // AI 튜터 이미지 (실제 이미지 URL로 교체 필요)
+      // AI tutor image (Needs to be replaced with actual image URL)
       imageUrl: 'https://cdn-icons-png.flaticon.com/512/8943/8943371.png',
       lastMessage: 'A short sentence that takes up the first and the second line.',
       timestamp: const TimeOfDay(hour: 12, minute: 00),
@@ -42,8 +42,8 @@ List<ChatListItemModel> getDummyChatListItems() {
     ChatListItemModel(
       chatId: 'chat_user_1',
       userId: 'user_1',
-      name: 'Brian', // 예시 사용자 이름
-      imageUrl: 'https://i.pravatar.cc/150?img=50', // 예시 사용자 이미지
+      name: 'Brian', // Example user name
+      imageUrl: 'https://i.pravatar.cc/150?img=50', // Example user image
       lastMessage: 'Okay, sounds good! Let me know when you arrive.',
       timestamp: const TimeOfDay(hour: 11, minute: 35),
     ),
@@ -57,9 +57,9 @@ List<ChatListItemModel> getDummyChatListItems() {
     ),
     ChatListItemModel(
       chatId: 'chat_group_1',
-      userId: 'group_1', // 그룹 채팅 ID
-      name: 'Tokyo Trip Planning', // 그룹 채팅 이름
-      imageUrl: null, // 그룹 채팅은 특정 사용자 이미지가 없을 수 있음
+      userId: 'group_1', // Group chat ID
+      name: 'Tokyo Trip Planning', // Group chat name
+      imageUrl: null, // Group chats may not have a specific user image
       lastMessage: 'Charlie: Don\'t forget to book the tickets!',
       timestamp: const TimeOfDay(hour: 9, minute: 05),
       isRead: false,

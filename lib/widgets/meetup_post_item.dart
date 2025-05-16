@@ -1,7 +1,7 @@
 // lib/widgets/meetup_post_item.dart
 import 'package:flutter/material.dart';
 import '../models/meetup_post.dart';
-// import 'overlapping_avatars.dart'; // 참여자 아바타는 새 디자인에 없음
+// import 'overlapping_avatars.dart'; // Participant avatars are not in the new design
 
 class MeetupPostItem extends StatelessWidget {
   final MeetupPost post;
@@ -27,46 +27,46 @@ class MeetupPostItem extends StatelessWidget {
         },
         child: Container(
           padding: const EdgeInsets.all(12.0),
-          height: 150, // 높이는 일단 유지 (오버플로우가 되면, 이 값을 늘려)
+          height: 150, // Maintain height for now (Increase this value if overflow occurs)
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. 왼쪽 이미지
+              // 1. Left image
               _buildImage(),
               const SizedBox(width: 12),
 
-              // 2. 오른쪽 텍스트 정보 영역
+              // 2. Right text info area
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 카테고리 칩
+                    // Category chips
                     _buildCategoryChips(context, colorScheme),
-                    // *** 간격 조정 ***
-                    const SizedBox(height: 4), // 기존 6에서 줄임
+                    // *** Adjust spacing ***
+                    const SizedBox(height: 4), // Reduced from original 6
 
-                    // 제목
+                    // Title
                     Text(
                       post.title,
                       style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    // *** 간격 조정 ***
-                    const SizedBox(height: 3), // 기존 4에서 줄임
+                    // *** Adjust spacing ***
+                    const SizedBox(height: 3), // Reduced from original 4
 
-                    // 위치 정보
+                    // Location info
                     _buildInfoRow(context, Icons.location_on_outlined, post.eventLocation, textTheme),
-                    // *** 간격 조정 ***
-                    const SizedBox(height: 3), // 기존 4에서 줄임
+                    // *** Adjust spacing ***
+                    const SizedBox(height: 3), // Reduced from original 4
 
-                    // 시간 정보
+                    // Time info
                     _buildInfoRow(context, Icons.access_time_outlined, post.eventDateTimeString, textTheme),
 
-                    // Spacer는 그대로 두어 하단 정보를 밑으로 밀어냄
+                    // Keep Spacer to push bottom info down
                     const Spacer(),
 
-                    // 작성자 및 참여 정보
+                    // Author and participation info
                     _buildBottomRow(context, textTheme, colorScheme),
                   ],
                 ),
@@ -78,14 +78,14 @@ class MeetupPostItem extends StatelessWidget {
     );
   }
 
-  // 왼쪽 이미지 빌더
+  // Left image builder
   Widget _buildImage() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8.0),
       child: Image.network(
         post.imageUrl,
         width: 100,
-        height: double.infinity, // Container 높이(140) - 패딩(24) = 116
+        height: double.infinity, // Container height (140) - padding (24) = 116
         fit: BoxFit.cover,
         loadingBuilder: (context, child, progress) => progress == null
             ? child
@@ -99,7 +99,7 @@ class MeetupPostItem extends StatelessWidget {
     );
   }
 
-  // 카테고리 칩 빌더
+  // Category chips builder
   Widget _buildCategoryChips(BuildContext context, ColorScheme colorScheme) {
     return Wrap(
       spacing: 6.0,
@@ -116,7 +116,7 @@ class MeetupPostItem extends StatelessWidget {
     );
   }
 
-  // 정보 행 빌더 (아이콘 + 텍스트)
+  // Info row builder (icon + text)
   Widget _buildInfoRow(BuildContext context, IconData icon, String text, TextTheme textTheme) {
     return Row(
       children: [
@@ -134,12 +134,12 @@ class MeetupPostItem extends StatelessWidget {
     );
   }
 
-  // 하단 행 빌더 (작성자 + 참여 정보)
+  // Bottom row builder (author + participation info)
   Widget _buildBottomRow(BuildContext context, TextTheme textTheme, ColorScheme colorScheme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // 작성자 정보
+        // Author info
         CircleAvatar(
           radius: 12,
           backgroundImage: NetworkImage(post.authorImageUrl),
@@ -156,18 +156,18 @@ class MeetupPostItem extends StatelessWidget {
         ),
         const SizedBox(width: 8),
 
-        // 참여 정보 (RichText 사용)
+        // Participation info (using RichText)
         RichText(
           text: TextSpan(
-            // 기본 스타일은 bodySmall 정도로 약간 작게 설정
+            // Set base style slightly smaller like bodySmall
             style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.8)),
             children: [
               TextSpan(
                 text: '${post.totalPeople}',
-                // 숫자는 조금 더 강조 (굵게, 약간 더 진하게)
+                // Numbers slightly emphasized (bold, slightly darker)
                 style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface.withValues(alpha: 0.9)),
               ),
-              const TextSpan(text: ' people · '), // 점으로 구분
+              const TextSpan(text: ' people · '), // Separated by dot
               TextSpan(
                 text: '${post.spotsLeft}',
                 style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface.withValues(alpha: 0.9)),

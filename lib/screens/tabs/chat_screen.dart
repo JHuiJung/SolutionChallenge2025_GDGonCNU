@@ -1,8 +1,8 @@
 // lib/screens/tabs/chat_screen.dart
 import 'package:flutter/material.dart';
-import '../../models/chat_list_item_model.dart'; // 채팅 모델 임포트
-import '../../widgets/chat_list_item.dart'; // 채팅 아이템 위젯 임포트
-import '../../firebase/firestoreManager.dart'; // Firestore 매니저 임포트
+import '../../models/chat_list_item_model.dart'; // Import chat model
+import '../../widgets/chat_list_item.dart'; // Import chat item widget
+import '../../firebase/firestoreManager.dart'; // Import Firestore manager
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -12,65 +12,61 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  List<ChatListItemModel> _chatList = []; // 화면에 표시될 전체 채팅 목록
-  bool _isLoading = true; // 데이터 로딩 상태
-  // late UserState userinfo; // 현재 사용자 정보 (mainUserInfo를 직접 사용하거나, 필요시 상태로 관리)
+  List<ChatListItemModel> _chatList = []; // Full list of chats to display on screen
+  bool _isLoading = true; // Data loading status
+  // late UserState userinfo; // Current user information (use mainUserInfo directly or manage as state if needed)
 
   @override
   void initState() {
     super.initState();
-    _loadAndProcessChatList(); // 채팅 목록 로드 및 처리 함수 호출
+    _loadAndProcessChatList(); // Call function to load and process chat list
   }
 
-  // 채팅 목록 로드 및 AI Tutor 고정 처리 함수
+  // Function to load chat list and handle AI Tutor fixed item
   Future<void> _loadAndProcessChatList() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
 
-    // UserState userinfo = mainUserInfo; // 전역 변수 사용 (또는 Provider 등으로 주입)
+    // UserState userinfo = mainUserInfo; // Use global variable (or inject with Provider etc.)
     List<ChatListItemModel> fetchedUserChats = [];
 
-    // 1. 현재 사용자의 채팅 ID 목록을 기반으로 각 채팅방 정보 가져오기
-    //    (mainUserInfo.chatIds가 Firestore에서 가져온 채팅방 ID 리스트라고 가정)
+    // 1. Get each chat room's information based on the current user's chat ID list
+    //    (Assuming mainUserInfo.chatIds is the list of chat room IDs fetched from Firestore)
     if (mainUserInfo.chatIds.isNotEmpty) {
       for (String chatId in mainUserInfo.chatIds) {
-        // 'chat_ai_tutor'는 별도로 처리하므로 여기서는 스킵
+        // Skip 'chat_ai_tutor' as it's handled separately
         if (chatId == 'chat_ai_tutor') continue;
 
-        ChatListItemModel? chatItem = await getChat(chatId); // Firestore에서 채팅방 정보 가져오기
+        ChatListItemModel? chatItem = await getChat(chatId); // Get chat room info from Firestore
         if (chatItem != null) {
           fetchedUserChats.add(chatItem);
         }
       }
     }
 
-    // 2. 사용자 채팅 목록을 시간 순으로 정렬 (최신 메시지가 위로)
+    // 2. Sort user chat list by time (latest message at the top)
     fetchedUserChats.sort((a, b) {
-      // TimeOfDay를 비교 가능한 형태로 변환 (오늘 날짜 기준)
+      // Convert TimeOfDay to a comparable form (based on today's date)
       final now = DateTime.now();
       final aDateTime = DateTime(now.year, now.month, now.day, a.timestamp.hour, a.timestamp.minute);
       final bDateTime = DateTime(now.year, now.month, now.day, b.timestamp.hour, b.timestamp.minute);
-      return bDateTime.compareTo(aDateTime); // 내림차순 정렬
+      return bDateTime.compareTo(aDateTime); // Sort in descending order
     });
 
-    // 3. AI Tutor 채팅방 정보 생성 또는 로드
-    //    (AI Tutor는 항상 존재한다고 가정하고, 필요시 Firestore에서 로드)
+    // 3. Create or load AI Tutor chat room information
+    //    (Assuming AI Tutor always exists, load from Firestore if necessary)
     ChatListItemModel aiTutorChat = ChatListItemModel(
       chatId: 'chat_ai_tutor',
-      userId: 'ai_tutor_bot',
-      // AI 튜터의 고유 ID
+      userId: 'ai_tutor_bot', // AI Tutor's unique ID
       name: 'Hatchy',
-      imageUrl: 'assets/images/egg.png',
-      // AI Tutor 프로필 이미지 경로
-      lastMessage: 'Hi! How can I help you?',
-      // 초기 메시지 또는 마지막 메시지
-      timestamp: TimeOfDay.now(),
-      // 항상 최신으로 보이도록 (또는 실제 마지막 대화 시간)
-      isRead: true, // 기본값
+      imageUrl: 'assets/images/egg.png', // AI Tutor profile image path
+      lastMessage: 'Hi! How can I help you?', // Initial or last message
+      timestamp: TimeOfDay.now(), // To always appear latest (or use actual last message time)
+      isRead: true, // Default value
     );
-    // 만약 AI Tutor 채팅방 정보도 Firestore에서 관리한다면 여기서 getChat('chat_ai_tutor') 호출
+    // If AI Tutor chat room info is also managed in Firestore, call getChat('chat_ai_tutor') here
 
-    // 4. 최종 채팅 목록 구성: AI Tutor를 맨 앞에 추가
+    // 4. Compose the final chat list: Add AI Tutor at the very beginning
     List<ChatListItemModel> finalChatList = [aiTutorChat, ...fetchedUserChats];
 
     if (mounted) {
@@ -84,21 +80,21 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    // UserState userinfo = mainUserInfo; // 빌드 메서드 내에서 필요시 다시 참조
+    // UserState userinfo = mainUserInfo; // Refer again if needed within the build method
 
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
-            RefreshIndicator( // 당겨서 새로고침 기능 추가
+            RefreshIndicator( // Add pull-to-refresh functionality
               onRefresh: _loadAndProcessChatList,
               child: CustomScrollView(
                 slivers: [
-                  // 1. 상단 헤더 (Chat 타이틀, MyPage 아이콘)
+                  // 1. Top Header (Chat Title, MyPage Icon)
                   _buildHeader(context, colorScheme, mainUserInfo),
-                  // mainUserInfo 전달
+                  // Pass mainUserInfo
 
-                  // 2. 채팅 목록
+                  // 2. Chat List
                   _buildChatList(colorScheme),
                 ],
               ),
@@ -109,9 +105,9 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // --- UI 빌더 함수들 ---
+  // --- UI Builder Functions ---
 
-  // 상단 헤더 빌드 함수
+  // Build top header function
   Widget _buildHeader(BuildContext context, ColorScheme colorScheme,
       UserState currentUserInfo) {
     return SliverPadding(
@@ -131,11 +127,11 @@ class _ChatScreenState extends State<ChatScreen> {
               child: CircleAvatar(
                 radius: 22,
                 backgroundColor: Colors.grey.shade300,
-                // 현재 사용자 프로필 이미지 표시
+                // Display current user's profile image
                 backgroundImage: (currentUserInfo.profileURL.isNotEmpty)
                     ? NetworkImage(currentUserInfo.profileURL)
                     : const AssetImage(
-                    'assets/images/user_profile.jpg') as ImageProvider, // 기본 이미지 에셋
+                    'assets/images/user_profile.jpg') as ImageProvider, // Default image asset
               ),
             ),
           ],
@@ -144,7 +140,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // 채팅 목록 빌드 함수
+  // Build chat list function
   Widget _buildChatList(ColorScheme colorScheme) {
     if (_isLoading) {
       return const SliverFillRemaining(
@@ -153,7 +149,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (_chatList.isEmpty) {
-      // AI Tutor도 없으면 이 메시지 표시 (실제로는 AI Tutor는 항상 있으므로 이 경우는 드묾)
+      // If even AI Tutor is missing, show this message (rare in practice as AI Tutor should always exist)
       return const SliverFillRemaining(
         child: Center(
           child: Text('No chats yet!', style: TextStyle(fontSize: 18, color: Colors.grey)),
@@ -167,11 +163,11 @@ class _ChatScreenState extends State<ChatScreen> {
           return Column(
             children: [
               ChatListItem(chat: _chatList[index]),
-              if (index < _chatList.length - 1) // 마지막 아이템 제외하고 구분선 추가
+              if (index < _chatList.length - 1) // Add divider except for the last item
                 Divider(
                   height: 1,
                   thickness: 1,
-                  indent: 88, // 프로필 사진 너비 + 여백
+                  indent: 88, // Profile picture width + padding
                   color: colorScheme.surfaceVariant.withOpacity(0.5),
                 ),
             ],

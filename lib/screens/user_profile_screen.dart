@@ -1,34 +1,34 @@
 // lib/screens/user_profile_screen.dart
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'dart:async'; // Timer 등 비동기 작업에 필요할 수 있음
+import 'dart:async'; // May be needed for async operations like Timer
 
-// --- 모델 임포트 (경로 확인 필요) ---
+// --- Model Imports (Check path) ---
 import '../models/user_profile_model.dart';
 import '../models/meetup_post.dart';
 import '../models/comment_model.dart';
 
-// --- 위젯 임포트 (경로 확인 필요) ---
+// --- Widget Imports (Check path) ---
 import '../widgets/meetup_post_item.dart';
 import '../widgets/comment_item.dart';
 import '../widgets/language_indicator.dart';
 import '../widgets/preference_display_box.dart';
 import '../firebase/firestoreManager.dart';
 
-// --- 더미 데이터 함수 (실제로는 별도 파일 또는 API 호출로 대체) ---
-// UserProfileModel에 userId를 받는 생성자 또는 함수가 있다고 가정
+// --- Dummy Data Functions (Replace with separate file or API calls in actual implementation) ---
+// Assuming UserProfileModel has a constructor or function that accepts userId
 /*UserProfileModel getDummyUserProfile(String userId) {
-  // userId에 따라 다른 더미 데이터 반환 (예시)
-  bool isJohn = userId == 'user_john'; // 예시 ID
+  // Return different dummy data based on userId (example)
+  bool isJohn = userId == 'user_john'; // Example ID
   return UserProfileModel(
     userId: userId,
     name: isJohn ? 'John' : 'Another User',
     age: isJohn ? 27 : 25,
     location: isJohn ? 'Seoul, Korea' : 'Busan, Korea',
-    timeZoneInfo: isJohn ? '13:37 (-7hours)' : '14:00 (+9 hours)', // 실제로는 계산 필요
+    timeZoneInfo: isJohn ? '13:37 (-7hours)' : '14:00 (+9 hours)', // Needs calculation in reality
     profileImageUrl: isJohn
-        ? 'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?size=626&ext=jpg' // John 이미지
-        : 'https://source.unsplash.com/random/200x200/?person&sig=${userId.hashCode}', // 다른 사용자 랜덤 이미지
+        ? 'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?size=626&ext=jpg' // John image
+        : 'https://source.unsplash.com/random/200x200/?person&sig=${userId.hashCode}', // Random image for other user
     statusMessage: isJohn ? "Let's hang out!" : "Exploring the world!",
     languages: [
       UserLanguage(languageCode: 'ko', languageName: 'Korean', proficiency: isJohn ? 4 : 5),
@@ -41,15 +41,15 @@ import '../firebase/firestoreManager.dart';
 }*/
 
 UserProfileModel getUserProfile(UserState userInfo) {
-  // userId에 따라 다른 더미 데이터 반환 (예시)
+  // Return different dummy data based on userId (example)
 
   return UserProfileModel(
     userId: userInfo.email ?? 'noneEmail',
     name: userInfo.name ?? 'noneName',
     age: userInfo.birthYear ?? 0,
     location: userInfo.region ?? 'Seoul, Korea',
-    timeZoneInfo: DateTime.now().toString().split('.').first, // 실제로는 계산 필요
-    profileImageUrl: userInfo.profileURL, // 다른 사용자 랜덤 이미지
+    timeZoneInfo: DateTime.now().toString().split('.').first, // Needs calculation in reality
+    profileImageUrl: userInfo.profileURL, // Random image for other user
     statusMessage: userInfo.statusMessage,
     languages: userInfo.languages,
     likes: userInfo.iLike,
@@ -59,19 +59,19 @@ UserProfileModel getUserProfile(UserState userInfo) {
 }
 
 List<MeetupPost> getDummyHostedPosts(String userId) {
-  // userId가 작성한 글만 필터링 (예시)
+  // Filter posts authored by userId (example)
   return getDummyMeetupPosts()
       .where((post) => post.authorId == userId)
       .toList();
 }
 
 List<CommentModel> getDummyCommentsAboutUser(String userId) {
-  // userId에 대한 코멘트만 필터링 (예시 - 실제로는 대상이 userId인 코멘트 조회)
+  // Filter comments about userId (example - in reality, query comments where the target is userId)
   return getDummyComments()
-      .where((comment) => userId == 'user_john') // John 프로필에만 코멘트 보이도록 (임시)
+      .where((comment) => userId == 'user_john') // Show comments only on John's profile (temporary)
       .toList();
 }
-// --- 더미 데이터 함수 끝 ---
+// --- End of Dummy Data Functions ---
 
 
 class UserProfileScreen extends StatefulWidget {
@@ -87,8 +87,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   late List<MeetupPost> _hostedPosts;
   late List<CommentModel> _comments;
   String? _userId;
-  bool _isFollowing = false; // 현재 내가 이 사용자를 팔로우하는지 여부 (DB 연동 필요)
-  bool _isProcessingFollow = false; // 팔로우/언팔로우 처리 중 플래그
+  bool _isFollowing = false; // Whether I am currently following this user (Needs DB integration)
+  bool _isProcessingFollow = false; // Flag for follow/unfollow processing
 
   late UserState? userInfo;
 
@@ -108,7 +108,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           setState(() => _isLoading = false);
         }
         print("Error: User ID not provided for profile screen.");
-        // Navigator.pop(context); // ID 없으면 이전 화면으로
+        // Navigator.pop(context); // Go back if no ID
       }
     });
   }
@@ -120,46 +120,46 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     userInfo = await getAnotherUserInfoByEmail(_userId ?? '');
 
-    // TODO: 실제 API 또는 DB에서 userId 기반으로 데이터 로드
+    // TODO: Load data based on userId from actual API or DB
     // _userProfile = getDummyUserProfile(userId);
     _userProfile = getUserProfile(userInfo ?? mainUserInfo);
     // _hostedPosts = getDummyHostedPosts(userId);
     _hostedPosts = [];
 
-    //print("🚒 가능한 언어 개수 : ${_userProfile.languages.length}");
+    //print("🚒 Number of available languages: ${_userProfile.languages.length}");
 
     List<String> userHostIds = userInfo?.postIds ?? [];
 
     for(int i = 0 ; i < userHostIds.length;++i)
-      {
-        MeetupPost? _post = await getMeetUpPostById(userHostIds[i]);
+    {
+      MeetupPost? _post = await getMeetUpPostById(userHostIds[i]);
 
-        if(_post != null)
-          {
-            _hostedPosts.add(_post);
-          }
+      if(_post != null)
+      {
+        _hostedPosts.add(_post);
       }
+    }
 
     _comments = getDummyCommentsAboutUser(userId);
-    // TODO: 현재 로그인한 사용자가 이 userId를 팔로우하는지 DB에서 확인하여 _isFollowing 설정
+    // TODO: Check in DB if the current logged-in user follows this userId and set _isFollowing
 
     if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
-  // 팔로우/언팔로우 처리 함수
+  // Follow/unfollow handling function
   Future<void> _handleFollowToggle() async {
-    if (_isProcessingFollow) return; // 처리 중이면 중복 방지
+    if (_isProcessingFollow) return; // Prevent duplicate if processing
 
     setState(() => _isProcessingFollow = true);
 
-    // TODO: 실제 서버/DB에 팔로우 또는 언팔로우 요청 보내기
-    // 요청 성공 시 _isFollowing 상태 업데이트
-    await Future.delayed(const Duration(milliseconds: 500)); // 시뮬레이션
+    // TODO: Send follow or unfollow request to the actual server/DB
+    // Update _isFollowing status on successful request
+    await Future.delayed(const Duration(milliseconds: 500)); // Simulation
 
     if (mounted) {
       setState(() {
-        _isFollowing = !_isFollowing; // 상태 토글
+        _isFollowing = !_isFollowing; // Toggle status
         _isProcessingFollow = false;
       });
       print('Follow status toggled for user: $_userId. Now following: $_isFollowing');
@@ -168,10 +168,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
 
 
-  // 전화 걸기 함수 (Placeholder)
+  // Call function (Placeholder)
   void _handleCall() {
-    // TODO: url_launcher 패키지 등을 사용하여 전화 걸기 기능 구현
-    // final Uri telLaunchUri = Uri(scheme: 'tel', path: _userProfile.phoneNumber); // 전화번호 필드 필요
+    // TODO: Implement call functionality using packages like url_launcher
+    // final Uri telLaunchUri = Uri(scheme: 'tel', path: _userProfile.phoneNumber); // Needs phone number field
     // await launchUrl(telLaunchUri);
     print('Call button pressed for user: ${_userProfile.name} (Not implemented)');
     ScaffoldMessenger.of(context).showSnackBar(
@@ -179,10 +179,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  // 메시지 보내기 함수
+  // Message sending function
   void _handleMessage() {
-    // TODO: 채팅방 ID를 생성하거나 기존 ID를 찾는 로직 필요
-    // 임시로 userId를 chatId처럼 사용
+    // TODO: Logic needed to create a chat room ID or find an existing one
+    // Temporarily using userId as chatId
     Navigator.pushNamed(context, '/chat_room', arguments: _userProfile.userId);
     print('Message button pressed for user: ${_userProfile.name}');
   }
@@ -193,7 +193,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final TextTheme textTheme = Theme.of(context).textTheme;
 
-    // 선호도 박스 스타일 (MyPageScreen과 동일)
+    // Preference box style (same as MyPageScreen)
     final Color prefBoxBgColor = colorScheme.brightness == Brightness.light
         ? Colors.purple.shade50.withValues(alpha: 0.7)
         : Colors.purple.shade900.withValues(alpha: 0.5);
@@ -206,7 +206,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
         slivers: <Widget>[
-          // 1. 상단 AppBar (사용자 이름, 나이, 뒤로가기)
+          // 1. Top AppBar (User Name, Age, Back button)
           SliverAppBar(
             pinned: true,
             elevation: 1,
@@ -215,23 +215,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              '${_userProfile.name}, ${_userProfile.age}', // 다른 사용자 정보 표시
+              '${_userProfile.name}, ${_userProfile.age}', // Display other user's info
               style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             centerTitle: true,
           ),
 
-          // 2. 헤더 영역 (지도 배경, 프로필 사진, 상태 메시지, 액션 버튼)
+          // 2. Header Area (Map background, profile picture, status message, action buttons)
           SliverToBoxAdapter(
             child: SizedBox(
-              // 액션 버튼 포함 위해 높이 조절 필요 시 조정
-              height: 350, // 예: 280(기존) + 70(버튼 영역)
+              // Adjust height if needed to include action button area
+              height: 350, // Example: 280 (original) + 70 (button area)
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // 지도 배경 (MyPageScreen과 동일)
+                  // Map background (same as MyPageScreen)
                   Positioned.fill(
-                    bottom: 70, // 액션 버튼 영역만큼 제외
+                    bottom: 70, // Exclude area for action buttons
                     child: Image.network(
                       'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png',
                       fit: BoxFit.cover,
@@ -240,10 +240,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade300),
                     ),
                   ),
-                  // 프로필 사진 (MyPageScreen과 동일, onTap 제거)
+                  // Profile picture (same as MyPageScreen, InkWell removed)
                   Positioned(
                     top: 70,
-                    child: CircleAvatar( // InkWell 제거
+                    child: CircleAvatar( // InkWell removed
                       radius: 65,
                       backgroundColor: Colors.white,
                       child: CircleAvatar(
@@ -253,7 +253,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                     ),
                   ),
-                  // 상태 메시지 (MyPageScreen과 동일)
+                  // Status message (same as MyPageScreen)
                   Positioned(
                     top: 185,
                     child: Text(
@@ -271,17 +271,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                     ),
                   ),
-                  // --- 새로운 액션 버튼 영역 ---
+                  // --- New Action Buttons Area ---
                   Positioned(
-                    top: 235, // 상태 메시지 아래 위치 조정
+                    top: 235, // Adjust position below status message
                     left: 0,
                     right: 0,
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      // 배경색 추가 가능 (선택 사항)
+                      // Can add background color (optional)
                       // color: colorScheme.surface.withValues(alpha: 0.8),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 버튼 간격 균등하게
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribute buttons evenly
                         children: [
                           _buildActionButton(
                             context,
@@ -297,13 +297,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                           _buildActionButton(
                             context,
-                            // 팔로우 상태에 따라 아이콘 변경
+                            // Change icon based on follow status
                             icon: _isFollowing ? Icons.person_remove_alt_1_outlined : Icons.person_add_alt_1_outlined,
                             label: _isFollowing ? 'Following' : 'Follow',
                             onPressed: _handleFollowToggle,
-                            // 팔로우 처리 중일 때 로딩 표시 (선택 사항)
+                            // Show loading while processing follow (optional)
                             isLoading: _isProcessingFollow,
-                            // 팔로우 상태일 때 다른 색상 (선택 사항)
+                            // Different color when following (optional)
                             // backgroundColor: _isFollowing ? colorScheme.primaryContainer : null,
                             // iconColor: _isFollowing ? colorScheme.primary : null,
                           ),
@@ -316,7 +316,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ),
 
-          // 3. 정보 섹션 (Info, Language, Preferences) - MyPageScreen과 동일한 위젯 사용
+          // 3. Info Section (Info, Language, Preferences) - Use same widgets as MyPageScreen
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 15.0),
             sliver: SliverList(
@@ -352,7 +352,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ),
 
-          // 4. Hosting 섹션 - MyPageScreen과 동일한 위젯 사용
+          // 4. Hosting Section - Use same widgets as MyPageScreen
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             sliver: SliverToBoxAdapter(child: _buildSectionTitle(context, 'Hosting')),
@@ -375,7 +375,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
 
-          // 5. Comments 섹션 수정
+          // 5. Comments Section Modification
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             sliver: SliverToBoxAdapter(
@@ -391,30 +391,30 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                       IconButton(
                         icon: Icon(Icons.edit_outlined, color: colorScheme.onSurface.withOpacity(0.7)),
-                        onPressed: () async { // async 추가
-                          // 사용자 코멘트 작성 화면으로 이동하고 결과(작성된 텍스트)를 기다림
+                        onPressed: () async { // Add async
+                          // Navigate to user comment write screen and wait for the result (entered text)
                           final newCommentText = await Navigator.pushNamed(
                             context,
                             '/write_user_comment',
                             arguments: _userId,
                           );
 
-                          // 결과가 null이 아니고 비어있지 않으면 UI 업데이트
+                          // If result is non-null and non-empty string, update UI
                           if (newCommentText != null && newCommentText is String && newCommentText.isNotEmpty) {
-                            // --- 새 코멘트 객체 생성 (임시) ---
-                            // TODO: 실제로는 현재 로그인한 사용자 정보로 채워야 함
+                            // --- Create new comment object (temporary) ---
+                            // TODO: In reality, this should be filled with current logged-in user info
                             final newComment = CommentModel(
-                              commentId: 'temp_${DateTime.now().millisecondsSinceEpoch}', // 임시 ID
-                              commenterId: 'current_user_id', // 현재 사용자 ID 필요
-                              commenterName: 'Me', // 현재 사용자 이름 필요
-                              commenterInfo: 'My Location, My Age', // 현재 사용자 정보 필요
-                              commenterImageUrl: 'https://i.pravatar.cc/150?img=60', // 현재 사용자 이미지 URL 필요
+                              commentId: 'temp_${DateTime.now().millisecondsSinceEpoch}', // Temporary ID
+                              commenterId: 'current_user_id', // Needs current user ID
+                              commenterName: 'Me', // Needs current user name
+                              commenterInfo: 'My Location, My Age', // Needs current user info
+                              commenterImageUrl: 'https://i.pravatar.cc/150?img=60', // Needs current user image URL
                               commentText: newCommentText,
                               timestamp: DateTime.now(),
                             );
-                            // --- 새 코멘트 객체 생성 끝 ---
+                            // --- End of creating new comment object ---
 
-                            // 상태 업데이트하여 목록에 추가 (맨 앞에 추가)
+                            // Update state to add to the list (add to the front)
                             setState(() {
                               _comments.insert(0, newComment);
                             });
@@ -461,14 +461,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  // --- Helper Widgets (MyPageScreen에서 가져오거나 유사하게 구현) ---
+  // --- Helper Widgets (Get from MyPageScreen or implement similarly) ---
 
-  // 액션 버튼 빌더 (새로 추가)
+  // Action button builder (newly added)
   Widget _buildActionButton(BuildContext context, {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
-    bool isLoading = false, // 로딩 상태 추가
+    bool isLoading = false, // Add loading status
     Color? backgroundColor,
     Color? iconColor,
   }) {
@@ -482,13 +482,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         InkWell(
-          onTap: isLoading ? null : onPressed, // 로딩 중이면 탭 비활성화
-          borderRadius: BorderRadius.circular(30), // 잉크 효과 범위
+          onTap: isLoading ? null : onPressed, // Disable tap if loading
+          borderRadius: BorderRadius.circular(30), // Ink effect radius
           child: CircleAvatar(
             radius: 30,
             backgroundColor: backgroundColor ?? defaultBackgroundColor,
             child: isLoading
-                ? const SizedBox( // 로딩 인디케이터
+                ? const SizedBox( // Loading indicator
               width: 20,
               height: 20,
               child: CircularProgressIndicator(strokeWidth: 2),
@@ -512,7 +512,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  // 섹션 제목 위젯
+  // Section title widget
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -523,7 +523,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  // 정보 행 위젯 (아이콘 + 텍스트)
+  // Info row widget (icon + text)
   Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -542,9 +542,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  // 언어 행 위젯 (국기 + 이름 + 능숙도)
+  // Language row widget (flag + name + proficiency)
   Widget _buildLanguageRow(BuildContext context, UserLanguageInfo language) {
-    String flagAssetPath = 'assets/flags/${language.languageCode}.jpg'; // 에셋 경로 확인 필요
+    String flagAssetPath = 'assets/flags/${language.languageCode}.jpg'; // Check asset path
 
     print("✈️ Language Row: $flagAssetPath");
 

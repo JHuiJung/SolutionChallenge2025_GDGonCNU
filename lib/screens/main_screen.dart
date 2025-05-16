@@ -11,23 +11,23 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0; // 현재 선택된 탭 인덱스
+  int _selectedIndex = 0; // Currently selected tab index
 
-  // 각 탭에 해당하는 화면 위젯 리스트
+  // List of screen widgets corresponding to each tab
   static const List<Widget> _widgetOptions = <Widget>[
     MeetupScreen(),
     MapScreen(),
     ChatScreen(),
   ];
 
-  // 탭 선택 시 호출될 함수
+  // Function to be called when a tab is selected
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  // 탭별 AppBar 제목
+  // AppBar title for each tab
   String _getAppBarTitle(int index) {
     switch (index) {
       case 0:
@@ -45,19 +45,19 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 상단의 앱 바 삭제
+      // Remove the top app bar
       // appBar: AppBar(
-      //   title: Text(_getAppBarTitle(_selectedIndex)), // 선택된 탭에 따라 제목 변경
+      //   title: Text(_getAppBarTitle(_selectedIndex)), // Change title based on selected tab
       // ),
       body: Center(
-        // 선택된 인덱스에 해당하는 화면 표시
+        // Display the screen corresponding to the selected index
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.people_outline),
-            activeIcon: Icon(Icons.people), // 활성화 시 아이콘
+            activeIcon: Icon(Icons.people), // Icon when active
             label: 'Meet Up',
           ),
           BottomNavigationBarItem(
@@ -71,13 +71,13 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Chat',
           ),
         ],
-        currentIndex: _selectedIndex, // 현재 선택된 탭 인덱스
-        // 선택된 아이템 색상 (테마에서 가져오거나 직접 지정)
+        currentIndex: _selectedIndex, // Current selected tab index
+        // Color of selected item (get from theme or specify directly)
         selectedItemColor: Theme.of(context).primaryColor,
-        // 선택되지 않은 아이템 색상
+        // Color of unselected item
         unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped, // 탭 선택 시 이벤트 핸들러 연결
-        type: BottomNavigationBarType.fixed, // 탭 개수가 적을 때 고정 타입 사용
+        onTap: _onItemTapped, // Connect event handler for tab selection
+        type: BottomNavigationBarType.fixed, // Use fixed type when the number of tabs is small
       ),
     );
   }

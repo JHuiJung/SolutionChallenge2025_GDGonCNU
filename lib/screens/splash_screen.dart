@@ -16,15 +16,15 @@ class _SplashScreenState extends State<SplashScreen> {
     _navigateToLogin();
   }
 
-  // 일정 시간 후 로그인 화면으로 이동하는 함수
+  // Function to navigate to the login screen after a certain duration
   Future<void> _navigateToLogin() async {
-    // 2초 동안 스플래시 화면을 보여줍니다.
-    // 실제 앱에서는 여기서 초기 데이터 로딩, 설정 확인 등의 작업을 수행할 수 있습니다.
+    // Show the splash screen for 2 seconds.
+    // In a real app, you can perform initial data loading, settings checks, etc., here.
     await Future.delayed(const Duration(seconds: 2));
 
-    // 위젯이 여전히 마운트되어 있는지 확인 후 네비게이션
+    // Navigate after checking if the widget is still mounted
     if (mounted) {
-      // '/login' 라우트로 이동하고, 현재 스플래시 화면은 스택에서 제거
+      // Navigate to the '/login' route and remove the current splash screen from the stack
       Navigator.pushReplacementNamed(context, '/login');
     }
   }
@@ -34,36 +34,36 @@ class _SplashScreenState extends State<SplashScreen> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final TextTheme textTheme = Theme.of(context).textTheme;
     final Color backgroundColor = colorScheme.brightness == Brightness.light
-        ? Colors.grey.shade100 // 밝은 모드 배경색 (또는 디자인에 맞는 색상)
-        : Colors.grey.shade900; // 어두운 모드 배경색 (또는 디자인에 맞는 색상)
+        ? Colors.grey.shade100 // Light mode background color (or color matching design)
+        : Colors.grey.shade900; // Dark mode background color (or color matching design)
 
     return Scaffold(
-      backgroundColor: backgroundColor, // 배경색 설정
-      body: Center( // 모든 컨텐츠를 화면 중앙에 정렬
+      backgroundColor: backgroundColor, // Set background color
+      body: Center( // Center all content on the screen
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // 수직 중앙 정렬
+          mainAxisAlignment: MainAxisAlignment.center, // Center vertically
           children: <Widget>[
-            // 1. 달걀 이미지
+            // 1. Egg image
             Image.asset(
-              'assets/images/egg.png', // 에셋 경로
-              width: 200, // 이미지 너비 조절 (원하는 크기로)
-              height: 200, // 이미지 높이 조절
-              // fit: BoxFit.contain, // 이미지 비율 유지하며 채우기 (선택 사항)
+              'assets/images/egg.png', // Asset path
+              width: 200, // Adjust image width (to desired size)
+              height: 200, // Adjust image height
+              // fit: BoxFit.contain, // Maintain aspect ratio and fill (optional)
             ),
-            const SizedBox(height: 30), // 이미지와 텍스트 사이 간격
+            const SizedBox(height: 30), // Space between image and text
 
-            // 2. 문구 "Travel local,"
+            // 2. Phrase "Travel local,"
             Text(
               'Travel Local',
-              textAlign: TextAlign.center, // 텍스트 중앙 정렬
-              style: textTheme.headlineMedium?.copyWith( // headlineSmall 또는 titleLarge 등 조절 가능
+              textAlign: TextAlign.center, // Center text horizontally
+              style: textTheme.headlineMedium?.copyWith( // Can adjust headlineSmall or titleLarge etc.
                 fontWeight: FontWeight.bold,
-                color: colorScheme.onBackground.withOpacity(0.8), // 테마에 맞는 텍스트 색상
+                color: colorScheme.onBackground.withOpacity(0.8), // Text color matching the theme
               ),
             ),
-            const SizedBox(height: 8), // 문구 사이 간격
+            const SizedBox(height: 8), // Space between phrases
 
-            // 3. 문구 "Connect Deeper."
+            // 3. Phrase "Connect Deeper."
             Text(
               'Connect Deeper',
               textAlign: TextAlign.center,

@@ -4,7 +4,7 @@ import '../firebase/firestoreManager.dart' as firestoreManager;
 
 import '../firebase/firestoreManager.dart' as firestoreManager;
 
-// --- 데이터 구조 정의 --- (다른 파일에 해도 된다)
+// --- Data Structure Definition --- (Can be in another file)
 class PreferenceSection {
   final String key;
   final String question;
@@ -36,7 +36,7 @@ final List<PreferenceSection> preferenceSectionsData = [
     key: 'companion',
     question: 'Who do you usually travel with?',
     options: ['Alone', 'Friends', 'Family', 'Partners'],
-    allowMultipleSelection: true, // 이미지상 여러 개 선택 가능해 보임
+    allowMultipleSelection: true, // Looks like multiple selection is possible based on the image
   ),
   PreferenceSection(
     key: 'planningStyle',
@@ -45,7 +45,7 @@ final List<PreferenceSection> preferenceSectionsData = [
     allowMultipleSelection: false,
   ),
 ];
-// --- 데이터 구조 정의 끝 ---
+// --- End of Data Structure Definition ---
 
 
 class PreferenceSelectionScreen extends StatefulWidget {
@@ -56,7 +56,7 @@ class PreferenceSelectionScreen extends StatefulWidget {
 }
 
 class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
-  // 선택된 항목들을 저장하는 상태 변수 (모든 섹션을 Set으로 관리)
+  // State variable to store selected items (Manage all sections as a Set)
   final Map<String, Set<String>> _selectedPreferences = {};
 
   @override
@@ -64,15 +64,15 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final TextTheme textTheme = Theme.of(context).textTheme;
 
-    // 칩 스타일 정의 (이미지 참고)
+    // Define chip style (refer to image)
     final Color chipBackgroundColor = colorScheme.brightness == Brightness.light
         ? Colors.purple.shade100.withValues(alpha: 0.7)
         : Colors.purple.shade800.withValues(alpha: 0.7);
     final Color selectedChipColor = colorScheme.brightness == Brightness.light
-        ? Colors.deepPurple.shade300 // 선택 시 더 진한 보라색
+        ? Colors.deepPurple.shade300 // Darker purple when selected
         : Colors.deepPurple.shade500;
     final Color chipTextColor = colorScheme.onSurface.withValues(alpha: 0.8);
-    final Color selectedChipTextColor = Colors.white; // 선택 시 흰색 텍스트
+    final Color selectedChipTextColor = Colors.white; // White text when selected
 
     return Scaffold(
       appBar: AppBar(
@@ -103,13 +103,13 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          // 좌우 패딩은 유지, 상하 패딩 조절
+          // Keep horizontal padding, adjust vertical padding
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
           child: Column(
-            // Column 자식들을 중앙 정렬 (텍스트 등)
+            // Center children of Column (text, etc.)
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 메인 제목
+              // Main title
               Text(
                 'Let me know\nmore about you',
                 textAlign: TextAlign.center,
@@ -121,30 +121,30 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
               ),
               const SizedBox(height: 50),
 
-              // --- 선호도 섹션 동적 생성 ---
+              // --- Dynamically generate preference sections ---
               ...preferenceSectionsData.map((section) {
                 return _buildPreferenceSection(
                   context: context,
-                  section: section, // 섹션 데이터 전달
-                  selectedOptions: _selectedPreferences[section.key] ?? {}, // 현재 선택값 전달
+                  section: section, // Pass section data
+                  selectedOptions: _selectedPreferences[section.key] ?? {}, // Pass current selection value
                   chipBackgroundColor: chipBackgroundColor,
                   selectedChipColor: selectedChipColor,
                   chipTextColor: chipTextColor,
                   selectedChipTextColor: selectedChipTextColor,
                 );
               }).toList(),
-              // --- 섹션 생성 끝 ---
+              // --- End of section generation ---
 
-              const SizedBox(height: 40), // 마지막 섹션과 버튼 사이 여백
+              const SizedBox(height: 40), // Space between last section and button
 
-              // 완료 버튼
+              // Complete button
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    // 선택된 선호도 저장 로직 추가 (필요 시)
+                    // Add logic to save selected preferences (if needed)
                     print('Selected Preferences: $_selectedPreferences');
 
-                    // Firestore에 저장
+                    // Save to Firestore
                     firestoreManager.mainUserInfo.preferTravlePurpose = _selectedPreferences['purpose']!.toList();
                     firestoreManager.mainUserInfo.preferDestination = _selectedPreferences['destination']!.toList();
                     firestoreManager.mainUserInfo.preferPeople = _selectedPreferences['companion']!.toList();
@@ -154,48 +154,48 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
 
                     firestoreManager.addUser();
 
-                    // 메인 화면으로 이동
+                    // Navigate to main screen
                     Navigator.pushReplacementNamed(context, '/main');
                   },
                   style: ElevatedButton.styleFrom(
-                    // 테마의 버튼 스타일을 사용하거나 직접 지정
+                    // Use theme's button style or specify directly
                     // backgroundColor: colorScheme.primary,
                     // foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                     textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30), // 둥근 버튼
+                      borderRadius: BorderRadius.circular(30), // Rounded button
                     ),
                   ),
                   child: const Text('완료'),
                 ),
               ),
-              const SizedBox(height: 40), // 하단 여백
+              const SizedBox(height: 40), // Bottom padding
             ],
           ),
         ),
       ),
-      // 하단 완료 버튼 (FloatingActionButton 사용)
+      // Bottom completion button (using FloatingActionButton)
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: 선택된 선호도 저장 로직 추가
+          // TODO: Add logic to save selected preferences
           print('Selected Preferences: $_selectedPreferences');
           Navigator.pushReplacementNamed(context, '/main');
         },
-        backgroundColor: chipBackgroundColor, // 버튼 색상 (선택되지 않은 칩 색상과 유사하게)
+        backgroundColor: chipBackgroundColor, // Button color (similar to unselected chip color)
         elevation: 2,
         child: Icon(
           Icons.arrow_forward,
-          color: chipTextColor, // 아이콘 색상
+          color: chipTextColor, // Icon color
         ),
       ),
     );
   }
 
-  // 선호도 섹션 빌더 함수
+  // Preference section builder function
   Widget _buildPreferenceSection({
     required BuildContext context,
-    required PreferenceSection section, // 섹션 데이터 받기
+    required PreferenceSection section, // Receive section data
     required Set<String> selectedOptions,
     required Color chipBackgroundColor,
     required Color selectedChipColor,
@@ -205,27 +205,27 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
     final TextTheme textTheme = Theme.of(context).textTheme;
 
     return Container(
-      // 각 섹션을 명확히 구분하기 위해 약간의 마진 추가 (선택 사항)
+      // Add slight margin to clearly distinguish each section (optional)
       margin: const EdgeInsets.only(bottom: 30.0),
       child: Column(
-        // 섹션 내부 요소들을 중앙 정렬 (질문, 칩 그룹)
+        // Center inner elements of the section (question, chip group)
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 질문 텍스트
+          // Question text
           Text(
             section.question,
             style: textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
             ),
-            textAlign: TextAlign.center, // 질문 텍스트도 중앙 정렬
+            textAlign: TextAlign.center, // Also center question text
           ),
           const SizedBox(height: 15),
-          // 선택지 칩 그룹 (Wrap 사용)
+          // Option chip group (using Wrap)
           Wrap(
-            spacing: 10.0, // 가로 간격
-            runSpacing: 10.0, // 세로 간격
-            alignment: WrapAlignment.center, // *** 칩들을 중앙 정렬 ***
+            spacing: 10.0, // Horizontal spacing
+            runSpacing: 10.0, // Vertical spacing
+            alignment: WrapAlignment.center, // *** Center the chips ***
             children: section.options.map((option) {
               final bool isSelected = selectedOptions.contains(option);
               return ChoiceChip(
@@ -236,11 +236,11 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                 ),
                 selected: isSelected,
                 onSelected: (selected) {
-                  // --- 선택 로직 수정 ---
+                  // --- Modify selection logic ---
                   setState(() {
                     final currentSelection = _selectedPreferences[section.key] ?? {};
                     if (section.allowMultipleSelection) {
-                      // 다중 선택 허용 섹션
+                      // Multiple selection allowed section
                       if (selected) {
                         currentSelection.add(option);
                       }
@@ -249,25 +249,25 @@ class _PreferenceSelectionScreenState extends State<PreferenceSelectionScreen> {
                       }
                     }
                     else {
-                      // 단일 선택 섹션
-                      currentSelection.clear(); // 기존 선택 모두 해제
+                      // Single selection section
+                      currentSelection.clear(); // Deselect all existing selections
                       if (selected) {
-                        currentSelection.add(option); // 새로 선택한 것만 추가
+                        currentSelection.add(option); // Add only the newly selected one
                       }
-                      // 선택 해제 시 아무것도 선택 안 된 상태 유지
+                      // Maintain unselected state if deselected
                     }
-                    _selectedPreferences[section.key] = currentSelection; // 업데이트된 Set 저장
+                    _selectedPreferences[section.key] = currentSelection; // Save updated Set
                   });
-                  // --- 선택 로직 수정 끝 ---
+                  // --- End of selection logic modification ---
                 },
                 backgroundColor: chipBackgroundColor,
                 selectedColor: selectedChipColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.0),
-                  side: BorderSide.none, // 테두리 제거
+                  side: BorderSide.none, // Remove border
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10.0), // 패딩 조절
-                showCheckmark: false, // 체크마크 숨김
+                padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10.0), // Adjust padding
+                showCheckmark: false, // Hide checkmark
               );
             }).toList(),
           ),

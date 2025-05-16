@@ -13,29 +13,29 @@ class TouristSpotCard extends StatelessWidget {
     final TextTheme textTheme = Theme.of(context).textTheme;
 
     return Container(
-      width: MediaQuery.of(context).size.width * 0.65, // 카드 너비 조절
-      height: 200, // 카드 높이 조절 (패널 내부 SizedBox 높이랑 일치)
+      width: MediaQuery.of(context).size.width * 0.65, // Adjust card width
+      height: 200, // Adjust card height (match SizedBox height inside panel)
       margin: const EdgeInsets.only(right: 12.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.0),
-        // Card 대신 Container 사용 시 그림자 직접 추가 가능
+        // When using Container instead of Card, shadow can be added directly
         // boxShadow: [ BoxShadow(...) ],
       ),
-      clipBehavior: Clip.antiAlias, // 내부 컨텐츠가 경계를 넘지 않도록
-      child: InkWell( // 카드 클릭 가능하도록
+      clipBehavior: Clip.antiAlias, // To prevent content from overflowing borders
+      child: InkWell( // Make card clickable
         onTap: () {
           Navigator.pushNamed(context, '/spot_detail', arguments: spot.id);
           print('Navigate to spot detail: ${spot.id}');
           // print('Tapped on spot: ${spot.name}');
         },
         child: Stack(
-          fit: StackFit.expand, // Stack이 Container 크기에 맞춰 확장
+          fit: StackFit.expand, // Stack expands to match Container size
           children: [
-            // 배경 이미지
+            // Background image
             Image.network(
               spot.imageUrl,
               fit: BoxFit.cover,
-              // 로딩/에러 처리
+              // Loading/Error handling
               loadingBuilder: (context, child, progress) => progress == null
                   ? child
                   : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
@@ -44,7 +44,7 @@ class TouristSpotCard extends StatelessWidget {
                 child: const Icon(Icons.image_not_supported, color: Colors.grey),
               ),
             ),
-            // 어두운 Gradient 오버레이 (텍스트 가독성 향상)
+            // Dark Gradient overlay (improve text readability)
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -54,7 +54,7 @@ class TouristSpotCard extends StatelessWidget {
                 ),
               ),
             ),
-            // 텍스트 및 아이콘 정보 (하단 정렬)
+            // Text and icon info (bottom aligned)
             Positioned(
               bottom: 12.0,
               left: 12.0,
@@ -62,7 +62,7 @@ class TouristSpotCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 위치 정보 (아이콘 + 텍스트)
+                  // Location info (icon + text)
                   // Row(
                   //   children: [
                   //     const Icon(Icons.location_on, color: Colors.white, size: 16),
@@ -74,7 +74,7 @@ class TouristSpotCard extends StatelessWidget {
                   //   ],
                   // ),
                   // const SizedBox(height: 4),
-                  // 관광지 이름
+                  // Tourist spot name
                   Text(
                     spot.name,
                     style: textTheme.titleLarge?.copyWith(
@@ -87,7 +87,7 @@ class TouristSpotCard extends StatelessWidget {
                 ],
               ),
             ),
-            // 오른쪽 하단 화살표 버튼
+            // Bottom right arrow button
             Positioned(
               bottom: 12.0,
               right: 12.0,
@@ -105,7 +105,7 @@ class TouristSpotCard extends StatelessWidget {
               ),
             ),
 
-            // 사진 작가 태그 (디자인 참고 - 분홍색) (추가 사항)
+            // Photographer tag (design reference - pink) (Additional feature)
             // Positioned(
             //   top: 12.0,
             //   right: 12.0,
@@ -122,7 +122,7 @@ class TouristSpotCard extends StatelessWidget {
             //   ),
             // ),
 
-            // TODO: 분홍색 화살표 포인터, 보라색 아이콘 등 추가 구현 필요 (CustomPaint 등 사용 고려)
+            // TODO: Need to implement pink arrow pointer, purple icon, etc. (Consider using CustomPaint)
 
           ],
         ),

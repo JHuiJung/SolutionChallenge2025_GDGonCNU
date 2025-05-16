@@ -12,50 +12,50 @@ class MeetupScreen extends StatefulWidget {
 }
 
 class _MeetupScreenState extends State<MeetupScreen> {
-  List<MeetupPost> _allPosts = []; // 모든 게시글 원본 저장
-  List<MeetupPost> _displayedPosts = []; // 화면에 표시될 게시글 (필터링 결과)
+  List<MeetupPost> _allPosts = []; // Store original list of all posts
+  List<MeetupPost> _displayedPosts = []; // Posts to be displayed on screen (filtered result)
   bool _isLoading = true;
-  String? _searchQuery; // 검색어 저장 상태 변수
+  String? _searchQuery; // State variable to store search query
 
   late UserState userinfo;
 
   @override
   void initState() {
     super.initState();
-    _loadMeetupPosts(); // 초기 데이터 로드
+    _loadMeetupPosts(); // Initial data load
   }
 
-  // 모든 게시글 로드 (초기 또는 검색 취소 시)
+  // Load all posts (initial or when search is cleared)
   Future<void> _loadMeetupPosts() async {
 
     userinfo = mainUserInfo;
-    print("Meet up 초기화 함수 ${userinfo.name}");
+    print("Meet up initialization function ${userinfo.name}");
 
     if (!mounted) return;
     setState(() {
       _isLoading = true;
-      _searchQuery = null; // 검색어 초기화
+      _searchQuery = null; // Initialize search query
     });
     await Future.delayed(const Duration(milliseconds: 500));
-    //_allPosts = getDummyMeetupPosts(); // 모든 더미 데이터 가져오기
+    //_allPosts = getDummyMeetupPosts(); // Get all dummy data
     _allPosts = await getAllMeetUpPost();
-    _displayedPosts = List.from(_allPosts); // 처음엔 모든 글 표시
+    _displayedPosts = List.from(_allPosts); // Initially display all posts
     if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
-  // 검색어에 따라 게시글 필터링
+  // Filter posts based on search query
   void _filterMeetupPosts() {
     if (!mounted) return;
     setState(() {
-      _isLoading = true; // 필터링 중 로딩 표시 (선택 사항)
+      _isLoading = true; // Show loading during filtering (optional)
     });
 
     if (_searchQuery == null || _searchQuery!.isEmpty) {
-      // 검색어가 없으면 모든 글 표시
+      // If no search query, display all posts
       _displayedPosts = List.from(_allPosts);
     } else {
-      // 검색어가 있으면 제목에 검색어가 포함된 글만 필터링 (대소문자 구분 없이)
+      // If there is a search query, filter posts whose title contains the query (case-insensitive)
       final query = _searchQuery!.toLowerCase();
       _displayedPosts = _allPosts
           .where((post) => post.title.toLowerCase().contains(query))
@@ -63,13 +63,13 @@ class _MeetupScreenState extends State<MeetupScreen> {
     }
 
     setState(() {
-      _isLoading = false; // 로딩 완료
+      _isLoading = false; // Loading complete
     });
   }
 
-  // 검색 상태 초기화 및 전체 글 다시 로드
+  // Initialize search status and reload all posts
   void _clearSearch() {
-    _loadMeetupPosts(); // 전체 글 다시 로드 (setState 포함됨)
+    _loadMeetupPosts(); // Reload all posts (includes setState)
   }
 
   @override
@@ -81,11 +81,11 @@ class _MeetupScreenState extends State<MeetupScreen> {
         child: Stack(
           children: [
             RefreshIndicator(
-              // 당겨서 새로고침 시 검색 상태 초기화 및 전체 로드
+              // Clear search status and reload all on pull-to-refresh
               onRefresh: _loadMeetupPosts,
               child: CustomScrollView(
                 slivers: [
-                  // 1. 상단 헤더 영역 수정
+                  // 1. Modify top header area
                   SliverPadding(
                     padding: const EdgeInsets.all(16.0),
                     sliver: SliverToBoxAdapter(
@@ -93,59 +93,59 @@ class _MeetupScreenState extends State<MeetupScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // --- 왼쪽: 제목 또는 검색 결과 ---
-                          Expanded( // 오른쪽 아이콘 공간 확보 위해 Expanded 사용
+                          // --- Left: Title or Search Result ---
+                          Expanded( // Use Expanded to reserve space for the right icons
                             child: (_searchQuery == null || _searchQuery!.isEmpty)
-                                ? const Text( // 기본 제목
+                                ? const Text( // Default title
                               "Let's meet up!",
                               style: TextStyle(
-                                fontSize: 32,
+                                fontSize: 27,
                                 fontWeight: FontWeight.bold,
                               ),
                             )
-                                : Row( // 검색 결과 표시
+                                : Row( // Display search result
                               children: [
-                                Flexible( // 긴 검색어 처리
+                                Flexible( // Handle long search queries
                                   child: Text(
-                                    '"$_searchQuery"', // 검색어 표시
+                                    '"$_searchQuery"', // Display search query
                                     style: const TextStyle(
-                                      fontSize: 24, // 제목보다 약간 작게
+                                      fontSize: 24, // Slightly smaller than title
                                       fontWeight: FontWeight.bold,
                                     ),
-                                    overflow: TextOverflow.ellipsis, // 넘치면 ...
+                                    overflow: TextOverflow.ellipsis, // Ellipsis on overflow
                                   ),
                                 ),
-                                IconButton( // 검색 취소 버튼
+                                IconButton( // Clear search button
                                   icon: const Icon(Icons.close, size: 20),
                                   onPressed: _clearSearch,
                                   tooltip: 'Clear search',
                                   visualDensity: VisualDensity.compact,
-                                  padding: const EdgeInsets.only(left: 4.0), // 텍스트와의 간격
+                                  padding: const EdgeInsets.only(left: 4.0), // Spacing from text
                                   constraints: const BoxConstraints(),
                                 ),
                               ],
                             ),
                           ),
 
-                          // --- 오른쪽: 아이콘 그룹 ---
+                          // --- Right: Icon Group ---
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // 검색 버튼
+                              // Search button
                               IconButton(
                                 icon: Icon(Icons.search, color: colorScheme.onSurface, size: 28),
-                                onPressed: () async { // async 추가
-                                  // 검색 화면으로 이동하고 결과(검색어)를 기다림
+                                onPressed: () async { // Add async
+                                  // Navigate to search screen and wait for result (search query)
                                   final result = await Navigator.pushNamed(context, '/search');
-                                  // 결과가 null이 아니고 비어있지 않은 문자열이면
+                                  // If the result is a non-null, non-empty string
                                   if (result != null && result is String && result.isNotEmpty) {
-                                    // 상태 업데이트 및 필터링 실행
+                                    // Update state and perform filtering
                                     setState(() {
                                       _searchQuery = result;
                                     });
-                                    _filterMeetupPosts(); // 필터링 함수 호출
+                                    _filterMeetupPosts(); // Call filtering function
                                   } else if (result == null) {
-                                    // 사용자가 검색 없이 뒤로가기 한 경우 (아무것도 안 함)
+                                    // If user navigates back without searching (do nothing)
                                     print('Search cancelled');
                                   }
                                 },
@@ -154,18 +154,18 @@ class _MeetupScreenState extends State<MeetupScreen> {
                                 constraints: const BoxConstraints(),
                               ),
                               const SizedBox(width: 2),
-                              // 글쓰기 버튼
+                              // Write button
                               IconButton(
                                 icon: Icon(Icons.edit_outlined, color: colorScheme.onSurface, size: 28),
                                 onPressed: () {
-                                  Navigator.pushNamed(context, '/write_meetup'); // 기존 write 부분을 write_meetup으로 수정
+                                  Navigator.pushNamed(context, '/write_meetup'); // Change existing write part to write_meetup
                                 },
                                 tooltip: 'Write a Post',
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                               ),
                               const SizedBox(width: 10),
-                              // 프로필 아바타
+                              // Profile Avatar
                               InkWell(
                                 onTap: () {
                                   Navigator.pushNamed(context, '/mypage');
@@ -174,10 +174,10 @@ class _MeetupScreenState extends State<MeetupScreen> {
                                   radius: 22,
                                   backgroundColor: Colors.grey.shade300,
                                   backgroundImage: (userinfo != null && userinfo.profileURL != null && userinfo.profileURL.isNotEmpty)
-                                  // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
+                                  // Use NetworkImage if userinfo exists and profileURL is not null and not empty
                                       ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
-                                  // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
-                                      : AssetImage('assets/images/user_profile.jpg') as ImageProvider<Object>?, // 예시: 기본 프로필 이미지 경로,
+                                  // Otherwise, use a default image (AssetImage etc.) or display a different widget entirely
+                                      : AssetImage('assets/images/user_profile.jpg') as ImageProvider<Object>?, // Example: Default profile image path,
                                 ),
                               ),
                             ],
@@ -187,29 +187,29 @@ class _MeetupScreenState extends State<MeetupScreen> {
                     ),
                   ),
 
-                  // 2. 게시글 목록 영역 (표시될 데이터 변경: _posts -> _displayedPosts)
+                  // 2. Post List Area (Displayed data changed: _posts -> _displayedPosts)
                   _isLoading
                       ? const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
                   )
-                      : _displayedPosts.isEmpty // 필터링 결과가 없을 때
+                      : _displayedPosts.isEmpty // When filter result is empty
                       ? SliverFillRemaining(
                     child: Center(
                       child: Text(
                         _searchQuery == null
-                            ? 'No meet-ups yet.' // 초기 상태 메시지
-                            : 'No results found for "$_searchQuery"', // 검색 결과 없음 메시지
+                            ? 'No meet-ups yet.' // Initial state message
+                            : 'No results found for "$_searchQuery"', // No search results message
                         style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                         textAlign: TextAlign.center,
                       ),
                     ),
                   )
-                      : SliverPadding( // 필터링 결과 표시
+                      : SliverPadding( // Display filter result
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                             (context, index) {
-                          // *** 중요: _displayedPosts 사용 ***
+                          // *** Important: Use _displayedPosts ***
                           return MeetupPostItem(post: _displayedPosts[index]);
                         },
                         childCount: _displayedPosts.length,

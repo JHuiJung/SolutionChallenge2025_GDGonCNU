@@ -105,10 +105,12 @@ class ApiService {
     required String eventId,
     required String userId,
   }) async {
+    print("🥲aaaaaa");
     final data = await _post('/comments', {
       'event_id': eventId,
       'user_id': userId,
     });
+    print("🥲bbbbb");
     return data['comment'] as String;
   }
 

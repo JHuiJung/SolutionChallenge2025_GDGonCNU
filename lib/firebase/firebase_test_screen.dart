@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter/foundation.dart'; // kIsWeb 사용
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import './firestoreManager.dart' as firestoreManager;
 
@@ -22,15 +22,15 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   String testDummyEmail = "test2@dummy.com";
   String testDummyPassword = "password123";
 
-  // ✅ 구글 로그인 함수
+  // ✅ Google sign-in function
   Future<void> _signInWithGoogle(BuildContext _context) async {
 
-    // 로그인 정보 가져오기
+    // Get login information
     final userinfo = FirebaseAuth.instance.currentUser;
 
     if (userinfo != null) {
-      // 이미 로그인 되어 있음 → 메인화면으로 이동
-      bool isRight = await firestoreManager.getUserInfoByEmail(userinfo!.email!);  // await 추가
+      // Already signed in -> Move to main screen
+      bool isRight = await firestoreManager.getUserInfoByEmail(userinfo!.email!);  // Add await
 
       if(isRight)
       {
@@ -40,7 +40,7 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
     }
 
-    // 로그인 안됨 → 로그인화면으로 이동
+    // Not signed in -> Move to login screen
     if (kIsWeb) {
       await signInWithGoogleForWeb(_context);
     } else {
@@ -49,29 +49,24 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
     User? user = FirebaseAuth.instance.currentUser;
 
-    // Firestore에서 유저 정보 조회
+    // Retrieve user info from Firestore
     bool isMember = await firestoreManager.getUserInfoByEmail(user!.email!);
 
-    print("😍 이벤트1");
+    print("😍 event1");
 
     if (isMember) {
-      print("😍 이벤트2");
+      print("😍 event2");
       Navigator.pushReplacementNamed(_context, '/main');
     } else {
-      print("😍 이벤트3");
+      print("😍 event3");
       Navigator.pushReplacementNamed(_context, '/profile');
     }
   }
 
-
-  // 웹 테스트용 구글 로그인 함수
+  // Function to sign in with Google for web
   Future<void> signInWithGoogleForWeb(BuildContext context) async {
     try {
       final googleProvider = GoogleAuthProvider();
-
-      // Optional: Add scopes or custom parameters
-      // googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-
       final userCredential =
       await FirebaseAuth.instance.signInWithPopup(googleProvider);
 
@@ -88,31 +83,31 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
     }
   }
 
-  // 모바일 구글 로그인 함수
+  // Function to sign in with Google for mobile
   Future<void> signInWithGoogleForMobile(BuildContext context) async {
 
-    print("😍 모바일 이벤트1");
+    print("😍 Mobile event1");
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-    print("😍 모바일 이벤트2");
+    print("😍 Mobile event2");
 
     if (googleUser == null) {
-      // 사용자가 로그인 취소함
+      // User canceled sign-in
       return;
     }
 
-    print("😍 모바일 이벤트3");
+    print("😍 Mobile event3");
     final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    print("😍 모바일 이벤트4");
+    print("😍 Mobile event4");
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
     final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-    print("😍 모바일 이벤트5");
+    print("😍 Mobile event5");
     setState(() {
       _status = 'Signed in with Google: ${userCredential.user?.displayName}';
     });
@@ -130,27 +125,26 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
       final user = userCredential.user;
       if (user != null) {
-        print("✅ 로그인 성공: ${user.email}");
-        // 로그인 성공 후 화면 이동 등 처리
-
+        print("✅ Login successful: ${user.email}");
+        // Handle screen transition after successful login
         bool isMember = await firestoreManager.getUserInfoByEmail(user!.email!);
 
-        print("😍 이벤트1");
+        print("😍 Event1");
 
         if(isMember)
         {
-          print("😍 이벤트2");
+          print("😍 Event2");
           Navigator.pushReplacementNamed(context, '/main');
 
         }
         else{
-          print("😍 이벤트3");
+          print("😍 Event3");
           Navigator.pushReplacementNamed(context, '/profile');
 
         }
       }
     } on FirebaseAuthException catch (e) {
-      print("❌ 로그인 실패: ${e.code} - ${e.message}");
+      print("❌ Login failed: ${e.code} - ${e.message}");
     }
   }
 
@@ -234,10 +228,10 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
                 style: TextStyle(fontSize: 18)),
             const SizedBox(height: 55),
             const Text(
-                'By Team Gromits.',
+                'By Team Gromits',
                 style: TextStyle(fontSize: 24)),
             const Text(
-                'GDG on campus: Chonnam National Univ.',
+                'GDG on campus: Chonnam National Univ',
                 style: TextStyle(fontSize: 18)),
           ],
         ),

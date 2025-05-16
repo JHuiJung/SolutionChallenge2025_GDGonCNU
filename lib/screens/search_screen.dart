@@ -17,15 +17,15 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
-  // 검색 실행 함수
+  // Search execution function
   void _performSearch(String query) {
-    final trimmedQuery = query.trim(); // 앞뒤 공백 제거
-    if (trimmedQuery.isNotEmpty) { // 검색어가 비어있지 않을 때만 결과 반환
+    final trimmedQuery = query.trim(); // Remove leading/trailing spaces
+    if (trimmedQuery.isNotEmpty) { // Return result only if search query is not empty
       print('Performing search for: $trimmedQuery');
-      // *** 중요: 검색어를 결과로 전달하며 pop ***
+      // *** Important: pop with the search query as result ***
       Navigator.pop(context, trimmedQuery);
     } else {
-      // 검색어가 비어있으면 아무것도 안하거나, 사용자에게 알림 (선택 사항)
+      // If search query is empty, do nothing or notify user (optional)
       print('Search query is empty.');
       // 예: ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please enter a search term.')));
     }
@@ -41,8 +41,8 @@ class _SearchScreenState extends State<SearchScreen> {
         elevation: 1,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: colorScheme.onSurface),
-          // *** 중요: 뒤로가기 버튼은 null을 반환 ***
-          onPressed: () => Navigator.pop(context), // 결과 없이 pop
+          // *** Important: Back button returns null ***
+          onPressed: () => Navigator.pop(context), // pop without result
         ),
         title: TextField(
           controller: _searchController,
@@ -54,7 +54,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           style: TextStyle(color: colorScheme.onSurface, fontSize: 18),
           textInputAction: TextInputAction.search,
-          onSubmitted: _performSearch, // 엔터키로 검색 실행
+          onSubmitted: _performSearch, // Execute search on Enter key
         ),
         actions: [
           IconButton(
@@ -63,7 +63,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ],
       ),
-      body: Container(), // 검색 결과 표시 영역 (비워둠)
+      body: Container(), // Area to display search results (left empty)
     );
   }
 }

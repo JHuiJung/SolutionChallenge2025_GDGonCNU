@@ -1,36 +1,36 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // 밝은 테마 정의
+  // Light theme definition
   static final ThemeData lightTheme = ThemeData(
-    useMaterial3: true, // Material 3 디자인 사용
+    useMaterial3: true, // Use Material 3 design
     brightness: Brightness.light,
-    primaryColor: Colors.purple.shade200, // 밝고 활기찬 주 색상
+    primaryColor: Colors.purple.shade200, // Bright and vibrant primary color
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.purple.shade200, // 씨앗 색상으로 전체 색상 스킴 생성
+      seedColor: Colors.purple.shade200, // Create entire color scheme from seed color
       brightness: Brightness.light,
     ),
-    scaffoldBackgroundColor: Colors.grey[100], // 밝은 배경색
+    scaffoldBackgroundColor: Colors.grey[100], // Light background color
     appBarTheme: AppBarTheme(
-      backgroundColor: Colors.purple.shade100, // 밝은 앱바 배경
-      foregroundColor: Colors.black87, // 앱바 텍스트/아이콘 색상
+      backgroundColor: Colors.purple.shade100, // Light AppBar background
+      foregroundColor: Colors.black87, // AppBar text/icon color
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.purple.shade200, // 버튼 배경색
-        foregroundColor: Colors.white, // 버튼 텍스트색
+        backgroundColor: Colors.purple.shade200, // Button background color
+        foregroundColor: Colors.white, // Button text color
       ),
     ),
-    // 다른 위젯 테마들도 필요에 따라 커스터마이징 가능
+    // Other widget themes can also be customized as needed
   );
 
-  // 다크 테마 정의
+  // Dark theme definition
   static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    primaryColor: Colors.purple.shade100, // 다크 모드에서의 주 색상
+    primaryColor: Colors.purple.shade100, // Primary color in dark mode
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.purple.shade200, // 씨앗 색상
+      seedColor: Colors.purple.shade200, // Seed color
       brightness: Brightness.dark,
     ),
     scaffoldBackgroundColor: Colors.grey[900],
@@ -40,10 +40,10 @@ class AppTheme {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.purple.shade100, // 버튼 배경색
-        foregroundColor: Colors.purple.shade200, // 버튼 텍스트색
+        backgroundColor: Colors.purple.shade100, // Button background color
+        foregroundColor: Colors.purple.shade200, // Button text color
       ),
     ),
-    // 다른 위젯 테마들도 필요에 따라 커스터마이징 가능
+    // Other widget themes can also be customized as needed
   );
 }

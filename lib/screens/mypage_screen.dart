@@ -1,13 +1,13 @@
 // lib/screens/mypage_screen.dart
 import 'package:flutter/material.dart';
 import 'package:naviya/firebase/firestoreManager.dart';
-import '../models/user_profile_model.dart'; // 내 프로필 모델
-import '../models/meetup_post.dart'; // 호스팅 글 모델
-import '../models/comment_model.dart'; // 코멘트 모델
-import '../widgets/meetup_post_item.dart'; // 호스팅 글 위젯
-import '../widgets/comment_item.dart'; // 코멘트 위젯
-import '../widgets/language_indicator.dart'; // 언어 점 위젯
-import '../widgets/preference_display_box.dart'; // 선호도 박스 위젯
+import '../models/user_profile_model.dart'; // My profile model
+import '../models/meetup_post.dart'; // Hosting post model
+import '../models/comment_model.dart'; // Comment model
+import '../widgets/meetup_post_item.dart'; // Hosting post widget
+import '../widgets/comment_item.dart'; // Comment widget
+import '../widgets/language_indicator.dart'; // Language indicator widget
+import '../widgets/preference_display_box.dart'; // Preference box widget
 import '../firebase/firestoreManager.dart' as firestoreManager;
 import '../firebase/imageManager.dart' as imageManager;
 
@@ -19,13 +19,13 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
-  // --- 데이터 로딩 상태 (실제 구현 시 필요) ---
+  // --- Data loading status (needed in actual implementation) ---
   bool _isLoading = true;
   late UserProfileModel _userProfile;
   late List<MeetupPost> _hostedPosts;
   late List<CommentModel> _comments;
 
-  //파이어베이스 데이터 가져오기
+  // Fetch Firebase data
   late UserState userinfo;
 
   @override
@@ -35,47 +35,47 @@ class _MyPageScreenState extends State<MyPageScreen> {
     _loadMyPageData();
   }
 
-  // 비동기 데이터 로딩 함수 (예시)
+  // Async data loading function (example)
   Future<void> _loadMyPageData() async {
     setState(() => _isLoading = true);
     // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 600));
 
-    // TODO: 실제 API 호출 또는 로컬 DB에서 데이터 가져오기
+    // TODO: Fetch data from actual API or local DB
 
-    //파이어 베이스 정보 로딩
+    // Loading Firebase info
     userinfo = firestoreManager.mainUserInfo;
 
 
     List<MeetupPost> userMeetupPosts = [];
 
 
-    print("(마이 페이지) 🙄 내가 쓴 글 수 ${mainUserInfo.postIds.length}");
+    print("(My Page) 🙄 Number of posts I wrote ${mainUserInfo.postIds.length}");
     for(int i = 0 ; i < mainUserInfo.postIds.length; ++i)
-      {
+    {
 
-        MeetupPost? _meetUpPost = await getMeetUpPostById(mainUserInfo.postIds[i]);
-        print("(마이 페이지) 🙄${i}번째 내가 쓴 글 ${_meetUpPost == null ? "없음" : mainUserInfo.postIds[i]}");
-        if(_meetUpPost != null)
-          {
-            userMeetupPosts.add(_meetUpPost);
-          }
+      MeetupPost? _meetUpPost = await getMeetUpPostById(mainUserInfo.postIds[i]);
+      print("(My Page) 🙄${i}th post I wrote ${_meetUpPost == null ? "None" : mainUserInfo.postIds[i]}");
+      if(_meetUpPost != null)
+      {
+        userMeetupPosts.add(_meetUpPost);
       }
-    print("(마이 페이지) 🙄 불러온 글 수 ${userMeetupPosts.length}");
+    }
+    print("(My Page) 🙄 Number of posts loaded ${userMeetupPosts.length}");
 
     _userProfile = getDummyMyProfile();
-    // 호스팅 글 필터링 (예시: authorId가 내 ID와 같은 글)
+    // Filter hosted posts (example: posts with authorId same as my ID)
     //_hostedPosts = getDummyMeetupPosts()
     _hostedPosts = userMeetupPosts
-        //.where((post) => post.authorId == _userProfile.userId) // 실제 ID 비교 필요
+    //.where((post) => post.authorId == _userProfile.userId) // Actual ID comparison needed
         .toList();
     if (_hostedPosts.isEmpty && getDummyMeetupPosts().isNotEmpty) {
-      // 내 글이 없으면 다른 사람 글이라도 하나 보여주기 (더미 데이터용)
-      print("(마이 페이지)😥 올린 글이 없어 더미 생성");
+      // If I have no posts, show one post from someone else (for dummy data)
+      print("(My Page)😥 No posts uploaded, creating dummy");
       _hostedPosts.add(getDummyMeetupPosts().first);
     }
 
-    //파이어 베이스 정보 로딩
+    // Loading Firebase info
     userinfo = firestoreManager.mainUserInfo;
 
 
@@ -90,7 +90,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final TextTheme textTheme = Theme.of(context).textTheme;
 
-    // 선호도 박스 스타일 정의
+    // Define preference box style
     final Color prefBoxBgColor = colorScheme.brightness == Brightness.light
         ? Colors.purple.shade50.withValues(alpha: 0.7)
         : Colors.purple.shade900.withValues(alpha: 0.5);
@@ -103,11 +103,11 @@ class _MyPageScreenState extends State<MyPageScreen> {
           ? const Center(child: CircularProgressIndicator())
           : CustomScrollView(
         slivers: <Widget>[
-          // 1. 상단 AppBar (이름, 나이, 뒤로가기)
+          // 1. Top AppBar (Name, Age, Back button)
           SliverAppBar(
-            pinned: true, // 스크롤 시 상단에 고정
-            // backgroundColor: colorScheme.surface, // 테마 배경색 사용
-            elevation: 1, // 약간의 그림자
+            pinned: true, // Pin to the top when scrolling
+            // backgroundColor: colorScheme.surface, // Use theme background color
+            elevation: 1, // Slight shadow
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios_new, color: colorScheme.onSurface),
               onPressed: () => Navigator.pop(context),
@@ -116,51 +116,51 @@ class _MyPageScreenState extends State<MyPageScreen> {
               '${userinfo.name}, ${userinfo.birthYear}',
               style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
-            centerTitle: true, // 제목 중앙 정렬
+            centerTitle: true, // Center title
             actions: [
               IconButton(
-                icon: Icon(Icons.edit, color: colorScheme.onSurface), // 연필 아이콘
+                icon: Icon(Icons.edit, color: colorScheme.onSurface), // Pencil icon
                 onPressed: () {
-                  // 프로필 수정 화면으로 이동
+                  // Navigate to profile edit screen
                   Navigator.pushNamed(context, '/edit_mypage');
                   print('Navigate to Edit MyPage');
                 },
-                tooltip: 'Edit Profile', // 툴팁 추가
+                tooltip: 'Edit Profile', // Add tooltip
               ),
-              const SizedBox(width: 8), // 오른쪽 여백
+              const SizedBox(width: 8), // Right margin
             ],
-            // --- actions 추가 끝 ---
+            // --- End of actions addition ---
           ),
 
-          // 2. 헤더 영역 (지도 배경, 프로필 사진, 상태 메시지)
+          // 2. Header Area (Map background, profile picture, status message)
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 280, // 헤더 영역 높이 조절
+              height: 280, // Adjust header area height
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // 지도 배경 (실제 지도 SDK 또는 이미지 사용)
+                  // Map background (use actual map SDK or image)
                   Positioned.fill(
-                    child: Image.network( // 예시 이미지
+                    child: Image.network( // Example image
                       'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png',
                       fit: BoxFit.cover,
-                      color: Colors.black.withValues(alpha: 0.1), // 약간 어둡게 처리 (선택 사항)
+                      color: Colors.black.withValues(alpha: 0.1), // Slightly darken (optional)
                       colorBlendMode: BlendMode.darken,
                       errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade300),
                     ),
                   ),
-                  // 프로필 사진 (지도 위에 표시)
+                  // Profile picture (displayed above the map)
                   Positioned(
-                    top: 50, // 지도 상단에서부터의 위치
+                    top: 50, // Position from the top of the map
                     child: InkWell(
                       onTap:() async {
 
-                        // 이미지 저장
+                        // Save image
                         bool isImageChanged = await imageManager
                             .handleImageUpload(userinfo.email ?? 'none');
                         if (isImageChanged) {
                           Navigator.pushNamed(context, '/mypage');
-                          // UI 업데이트 등
+                          // UI update etc.
                         }
 
                         //Navigator.pushNamed(context, '/edit_profile_picture');
@@ -168,30 +168,30 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       },
 
                       child: CircleAvatar(
-                        radius: 65, // 사진 크기
-                        backgroundColor: Colors.white, // 테두리 효과
+                        radius: 65, // Photo size
+                        backgroundColor: Colors.white, // Border effect
                         child: CircleAvatar(
                           radius: 62,
-                          // 여기에서 profileURL이 null인지 확인합니다.
+                          // Check if profileURL is null here.
                           backgroundImage: (userinfo != null && userinfo.profileURL != null && userinfo.profileURL.isNotEmpty)
-                          // userinfo가 있고 profileURL이 null이 아니며 비어있지 않다면 NetworkImage 사용
+                          // If userinfo exists and profileURL is not null and not empty, use NetworkImage
                               ? NetworkImage(userinfo.profileURL) as ImageProvider<Object>?
-                          // 그렇지 않다면 기본 이미지 (AssetImage 등) 사용 또는 아예 다른 위젯 표시
-                              : AssetImage('assets/images/user_profile.jpg') as ImageProvider<Object>?, // 예시: 기본 프로필 이미지 경로
+                          // Otherwise, use a default image (AssetImage etc.) or display a different widget entirely
+                              : AssetImage('assets/images/user_profile.jpg') as ImageProvider<Object>?, // Example: default profile image path
                           backgroundColor: Colors.grey.shade300,
                         ),
                       ),
                     ),
                   ),
-                  // 상태 메시지 (프로필 사진 아래)
+                  // Status message (below the profile picture)
                   Positioned(
-                    top: 185, // 프로필 사진 아래 위치하도록 조정
+                    top: 185, // Adjust to be below the profile picture
                     child: Text(
                       userinfo.statusMessage,
                       style: textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.white, // 배경이 어두우므로 흰색 텍스트
-                        shadows: [ // 텍스트 가독성 향상 (선택 사항)
+                        color: Colors.white, // White text because background is dark
+                        shadows: [ // Improve text readability (optional)
                           Shadow(
                             blurRadius: 4.0,
                             color: Colors.black.withValues(alpha: 0.5),
@@ -206,7 +206,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
             ),
           ),
 
-          // 3. 정보 섹션 (Info, Language, Preferences) - 패딩 추가
+          // 3. Info Section (Info, Language, Preferences) - Add padding
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
             sliver: SliverList(
@@ -255,19 +255,19 @@ class _MyPageScreenState extends State<MyPageScreen> {
             ),
           ),
 
-          // 4. Hosting 섹션
+          // 4. Hosting Section
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             sliver: SliverToBoxAdapter(child: _buildSectionTitle(context, 'Hosting')),
           ),
           _hostedPosts.isEmpty
-              ? SliverPadding( // 호스팅 글 없을 때 메시지
+              ? SliverPadding( // Message when no hosted posts
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
             sliver: SliverToBoxAdapter(
               child: Center(child: Text('No meet-ups hosted yet.', style: TextStyle(color: Colors.grey))),
             ),
           )
-              : SliverPadding( // 호스팅 글 목록
+              : SliverPadding( // List of hosted posts
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
@@ -276,26 +276,26 @@ class _MyPageScreenState extends State<MyPageScreen> {
               ),
             ),
           ),
-          const SliverPadding(padding: EdgeInsets.only(bottom: 24)), // 섹션 간 여백
+          const SliverPadding(padding: EdgeInsets.only(bottom: 24)), // Margin between sections
 
-          // 5. Comments 섹션
+          // 5. Comments Section
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             sliver: SliverToBoxAdapter(child: _buildSectionTitle(context, 'Comments')),
           ),
           _comments.isEmpty
-              ? SliverPadding( // 코멘트 없을 때 메시지
+              ? SliverPadding( // Message when no comments
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
             sliver: SliverToBoxAdapter(
               child: Center(child: Text('No comments yet.', style: TextStyle(color: Colors.grey))),
             ),
           )
-              : SliverPadding( // 코멘트 목록
+              : SliverPadding( // List of comments
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                  return Column( // 각 코멘트 아래 구분선 추가
+                  return Column( // Add a divider below each comment
                     children: [
                       CommentItem(comment: _comments[index]),
                       if (index < _comments.length - 1)
@@ -307,7 +307,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
               ),
             ),
           ),
-          const SliverPadding(padding: EdgeInsets.only(bottom: 40)), // 맨 아래 여백
+          const SliverPadding(padding: EdgeInsets.only(bottom: 40)), // Bottom margin
         ],
       ),
     );
@@ -315,7 +315,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   // --- Helper Widgets ---
 
-  // 섹션 제목 위젯
+  // Section title widget
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -326,7 +326,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 
-  // 정보 행 위젯 (아이콘 + 텍스트)
+  // Info row widget (icon + text)
   Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -334,7 +334,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
         children: [
           Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
           const SizedBox(width: 12),
-          Expanded( // 긴 텍스트 줄바꿈 처리
+          Expanded( // Handle text wrapping for long text
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodyLarge,
@@ -345,23 +345,23 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 
-  // 희중 버전
+  // Huijung's version
   Widget _buildLanguageRow(BuildContext context, UserLanguageInfo langinfo) {
-    // TODO: languageCode에 맞는 실제 국기 이미지 에셋 필요
-    String flagAssetPath = 'assets/flags/${langinfo.languageCode}.jpg'; // 예시 경로
-    //String flagAssetPath = 'assets/flags/usa.jpg'; // 예시 경로
+    // TODO: Actual flag image assets needed matching languageCode
+    String flagAssetPath = 'assets/flags/${langinfo.languageCode}.jpg'; // Example path
+    //String flagAssetPath = 'assets/flags/usa.jpg'; // Example path
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          // 국기 이미지 (에셋 필요)
+          // Flag image (asset needed)
           Image.asset(
             flagAssetPath,
             width: 24,
-            height: 18, // 비율 유지
+            height: 18, // Maintain aspect ratio
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => // 에러 시 Placeholder
+            errorBuilder: (context, error, stackTrace) => // Placeholder on error
             Container(width: 24, height: 18, color: Colors.grey.shade300, child: Icon(Icons.flag, size: 14)),
           ),
           const SizedBox(width: 12),
@@ -371,30 +371,30 @@ class _MyPageScreenState extends State<MyPageScreen> {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
-          LanguageIndicator(proficiency: langinfo.proficiency), // 능숙도 점 표시
+          LanguageIndicator(proficiency: langinfo.proficiency), // Display proficiency dots
         ],
       ),
     );
   }
 }
 /*
-  // 언어 행 위젯 (국기 + 이름 + 능숙도) _ 재현님 버전
+  // Language row widget (flag + name + proficiency) _ Jaehyeon version
   Widget _buildLanguageRow(BuildContext context, UserLanguage language) {
-    // TODO: languageCode에 맞는 실제 국기 이미지 에셋 필요
-    String flagAssetPath = 'assets/flags/korea.jpg'; // 예시 경로
-    //String flagAssetPath = 'assets/flags/usa.jpg'; // 예시 경로
+    // TODO: Actual flag image assets needed matching languageCode
+    String flagAssetPath = 'assets/flags/korea.jpg'; // Example path
+    //String flagAssetPath = 'assets/flags/usa.jpg'; // Example path
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          // 국기 이미지 (에셋 필요)
+          // Flag image (asset needed)
           Image.asset(
             flagAssetPath,
             width: 24,
-            height: 18, // 비율 유지
+            height: 18, // Maintain aspect ratio
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => // 에러 시 Placeholder
+            errorBuilder: (context, error, stackTrace) => // Placeholder on error
             Container(width: 24, height: 18, color: Colors.grey.shade300, child: Icon(Icons.flag, size: 14)),
           ),
           const SizedBox(width: 12),
@@ -404,7 +404,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
-          LanguageIndicator(proficiency: language.proficiency), // 능숙도 점 표시
+          LanguageIndicator(proficiency: language.proficiency), // Display proficiency dots
         ],
       ),
     );
@@ -424,4 +424,3 @@ class EditProfilePictureScreen extends StatelessWidget {
     );
   }
 }
-

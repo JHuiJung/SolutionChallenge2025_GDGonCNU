@@ -9,12 +9,12 @@ class EditMyPageScreen extends StatefulWidget {
 }
 
 class _EditMyPageScreenState extends State<EditMyPageScreen> {
-  // TODO: 기존 프로필 데이터를 로드하고 수정할 컨트롤러/변수 선언
+  // TODO: Declare controllers/variables to load and edit existing profile data
 
   @override
   void initState() {
     super.initState();
-    // TODO: 이전 화면(MyPage)에서 전달받거나 DB에서 기존 프로필 데이터 로드
+    // TODO: Load existing profile data passed from previous screen (MyPage) or from DB
   }
 
   @override
@@ -23,12 +23,12 @@ class _EditMyPageScreenState extends State<EditMyPageScreen> {
       appBar: AppBar(
         title: const Text('Edit Profile'),
         actions: [
-          // 저장 버튼 (기능은 추후 구현)
+          // Save button (functionality to be implemented later)
           TextButton(
             onPressed: () {
-              // TODO: 수정된 프로필 정보 저장 로직 구현
+              // TODO: Implement logic to save modified profile information
               print('Save profile changes');
-              Navigator.pop(context); // 저장 후 이전 화면으로 돌아가기
+              Navigator.pop(context); // Go back to the previous screen after saving
             },
             child: Text(
               'Save',
@@ -48,7 +48,7 @@ class _EditMyPageScreenState extends State<EditMyPageScreen> {
             textAlign: TextAlign.center,
           ),
         ),
-        // TODO: 실제 프로필 수정 UI 구현 (TextField, Dropdown 등)
+        // TODO: Implement actual profile editing UI (TextField, Dropdown, etc.)
       ),
     );
   }

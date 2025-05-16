@@ -1,7 +1,7 @@
 // lib/widgets/message_bubble.dart
 import 'package:flutter/material.dart';
 import '../models/chat_message_model.dart';
-import 'package:intl/intl.dart'; // 시간 포맷
+import 'package:intl/intl.dart'; // Time format
 
 class MessageBubble extends StatelessWidget {
   final ChatMessageModel message;
@@ -14,45 +14,45 @@ class MessageBubble extends StatelessWidget {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final TextTheme textTheme = Theme.of(context).textTheme;
 
-    // 말풍선 색상 결정
+    // Determine bubble color
     final Color bubbleColor = isMe
-        ? colorScheme.primary // 내가 보낸 메시지 (파란색 계열)
-        : colorScheme.surfaceVariant; // 상대방 메시지 (밝은 회색 계열)
+        ? colorScheme.primary // Message sent by me (blue tone)
+        : colorScheme.surfaceVariant; // Message from other (light grey tone)
 
-    // 텍스트 색상 결정
+    // Determine text color
     final Color textColor = isMe
-        ? colorScheme.onPrimary // 내 메시지 텍스트 (흰색 계열)
-        : colorScheme.onSurfaceVariant; // 상대방 메시지 텍스트 (어두운 색 계열)
+        ? colorScheme.onPrimary // Text in my message (white tone)
+        : colorScheme.onSurfaceVariant; // Text in other's message (dark tone)
 
-    // 시간 포맷터
-    final timeFormatter = DateFormat('HH:mm'); // 예: 10:43
+    // Time formatter
+    final timeFormatter = DateFormat('HH:mm'); // e.g.: 10:43
 
-    // AI 번역 알림 텍스트 스타일
+    // AI translation notice text style
     final aiNoticeStyle = textTheme.bodySmall?.copyWith(
       color: colorScheme.onSurface.withValues(alpha: 0.5),
       fontSize: 11,
     );
 
-    // 읽음 상태/시간 텍스트 스타일
+    // Read status/time text style
     final statusStyle = textTheme.bodySmall?.copyWith(
       color: isMe ? colorScheme.onPrimary.withValues(alpha: 0.7) : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
       fontSize: 11,
     );
 
-    // 말풍선 모양 설정 (꼬리 효과는 제외하고 둥근 모서리만)
+    // Set bubble shape (rounded corners only, excluding tail effect)
     final BorderRadius borderRadius = BorderRadius.only(
       topLeft: const Radius.circular(18),
       topRight: const Radius.circular(18),
-      bottomLeft: isMe ? const Radius.circular(18) : const Radius.circular(4), // 내 메시지는 왼쪽 아래 둥글게
-      bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(18), // 상대 메시지는 오른쪽 아래 둥글게
+      bottomLeft: isMe ? const Radius.circular(18) : const Radius.circular(4), // Rounded bottom-left for my message
+      bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(18), // Rounded bottom-right for other's message
     );
 
     return Align(
-      // 메시지 정렬 (좌/우)
+      // Message alignment (left/right)
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         constraints: BoxConstraints(
-          // 말풍선 최대 너비 제한 (화면 너비의 75%)
+          // Limit maximum width of the bubble (75% of screen width)
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
@@ -63,33 +63,33 @@ class MessageBubble extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min, // 내용물 크기만큼만 차지
+          mainAxisSize: MainAxisSize.min, // Take up only the size of content
           children: [
-            // 원문 표시 (번역된 경우)
+            // Display original text (if translated)
             if (message.originalText != null && message.isTranslatedByAI)
               Text(
                 message.originalText!,
-                style: TextStyle(color: textColor.withValues(alpha: 0.8), fontSize: 14), // 원문은 약간 흐리게
+                style: TextStyle(color: textColor.withValues(alpha: 0.8), fontSize: 14), // Original text slightly faded
               ),
-            // 번역/주요 텍스트 표시
+            // Display translated/main text
             Text(
               message.text,
-              style: TextStyle(color: textColor, fontSize: 15, height: 1.4), // 기본 텍스트
+              style: TextStyle(color: textColor, fontSize: 15, height: 1.4), // Main text
             ),
-            // AI 번역 알림
+            // AI translation notice
             if (message.isTranslatedByAI)
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
                 child: Text('Translated by Gemini', style: aiNoticeStyle),
               ),
-            // 시간 및 읽음 상태 (내 메시지 또는 상대 메시지 아래)
+            // Time and read status (below my message or other's message)
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
                 children: [
-                  if (isMe && message.isRead) // 내 메시지이고 읽었으면
+                  if (isMe && message.isRead) // If it's my message and read
                     Text('Read ', style: statusStyle),
                   Text(timeFormatter.format(message.timestamp), style: statusStyle),
                 ],

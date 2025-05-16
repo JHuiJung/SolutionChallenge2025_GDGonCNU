@@ -3,8 +3,8 @@ class SpotCommentModel {
   final String id;
   final String commenterId;
   final String commenterName;
-  final String? commenterImageUrl; // null 가능
-  final double rating; // 별점 (0.0 ~ 5.0)
+  final String? commenterImageUrl; // nullable
+  final double rating; // Rating (0.0 ~ 5.0)
   final String text;
 
   SpotCommentModel({
@@ -17,14 +17,14 @@ class SpotCommentModel {
   });
 }
 
-// --- 임시 더미 데이터 생성 함수 ---
+// --- Temporary Dummy Data Creation Function ---
 List<SpotCommentModel> getDummySpotComments() {
   return List.generate(5, (index) => SpotCommentModel(
     id: 'comment_$index',
     commenterId: 'user_${index + 10}',
     commenterName: ['Explorer99', 'WanderlustGirl', 'LocalGuide', 'PhotoFanatic', 'HistoryBuff'][index % 5],
-    commenterImageUrl: index % 3 == 0 ? null : 'https://i.pravatar.cc/150?img=${index + 10}', // 일부는 이미지 없음
-    rating: (index % 5) + 0.5, // 0.5 ~ 4.5 별점
+    commenterImageUrl: index % 3 == 0 ? null : 'https://i.pravatar.cc/150?img=${index + 10}', // Some don't have images
+    rating: (index % 5) + 0.5, // 0.5 ~ 4.5 rating
     text: [
       'Had a great time meeting locals and enjoying the view!',
       'Exploring hidden gems like this is why I travel. Beautiful!',

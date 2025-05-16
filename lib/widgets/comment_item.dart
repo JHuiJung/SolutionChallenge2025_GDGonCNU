@@ -1,6 +1,6 @@
 // lib/widgets/comment_item.dart
 import 'package:flutter/material.dart';
-import '../models/comment_model.dart'; // 코멘트 모델 임포트
+import '../models/comment_model.dart'; // Import comment model
 
 class CommentItem extends StatelessWidget {
   final CommentModel comment;
@@ -14,13 +14,13 @@ class CommentItem extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
-      // Card 대신 Container와 Divider 사용 가능
+      // Can use Container and Divider instead of Card
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
             onTap: () {
-              // 코멘트 작성자 프로필로 이동
+              // Navigate to comment author's profile
               Navigator.pushNamed(context, '/user_profile', arguments: comment.commenterId);
               print('Navigate to commenter profile: ${comment.commenterId}');
             },
@@ -35,7 +35,7 @@ class CommentItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row( // 이름과 정보(지역, 나이)를 한 줄에 표시
+                Row( // Display name and info (region, age) on one line
                   children: [
                     Text(
                       comment.commenterName,
@@ -43,7 +43,7 @@ class CommentItem extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      comment.commenterInfo, // 예: "America, 20"
+                      comment.commenterInfo, // e.g.: "America, 20"
                       style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
                     ),
                   ],
@@ -51,7 +51,7 @@ class CommentItem extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   comment.commentText,
-                  style: textTheme.bodyMedium?.copyWith(height: 1.4), // 줄 간격
+                  style: textTheme.bodyMedium?.copyWith(height: 1.4), // Line spacing
                 ),
               ],
             ),
