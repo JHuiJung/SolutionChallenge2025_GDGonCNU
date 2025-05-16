@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "194283088715",
+    "project_id": "solutionchalleng2025-cnu",
+    "storage_bucket": "solutionchalleng2025-cnu.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:194283088715:android:6db377f8c0a5eee90b56ce",
+        "android_client_info": {
+          "package_name": "com.example.naviya"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "194283088715-17nkds2u8q36ku2531jfbf0hbpdjn21k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.naviya",
+            "certificate_hash": "b97796ee66b3b98ee82eee1ba303c05f7ee41e3f"
+          }
+        },
+        {
+          "client_id": "194283088715-8eo04g8505npkhcpm96qb83t9doevlrq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.naviya",
+            "certificate_hash": "4f9a0b7cc35cca2dc278080f4783bb8aac72f04f"
+          }
+        },
+        {
+          "client_id": "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLhDuykjN5LW_bTNbIfFz0Zp5w5AfHSZI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "194283088715-430r21bhrl16skrk8murs5rdg095i0sh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.naviya"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
