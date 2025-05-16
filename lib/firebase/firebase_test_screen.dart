@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import './firestoreManager.dart' as firestoreManager;
 
-String firebase_client_id = "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com";
+//String firebase_client_id = "194283088715-clqaongemkmhhd4n3fcq9oflqsamv26q.apps.googleusercontent.com";
 
 
 
@@ -26,6 +26,8 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   Future<void> _signInWithGoogle(BuildContext _context) async {
 
     // Get login information
+    // 로그인 정보 가져오기
+    /*
     final userinfo = FirebaseAuth.instance.currentUser;
 
     if (userinfo != null) {
@@ -39,6 +41,7 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
       }
 
     }
+    */
 
     // Not signed in -> Move to login screen
     if (kIsWeb) {
@@ -86,7 +89,44 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   // Function to sign in with Google for mobile
   Future<void> signInWithGoogleForMobile(BuildContext context) async {
 
-    print("😍 Mobile event1");
+
+    try {
+      print("😍 모바일 이벤트1");
+
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      print("😍 모바일 이벤트2");
+
+      if (googleUser == null) {
+        print("😥 Google 로그인 취소");
+        if (context.mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+        return;
+      }
+
+      print("😍 모바일 이벤트3");
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      print("😍 모바일 이벤트4");
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      print("🎉 로그인 성공: ${userCredential.user?.email}");
+
+    } catch (e, stack) {
+      print("❌ 로그인 중 오류 발생: $e");
+      print(stack);
+      // 오류 처리 UI 혹은 fallback 로직 추가 가능
+    }
+
+    /*
+    print("😍 모바일 이벤트1");
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
@@ -95,6 +135,9 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
     if (googleUser == null) {
       // User canceled sign-in
+      // 사용자가 로그인 취소함
+      print("😥 Google 로그인 취소");
+      Navigator.pushReplacementNamed(context, '/login');
       return;
     }
 
@@ -108,11 +151,15 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
 
     final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
     print("😍 Mobile event5");
+    print("😍 모바일 이벤트5");
+
     setState(() {
       _status = 'Signed in with Google: ${userCredential.user?.displayName}';
     });
     print("😍 Signed in as ${userCredential.user?.displayName}");
+  */
   }
+
 
   Future<void> signInWithEmailPassword({
     required BuildContext context,
@@ -183,14 +230,6 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
               ),
             ),
 
-            /*
-            ElevatedButton(
-              onPressed: addUser,
-              child: Text('사용자 추가'),
-            ),
-
-             */
-
             const SizedBox(height: 50),
 
             // Google G Logo Button
@@ -238,4 +277,5 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
       ),
     );
   }
+
 }
